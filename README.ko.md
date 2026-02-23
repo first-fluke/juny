@@ -1,9 +1,9 @@
 # Fullstack Starter
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/first-fluke/fullstack-starter?logo=githubsponsors)](https://github.com/first-fluke/fullstack-starter/stargazers)
-[![Last Commit](https://img.shields.io/github/last-commit/first-fluke/fullstack-starter/main?label=last%20updated&logo=github&logoColor=white)](https://github.com/first-fluke/fullstack-starter)
-[![Version](https://img.shields.io/github/v/release/first-fluke/fullstack-starter?label=version)](https://github.com/first-fluke/fullstack-starter/releases)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/first-fluke/fullstack-starter)
+[![GitHub Repo stars](https://img.shields.io/github/stars/first-fluke/juny?logo=githubsponsors)](https://github.com/first-fluke/juny/stargazers)
+[![Last Commit](https://img.shields.io/github/last-commit/first-fluke/juny/main?label=last%20updated&logo=github&logoColor=white)](https://github.com/first-fluke/juny)
+[![Version](https://img.shields.io/github/v/release/first-fluke/juny?label=version)](https://github.com/first-fluke/juny/releases)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/first-fluke/juny)
 
 [English](./README.md) | 한국어
 
@@ -124,15 +124,15 @@ graph TB
 
 ```bash
 # CLI로 생성하기
-bun create fullstack-starter my-app
+bun create juny my-app
 # 또는
-npm create fullstack-starter my-app
+npm create juny my-app
 ```
 
 또는 GitHub에서:
 
-1. **[Use this template](https://github.com/first-fluke/fullstack-starter/generate)**을 클릭하여 새 레포지토리 생성
-2. 또는 이 레포지토리를 **[Fork](https://github.com/first-fluke/fullstack-starter/fork)**
+1. **[Use this template](https://github.com/first-fluke/juny/generate)**을 클릭하여 새 레포지토리 생성
+2. 또는 이 레포지토리를 **[Fork](https://github.com/first-fluke/juny/fork)**
 
 ### 사전 요구사항
 
@@ -197,7 +197,7 @@ mise dev
 ## 프로젝트 구조
 
 ```
-fullstack-starter/
+juny/
 ├── apps/
 │   ├── api/           # FastAPI 백엔드
 │   ├── web/           # Next.js 프론트엔드
@@ -488,9 +488,9 @@ MIT
 또는 스타(Star)를 눌러주세요:
 
 ```bash
-gh api --method PUT /user/starred/first-fluke/fullstack-starter
+gh api --method PUT /user/starred/first-fluke/juny
 ```
 
 ## 스타 히스토리
 
-[![Star History Chart](https://api.star-history.com/svg?repos=first-fluke/fullstack-starter&type=date&legend=bottom-right)](https://www.star-history.com/#first-fluke/fullstack-starter&type=date&legend=bottom-right)
+[![Star History Chart](https://api.star-history.com/svg?repos=first-fluke/juny&type=date&legend=bottom-right)](https://www.star-history.com/#first-fluke/juny&type=date&legend=bottom-right)

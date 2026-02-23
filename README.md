@@ -1,9 +1,9 @@
 # Fullstack Starter
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/first-fluke/fullstack-starter?logo=githubsponsors)](https://github.com/first-fluke/fullstack-starter/stargazers)
-[![Last Commit](https://img.shields.io/github/last-commit/first-fluke/fullstack-starter/main?label=last%20updated&logo=github&logoColor=white)](https://github.com/first-fluke/fullstack-starter)
-[![Version](https://img.shields.io/github/v/release/first-fluke/fullstack-starter?label=version)](https://github.com/first-fluke/fullstack-starter/releases)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/first-fluke/fullstack-starter)
+[![GitHub Repo stars](https://img.shields.io/github/stars/first-fluke/juny?logo=githubsponsors)](https://github.com/first-fluke/juny/stargazers)
+[![Last Commit](https://img.shields.io/github/last-commit/first-fluke/juny/main?label=last%20updated&logo=github&logoColor=white)](https://github.com/first-fluke/juny)
+[![Version](https://img.shields.io/github/v/release/first-fluke/juny?label=version)](https://github.com/first-fluke/juny/releases)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/first-fluke/juny)
 
 English | [한국어](./README.ko.md)
 
@@ -124,15 +124,15 @@ Choose one of the following methods to start with this template:
 
 ```bash
 # Create from CLI
-bun create fullstack-starter my-app
+bun create juny my-app
 # or
-npm create fullstack-starter my-app
+npm create juny my-app
 ```
 
 Or use GitHub:
 
-1. Click **[Use this template](https://github.com/first-fluke/fullstack-starter/generate)** to create a new repository
-2. Or **[Fork](https://github.com/first-fluke/fullstack-starter/fork)** this repository
+1. Click **[Use this template](https://github.com/first-fluke/juny/generate)** to create a new repository
+2. Or **[Fork](https://github.com/first-fluke/juny/fork)** this repository
 
 ### Prerequisites
 
@@ -197,7 +197,7 @@ mise dev
 ## Project Structure
 
 ```
-fullstack-starter/
+juny/
 ├── apps/
 │   ├── api/           # FastAPI backend
 │   ├── web/           # Next.js frontend
@@ -488,9 +488,9 @@ If this project helped you, please consider buying me a coffee!
 Or leave a star:
 
 ```bash
-gh api --method PUT /user/starred/first-fluke/fullstack-starter
+gh api --method PUT /user/starred/first-fluke/juny
 ```
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=first-fluke/fullstack-starter&type=date&legend=bottom-right)](https://www.star-history.com/#first-fluke/fullstack-starter&type=date&legend=bottom-right)
+[![Star History Chart](https://api.star-history.com/svg?repos=first-fluke/juny&type=date&legend=bottom-right)](https://www.star-history.com/#first-fluke/juny&type=date&legend=bottom-right)

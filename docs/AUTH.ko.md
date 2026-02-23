@@ -227,17 +227,17 @@ JWE_SECRET_KEY=strong-encryption-key-32-chars-or-more
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/app
 
 # Better Auth (OAuth only)
-BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3200
 ```
 
 ### 프론트엔드 (apps/web/.env)
 
 ```bash
 # API
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://localhost:8200
 
 # Better Auth
-NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3200
 BETTER_AUTH_SECRET=strong-secret-key-32-chars-or-more
 
 # OAuth Providers (optional)
