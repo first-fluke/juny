@@ -63,6 +63,7 @@ apps/mobile/.packages
 *.bak
 *.tmp
 .cache/
+CLAUDE.md
 
 .opencode/mimic/
 
