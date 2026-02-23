@@ -7,7 +7,7 @@ import 'package:dio/dio.dart';
 import 'clients/fallback_service.dart';
 import 'clients/authentication_service.dart';
 
-/// fullstack-starter-api `v0.1.0`
+/// juny-api `v0.1.0`
 class ApiClient {
   ApiClient(
     Dio dio, {
