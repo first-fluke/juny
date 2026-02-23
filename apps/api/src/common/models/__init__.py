@@ -1,5 +1,6 @@
 """Common models for the API."""
 
+from src.common.enums import UserRole, WellnessStatus
 from src.common.models.base import TimestampMixin, UUIDMixin
 from src.common.models.pagination import (
     PaginatedResponse,
@@ -13,4 +14,6 @@ __all__ = [
     "PaginationParams",
     "TimestampMixin",
     "UUIDMixin",
+    "UserRole",
+    "WellnessStatus",
 ]

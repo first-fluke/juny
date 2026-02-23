@@ -1,23 +1,27 @@
+import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Literal, cast
+from typing import Literal
 from uuid import uuid4
 
+import redis.asyncio as aioredis
 import structlog
-from fastapi import FastAPI, Request, Response, status
+from fastapi import APIRouter, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from opentelemetry import trace
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from src.auth.router import router as auth_router
 from src.lib.config import settings
 from src.lib.database import async_session_factory
 from src.lib.logging import configure_logging, get_logger
 from src.lib.telemetry import configure_telemetry, instrument_app
-
-if TYPE_CHECKING:
-    import redis.asyncio as redis_module
+from src.medications.router import router as medications_router
+from src.relations.router import router as relations_router
+from src.routers.live import router as live_router
+from src.wellness.router import router as wellness_router
 
 # Configure logging first
 configure_logging()
@@ -118,7 +122,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -143,8 +147,6 @@ class HealthResponse(BaseModel):
 
 async def check_database() -> ServiceStatus:
     """Check database connectivity."""
-    import time
-
     start = time.perf_counter()
     try:
         async with async_session_factory() as session:
@@ -160,22 +162,16 @@ async def check_database() -> ServiceStatus:
 
 async def check_redis() -> ServiceStatus | None:
     """Check Redis connectivity if configured."""
-    import time
-
     if not settings.REDIS_URL:
         return None
 
     start = time.perf_counter()
     try:
-        import redis.asyncio as redis
-
-        client = cast(redis_module.Redis, redis.from_url(settings.REDIS_URL))  # type: ignore[no-untyped-call]
-        await client.ping()  # type: ignore[misc]
+        client = aioredis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
+        await client.ping()
         await client.aclose()
         latency = (time.perf_counter() - start) * 1000
         return ServiceStatus(status="healthy", latency_ms=round(latency, 2))
-    except ImportError:
-        return ServiceStatus(status="unhealthy", error="redis package not installed")
     except Exception as e:
         latency = (time.perf_counter() - start) * 1000
         return ServiceStatus(
@@ -223,8 +219,6 @@ async def readiness_check() -> dict[str, str]:
     """Readiness probe - checks if app can serve traffic."""
     db_status = await check_database()
     if db_status.status == "unhealthy":
-        from fastapi import HTTPException, status
-
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Database not ready",
@@ -232,7 +226,12 @@ async def readiness_check() -> dict[str, str]:
     return {"status": "ready"}
 
 
-# Register routers here
-from src.auth.router import router as auth_router  # noqa: E402
+# Register routers
+api_v1 = APIRouter(prefix="/api/v1")
+api_v1.include_router(auth_router, prefix="/auth", tags=["authentication"])
+api_v1.include_router(live_router, prefix="/live", tags=["live"])
+api_v1.include_router(relations_router, prefix="/relations", tags=["relations"])
+api_v1.include_router(wellness_router, prefix="/wellness", tags=["wellness"])
+api_v1.include_router(medications_router, prefix="/medications", tags=["medications"])
 
-app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
+app.include_router(api_v1)

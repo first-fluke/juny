@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
 
+from src.auth import service
 from src.lib.auth import (
     OAuthLoginRequest,
     RefreshTokenRequest,
@@ -10,7 +11,6 @@ from src.lib.auth import (
     verify_oauth_token,
 )
 from src.lib.dependencies import DBSession
-from src.users.model import User
 
 router = APIRouter()
 
@@ -26,26 +26,19 @@ async def login(
     """
     user_info = await verify_oauth_token(request.provider, request.access_token)
 
-    from sqlalchemy import select
-
-    result = await db.execute(select(User).where(User.email == user_info.email))
-    user = result.scalar_one_or_none()
-
-    if not user:
-        user = User(
-            email=user_info.email,
-            name=user_info.name,
-            image=user_info.image,
-            email_verified=user_info.email_verified,
+    try:
+        user = await service.login_or_create_user(
+            db,
+            provider=request.provider,
+            user_info=user_info,
         )
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(e),
+        ) from e
 
-    from src.lib.auth import create_access_token, create_refresh_token
-
-    access_token = create_access_token(str(user.id))
-    refresh_token = create_refresh_token(str(user.id))
+    access_token, refresh_token = service.issue_tokens(str(user.id), role=user.role)
 
     return TokenResponse(
         access_token=access_token,
@@ -67,20 +60,14 @@ async def refresh_token(
             detail="Invalid token type",
         )
 
-    from sqlalchemy import select
-
-    result = await db.execute(select(User).where(User.id == UUID(payload.user_id)))
-    user = result.scalar_one_or_none()
-
+    user = await service.get_user_by_id(db, UUID(payload.user_id))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found",
         )
 
-    from src.lib.auth import create_access_token
-
-    access_token = create_access_token(str(user.id))
+    access_token, _ = service.issue_tokens(str(user.id), role=user.role)
 
     return TokenResponse(
         access_token=access_token,

@@ -15,18 +15,18 @@ class Settings(BaseSettings):
     )
 
     # Project
-    PROJECT_NAME: str = "fullstack-starter-api"
+    PROJECT_NAME: str = "juny-api"
     PROJECT_ENV: Literal["local", "staging", "prod"] = "local"
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/app"
     DATABASE_URL_SYNC: str = "postgresql://postgres:postgres@localhost:5432/app"
 
-    # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+    # CORS (comma-separated string in .env)
+    CORS_ORIGINS: str = "http://localhost:3200"
 
     # Auth (better-auth)
-    BETTER_AUTH_URL: str = "http://localhost:3000"
+    BETTER_AUTH_URL: str = "http://localhost:3200"
 
     # JWT/JWE (stateless authentication)
     JWT_SECRET: str = "your-super-secret-jwt-key-change-in-production"  # noqa: S105
@@ -35,13 +35,21 @@ class Settings(BaseSettings):
     # Redis (optional)
     REDIS_URL: str | None = None
 
+    # LiveKit (optional)
+    LIVEKIT_API_URL: str | None = None
+    LIVEKIT_API_KEY: str | None = None
+    LIVEKIT_API_SECRET: str | None = None
+
     # OpenTelemetry (optional)
     OTEL_EXPORTER_OTLP_ENDPOINT: str | None = None
     OTEL_SERVICE_NAME: str | None = None
 
     # AI (optional)
     AI_PROVIDER: Literal["gemini", "openai"] = "gemini"
+    GEMINI_BACKEND: Literal["ai_studio", "vertex_ai"] = "ai_studio"
+    GEMINI_LIVE_MODEL: str | None = None
     GOOGLE_CLOUD_PROJECT: str | None = None
+    GOOGLE_CLOUD_LOCATION: str = "us-central1"
     GEMINI_API_KEY: str | None = None
     OPENAI_API_KEY: str | None = None
 
@@ -51,6 +59,18 @@ class Settings(BaseSettings):
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin"  # noqa: S105
+
+    @property
+    def gemini_configured(self) -> bool:
+        """Check whether Gemini is ready (AI Studio or Vertex AI)."""
+        if self.GEMINI_BACKEND == "vertex_ai":
+            return bool(self.GOOGLE_CLOUD_PROJECT)
+        return bool(self.GEMINI_API_KEY)
+
+    @property
+    def cors_origins(self) -> list[str]:
+        """Parse CORS_ORIGINS into a list of origin strings."""
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
 
 @lru_cache

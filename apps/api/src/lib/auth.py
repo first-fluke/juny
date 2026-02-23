@@ -1,8 +1,6 @@
 import json
-from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
-from functools import wraps
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 import httpx
 from fastapi import Depends, HTTPException, Request, status
@@ -20,6 +18,7 @@ class TokenPayload(BaseModel):
     token_type: Literal["access", "refresh"]
     exp: int
     iat: int
+    role: str | None = None
 
 
 class TokenResponse(BaseModel):
@@ -35,8 +34,6 @@ class OAuthLoginRequest(BaseModel):
 
     provider: Literal["google", "github", "facebook"]
     access_token: str
-    email: str
-    name: str | None = None
 
 
 class RefreshTokenRequest(BaseModel):
@@ -59,6 +56,7 @@ class CurrentUserInfo(BaseModel):
     """Current authenticated user info."""
 
     id: str
+    role: str | None = None
     email: str | None = None
     name: str | None = None
     image: str | None = None
@@ -75,15 +73,17 @@ def _get_jwe_key() -> jwk.JWK:
     return jwk.JWK(kty="oct", k=jwk.base64url_encode(key_bytes))
 
 
-def create_access_token(user_id: str) -> str:
+def create_access_token(user_id: str, *, role: str | None = None) -> str:
     """Create JWE access token."""
     now = datetime.now(UTC)
-    payload = {
+    payload: dict[str, str | int] = {
         "user_id": user_id,
         "token_type": "access",
         "exp": int((now + timedelta(hours=1)).timestamp()),
         "iat": int(now.timestamp()),
     }
+    if role is not None:
+        payload["role"] = role
 
     key = _get_jwe_key()
     jwe_token = jwe.JWE(
@@ -245,7 +245,7 @@ async def get_current_user(request: Request) -> CurrentUserInfo:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return CurrentUserInfo(id=payload.user_id)
+    return CurrentUserInfo(id=payload.user_id, role=payload.role)
 
 
 async def get_optional_user(request: Request) -> CurrentUserInfo | None:
@@ -258,27 +258,3 @@ async def get_optional_user(request: Request) -> CurrentUserInfo | None:
 
 CurrentUser = Annotated[CurrentUserInfo, Depends(get_current_user)]
 OptionalUser = Annotated[CurrentUserInfo | None, Depends(get_optional_user)]
-
-
-def require_auth(
-    func: Callable[..., Any] | None = None,
-) -> Callable[..., Any]:
-    """Decorator to require authentication on a route.
-
-    Usage:
-        @router.get("/protected")
-        @require_auth
-        async def protected_route(user: CurrentUser):
-            return {"user": user}
-    """
-
-    def decorator(f: Callable[..., Any]) -> Callable[..., Any]:
-        @wraps(f)
-        async def wrapper(*args: Any, **kwargs: Any) -> Any:
-            return await f(*args, **kwargs)
-
-        return wrapper
-
-    if func is not None:
-        return decorator(func)
-    return decorator
