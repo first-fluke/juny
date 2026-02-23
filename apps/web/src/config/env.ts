@@ -4,7 +4,7 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     BETTER_AUTH_SECRET: z.string().min(32, "Secret must be at least 32 characters"),
-    BETTER_AUTH_URL: z.string().url().optional().default("http://localhost:3000"),
+    BETTER_AUTH_URL: z.string().url().optional().default("http://localhost:3200"),
     GOOGLE_CLIENT_ID: z.string().optional().or(z.literal("")),
     GOOGLE_CLIENT_SECRET: z.string().optional().or(z.literal("")),
     GITHUB_CLIENT_ID: z.string().optional().or(z.literal("")),
@@ -20,8 +20,8 @@ export const env = createEnv({
   },
 
   client: {
-    NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url().optional().default("http://localhost:3000"),
-    NEXT_PUBLIC_API_URL: z.string().url().optional().default("http://localhost:8000"),
+    NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url().optional().default("http://localhost:3200"),
+    NEXT_PUBLIC_API_URL: z.string().url().optional().default("http://localhost:8200"),
     NEXT_PUBLIC_SITE_URL: z.string().url().optional().default("https://example.com"),
     NEXT_PUBLIC_ENABLE_DEVTOOLS: z.enum(["true", "false"]).optional().default("false"),
     NEXT_PUBLIC_GIT_COMMIT: z.string().optional(),
