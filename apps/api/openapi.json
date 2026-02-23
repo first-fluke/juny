@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "fullstack-starter-api",
+    "title": "juny-api",
     "version": "0.1.0"
   },
   "paths": {
@@ -70,14 +70,14 @@
         }
       }
     },
-    "/api/auth/login": {
+    "/api/v1/auth/login": {
       "post": {
         "tags": [
           "authentication"
         ],
         "summary": "Login",
         "description": "OAuth login endpoint.\n\nVerify OAuth token, create/update user, and issue JWE tokens.",
-        "operationId": "login_api_auth_login_post",
+        "operationId": "login_api_v1_auth_login_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -112,14 +112,14 @@
         }
       }
     },
-    "/api/auth/refresh": {
+    "/api/v1/auth/refresh": {
       "post": {
         "tags": [
           "authentication"
         ],
         "summary": "Refresh Token",
         "description": "Refresh access token using refresh token.",
-        "operationId": "refresh_token_api_auth_refresh_post",
+        "operationId": "refresh_token_api_v1_auth_refresh_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -154,17 +154,717 @@
         }
       }
     },
-    "/api/auth/logout": {
+    "/api/v1/auth/logout": {
       "post": {
         "tags": [
           "authentication"
         ],
         "summary": "Logout",
         "description": "Logout endpoint.\n\nClient should remove tokens from localStorage.",
-        "operationId": "logout_api_auth_logout_post",
+        "operationId": "logout_api_v1_auth_logout_post",
         "responses": {
           "204": {
             "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/v1/live/token": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Get Live Token",
+        "description": "Generate a LiveKit access token for the authenticated user.",
+        "operationId": "get_live_token_api_v1_live_token_get",
+        "parameters": [
+          {
+            "name": "room_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Room Name"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "host",
+                "concierge",
+                "organization"
+              ],
+              "type": "string",
+              "title": "Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveTokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/relations": {
+      "post": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Create Care Relation",
+        "description": "Create a new care relation between host and caregiver.\n\nOnly the host or an existing caregiver of the host may create new relations.",
+        "operationId": "create_care_relation_api_v1_relations_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareRelationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareRelationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "List Care Relations",
+        "description": "List care relations filtered by host or caregiver.\n\nUsers can only list relations they participate in.",
+        "operationId": "list_care_relations_api_v1_relations_get",
+        "parameters": [
+          {
+            "name": "host_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Host Id"
+            }
+          },
+          {
+            "name": "caregiver_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Caregiver Id"
+            }
+          },
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Active Only"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CareRelationResponse"
+                  },
+                  "title": "Response List Care Relations Api V1 Relations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/relations/{relation_id}": {
+      "get": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Get Care Relation",
+        "description": "Get a specific care relation by ID.",
+        "operationId": "get_care_relation_api_v1_relations__relation_id__get",
+        "parameters": [
+          {
+            "name": "relation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Relation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareRelationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Update Care Relation",
+        "description": "Update a care relation (e.g. deactivate, change role).",
+        "operationId": "update_care_relation_api_v1_relations__relation_id__patch",
+        "parameters": [
+          {
+            "name": "relation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Relation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareRelationUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareRelationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "relations"
+        ],
+        "summary": "Delete Care Relation",
+        "description": "Delete a care relation.",
+        "operationId": "delete_care_relation_api_v1_relations__relation_id__delete",
+        "parameters": [
+          {
+            "name": "relation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Relation Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/wellness": {
+      "post": {
+        "tags": [
+          "wellness"
+        ],
+        "summary": "Create Wellness Log",
+        "description": "Create a wellness log entry for a host.",
+        "operationId": "create_wellness_log_api_v1_wellness_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WellnessLogCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellnessLogResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "wellness"
+        ],
+        "summary": "List Wellness Logs",
+        "description": "List wellness logs for a host (paginated, newest first).",
+        "operationId": "list_wellness_logs_api_v1_wellness_get",
+        "parameters": [
+          {
+            "name": "host_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Host Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_WellnessLogResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/wellness/{log_id}": {
+      "get": {
+        "tags": [
+          "wellness"
+        ],
+        "summary": "Get Wellness Log",
+        "description": "Get a specific wellness log by ID.",
+        "operationId": "get_wellness_log_api_v1_wellness__log_id__get",
+        "parameters": [
+          {
+            "name": "log_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Log Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellnessLogResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/medications": {
+      "post": {
+        "tags": [
+          "medications"
+        ],
+        "summary": "Create Medication",
+        "description": "Create a medication schedule entry for a host.",
+        "operationId": "create_medication_api_v1_medications_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "medications"
+        ],
+        "summary": "List Medications",
+        "description": "List medications for a host (paginated, newest first).",
+        "operationId": "list_medications_api_v1_medications_get",
+        "parameters": [
+          {
+            "name": "host_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Host Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_MedicationResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/medications/{medication_id}": {
+      "get": {
+        "tags": [
+          "medications"
+        ],
+        "summary": "Get Medication",
+        "description": "Get a specific medication by ID.",
+        "operationId": "get_medication_api_v1_medications__medication_id__get",
+        "parameters": [
+          {
+            "name": "medication_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Medication Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "medications"
+        ],
+        "summary": "Update Medication",
+        "description": "Update a medication entry (e.g. mark as taken).",
+        "operationId": "update_medication_api_v1_medications__medication_id__patch",
+        "parameters": [
+          {
+            "name": "medication_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Medication Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicationUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "medications"
+        ],
+        "summary": "Delete Medication",
+        "description": "Delete a medication entry.",
+        "operationId": "delete_medication_api_v1_medications__medication_id__delete",
+        "parameters": [
+          {
+            "name": "medication_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Medication Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         }
       }
@@ -172,6 +872,122 @@
   },
   "components": {
     "schemas": {
+      "CareRelationCreate": {
+        "properties": {
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "caregiver_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Caregiver Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "Caregiver role",
+            "examples": [
+              "concierge",
+              "care_worker",
+              "organization"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "host_id",
+          "caregiver_id",
+          "role"
+        ],
+        "title": "CareRelationCreate",
+        "description": "Request body for creating a care relation."
+      },
+      "CareRelationResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "caregiver_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Caregiver Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "host_id",
+          "caregiver_id",
+          "role",
+          "is_active",
+          "created_at"
+        ],
+        "title": "CareRelationResponse",
+        "description": "Response model for a care relation."
+      },
+      "CareRelationUpdate": {
+        "properties": {
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "title": "CareRelationUpdate",
+        "description": "Request body for updating a care relation."
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -217,6 +1033,165 @@
         "title": "HealthResponse",
         "description": "Health check response with detailed service statuses."
       },
+      "LiveTokenResponse": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "room_name": {
+            "type": "string",
+            "title": "Room Name"
+          },
+          "identity": {
+            "type": "string",
+            "title": "Identity"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "host",
+              "concierge",
+              "organization"
+            ],
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "room_name",
+          "identity",
+          "role"
+        ],
+        "title": "LiveTokenResponse"
+      },
+      "MedicationCreate": {
+        "properties": {
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "pill_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Pill Name"
+          },
+          "schedule_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Schedule Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host_id",
+          "pill_name",
+          "schedule_time"
+        ],
+        "title": "MedicationCreate",
+        "description": "Request body for creating a medication schedule."
+      },
+      "MedicationResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "pill_name": {
+            "type": "string",
+            "title": "Pill Name"
+          },
+          "schedule_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Schedule Time"
+          },
+          "is_taken": {
+            "type": "boolean",
+            "title": "Is Taken"
+          },
+          "taken_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Taken At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "host_id",
+          "pill_name",
+          "schedule_time",
+          "is_taken",
+          "created_at"
+        ],
+        "title": "MedicationResponse",
+        "description": "Response model for a medication entry."
+      },
+      "MedicationUpdate": {
+        "properties": {
+          "pill_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pill Name"
+          },
+          "schedule_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Time"
+          },
+          "is_taken": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Taken"
+          }
+        },
+        "type": "object",
+        "title": "MedicationUpdate",
+        "description": "Request body for updating a medication."
+      },
       "OAuthLoginRequest": {
         "properties": {
           "provider": {
@@ -231,31 +1206,100 @@
           "access_token": {
             "type": "string",
             "title": "Access Token"
-          },
-          "email": {
-            "type": "string",
-            "title": "Email"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
           }
         },
         "type": "object",
         "required": [
           "provider",
-          "access_token",
-          "email"
+          "access_token"
         ],
         "title": "OAuthLoginRequest",
         "description": "OAuth login request."
+      },
+      "PaginatedResponse_MedicationResponse_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MedicationResponse"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "PaginatedResponse[MedicationResponse]"
+      },
+      "PaginatedResponse_WellnessLogResponse_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/WellnessLogResponse"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "PaginatedResponse[WellnessLogResponse]"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "description": "Current page number"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Items per page"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of items"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "Total Pages",
+            "description": "Total number of pages"
+          },
+          "has_next": {
+            "type": "boolean",
+            "title": "Has Next",
+            "description": "Whether there is a next page"
+          },
+          "has_prev": {
+            "type": "boolean",
+            "title": "Has Prev",
+            "description": "Whether there is a previous page"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page",
+          "limit",
+          "total",
+          "total_pages",
+          "has_next",
+          "has_prev"
+        ],
+        "title": "PaginationMeta",
+        "description": "Pagination metadata."
       },
       "RefreshTokenRequest": {
         "properties": {
@@ -367,6 +1411,90 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WellnessLogCreate": {
+        "properties": {
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WellnessStatus"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host_id",
+          "status",
+          "summary"
+        ],
+        "title": "WellnessLogCreate",
+        "description": "Request body for creating a wellness log."
+      },
+      "WellnessLogResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "host_id",
+          "status",
+          "summary",
+          "details",
+          "created_at"
+        ],
+        "title": "WellnessLogResponse",
+        "description": "Response model for a wellness log."
+      },
+      "WellnessStatus": {
+        "type": "string",
+        "enum": [
+          "normal",
+          "warning",
+          "emergency"
+        ],
+        "title": "WellnessStatus",
+        "description": "Wellness log severity levels."
       }
     }
   }
