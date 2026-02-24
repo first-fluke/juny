@@ -15,11 +15,13 @@ from src.lib.ai.tools.base import (
 from src.lib.ai.tools.log_wellness import LogWellnessTool
 from src.lib.ai.tools.ping_tool import PingTool
 from src.lib.ai.tools.register_medication import RegisterMedicationTool
+from src.lib.ai.tools.scan_medication_schedule import ScanMedicationScheduleTool
 
 _NOTIFY = "src.lib.ai.tools.log_wellness.send_push_notification"
 _FIND_BY_HOST = "src.lib.ai.tools.log_wellness.relations_repo.find_by_host"
 _CREATE_WELLNESS = "src.lib.ai.tools.log_wellness.create_wellness_log"
 _CREATE_MED = "src.lib.ai.tools.register_medication.create_medication"
+_CREATE_MED_SCAN = "src.lib.ai.tools.scan_medication_schedule.create_medication"
 
 
 @pytest.fixture(autouse=True)
@@ -129,6 +131,11 @@ class TestAIPersona:
 
     def test_system_instruction_mentions_emergency(self) -> None:
         assert "emergency" in DEFAULT_SYSTEM_INSTRUCTION
+
+    def test_system_instruction_references_scan_medication_schedule(
+        self,
+    ) -> None:
+        assert "scan_medication_schedule" in DEFAULT_SYSTEM_INSTRUCTION
 
 
 class TestLogWellnessTool:
@@ -351,3 +358,84 @@ class TestRegisterMedicationTool:
             "pill_name",
             "schedule_time",
         ]
+
+
+class TestScanMedicationScheduleTool:
+    @pytest.mark.asyncio
+    @patch(_CREATE_MED_SCAN, new_callable=AsyncMock)
+    async def test_scan_success_multiple_medications(
+        self, mock_create: AsyncMock
+    ) -> None:
+        med_ids = [
+            uuid.UUID("00000000-0000-4000-8000-000000000004"),
+            uuid.UUID("00000000-0000-4000-8000-000000000005"),
+            uuid.UUID("00000000-0000-4000-8000-000000000006"),
+        ]
+        mock_create.side_effect = [_mock_medication(m) for m in med_ids]
+        tool = ScanMedicationScheduleTool()
+        ctx = _make_db_context()
+
+        result = await tool.execute(
+            context=ctx,
+            medications=[
+                {"pill_name": "Aspirin 100mg", "schedule_time": "2026-03-01T09:00:00"},
+                {"pill_name": "Amlodipine 5mg", "schedule_time": "2026-03-01T12:00:00"},
+                {
+                    "pill_name": "Metformin 500mg",
+                    "schedule_time": "2026-03-01T18:00:00",
+                },
+            ],
+        )
+
+        assert result["success"] is True
+        assert result["created_count"] == 3
+        assert len(result["created"]) == 3
+        assert len(result["errors"]) == 0
+        assert mock_create.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_scan_empty_medications(self) -> None:
+        tool = ScanMedicationScheduleTool()
+        ctx = _make_db_context()
+        result = await tool.execute(context=ctx, medications=[])
+        assert "error" in result
+        assert "empty" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_scan_missing_context(self) -> None:
+        tool = ScanMedicationScheduleTool()
+        result = await tool.execute(
+            medications=[
+                {"pill_name": "Aspirin", "schedule_time": "2026-03-01T09:00:00"},
+            ],
+        )
+        assert "error" in result
+
+    @pytest.mark.asyncio
+    @patch(_CREATE_MED_SCAN, new_callable=AsyncMock)
+    async def test_scan_partial_failure(self, mock_create: AsyncMock) -> None:
+        mock_create.return_value = _mock_medication()
+        tool = ScanMedicationScheduleTool()
+        ctx = _make_db_context()
+
+        result = await tool.execute(
+            context=ctx,
+            medications=[
+                {"pill_name": "Aspirin 100mg", "schedule_time": "2026-03-01T09:00:00"},
+                {"pill_name": "Bad Med", "schedule_time": "not-a-date"},
+                {"pill_name": "  ", "schedule_time": "2026-03-01T12:00:00"},
+            ],
+        )
+
+        assert result["success"] is True
+        assert result["created_count"] == 1
+        assert len(result["errors"]) == 2
+        mock_create.assert_called_once()
+
+    def test_scan_declaration(self) -> None:
+        tool = ScanMedicationScheduleTool()
+        decl = tool.to_declaration()
+        assert decl["name"] == "scan_medication_schedule"
+        assert "parameters" in decl
+        assert "medications" in decl["parameters"]["properties"]
+        assert decl["parameters"]["required"] == ["medications"]

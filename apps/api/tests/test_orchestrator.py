@@ -73,6 +73,24 @@ class TestHandleToolCall:
         mock_session.send_tool_response.assert_not_called()
 
     @pytest.mark.asyncio
+    async def test_no_tool_call_returns_early(self) -> None:
+        """Response without tool_call should be a no-op."""
+
+        async def mock_handler(name: str, args: dict[str, Any]) -> dict[str, str]:
+            return {"status": "ok"}
+
+        orch = GeminiLiveOrchestrator(
+            model="test-model",
+            tool_handler=mock_handler,
+        )
+        mock_session = AsyncMock()
+        mock_response = MagicMock()
+        mock_response.tool_call = None
+
+        await orch.handle_tool_call(mock_session, mock_response)
+        mock_session.send_tool_response.assert_not_called()
+
+    @pytest.mark.asyncio
     async def test_success(self) -> None:
         handler_result = {"status": "ok"}
 
@@ -87,20 +105,60 @@ class TestHandleToolCall:
         mock_fc = MagicMock()
         mock_fc.name = "test_tool"
         mock_fc.args = {"key": "value"}
+        mock_fc.id = "call-001"
 
-        mock_part = MagicMock()
-        mock_part.function_call = mock_fc
-
-        mock_model_turn = MagicMock()
-        mock_model_turn.parts = [mock_part]
-
-        mock_sc = MagicMock()
-        mock_sc.model_turn = mock_model_turn
+        mock_tc = MagicMock()
+        mock_tc.function_calls = [mock_fc]
 
         mock_response = MagicMock()
-        mock_response.server_content = mock_sc
+        mock_response.tool_call = mock_tc
 
         mock_session = AsyncMock()
 
         await orch.handle_tool_call(mock_session, mock_response)
         mock_session.send_tool_response.assert_called_once()
+
+        # Verify keyword argument format
+        call_kwargs = mock_session.send_tool_response.call_args.kwargs
+        assert "function_responses" in call_kwargs
+        fr_list = call_kwargs["function_responses"]
+        assert len(fr_list) == 1
+        assert fr_list[0].name == "test_tool"
+
+    @pytest.mark.asyncio
+    async def test_multiple_function_calls(self) -> None:
+        """Multiple function calls in a single response should all be handled."""
+        results: list[str] = []
+
+        async def mock_handler(name: str, args: dict[str, Any]) -> dict[str, str]:
+            results.append(name)
+            return {"status": "ok"}
+
+        orch = GeminiLiveOrchestrator(
+            model="test-model",
+            tool_handler=mock_handler,
+        )
+
+        fc1 = MagicMock()
+        fc1.name = "tool_a"
+        fc1.args = {}
+        fc1.id = "call-001"
+
+        fc2 = MagicMock()
+        fc2.name = "tool_b"
+        fc2.args = {"x": 1}
+        fc2.id = "call-002"
+
+        mock_tc = MagicMock()
+        mock_tc.function_calls = [fc1, fc2]
+
+        mock_response = MagicMock()
+        mock_response.tool_call = mock_tc
+
+        mock_session = AsyncMock()
+
+        await orch.handle_tool_call(mock_session, mock_response)
+
+        assert results == ["tool_a", "tool_b"]
+        call_kwargs = mock_session.send_tool_response.call_args.kwargs
+        assert len(call_kwargs["function_responses"]) == 2

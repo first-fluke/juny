@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from starlette.websockets import WebSocketDisconnect
 
+from src.lib.livekit.bot import DuckingBotParticipant
+
 if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
@@ -149,6 +151,231 @@ class TestGetLiveToken:
             params={"room_name": "test-room", "role": "host"},
         )
         assert response.status_code == 503
+
+
+class TestAudioDucking:
+    """Tests for ducking behaviour in _forward_response."""
+
+    @pytest.mark.asyncio
+    async def test_ducking_suppresses_audio(self) -> None:
+        """When ducking is active, audio data must NOT be forwarded."""
+        from src.routers.live import _forward_response
+
+        ws = AsyncMock()
+        orchestrator = MagicMock()
+        session = AsyncMock()
+
+        bot = DuckingBotParticipant(room_name="room-1", host_identity="user-1")
+        bot.ducking_active.set()  # activate ducking
+
+        response = MagicMock()
+        response.tool_call = None
+        response.text = None
+        response.server_content = None
+        response.data = b"audio-bytes"
+
+        await _forward_response(ws, response, orchestrator, session, bot=bot)
+
+        ws.send_json.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_ducking_passes_text(self) -> None:
+        """Even when ducking is active, text messages must still pass through."""
+        from src.routers.live import _forward_response
+
+        ws = AsyncMock()
+        orchestrator = MagicMock()
+        session = AsyncMock()
+
+        bot = DuckingBotParticipant(room_name="room-1", host_identity="user-1")
+        bot.ducking_active.set()  # activate ducking
+
+        response = MagicMock()
+        response.tool_call = None
+        response.text = "Hello"
+        response.server_content = None
+        response.data = None
+
+        await _forward_response(ws, response, orchestrator, session, bot=bot)
+
+        ws.send_json.assert_called_once_with({"type": "text", "text": "Hello"})
+
+    @pytest.mark.asyncio
+    async def test_no_ducking_passes_audio(self) -> None:
+        """When ducking is NOT active, audio data must be forwarded."""
+        from src.routers.live import _forward_response
+
+        ws = AsyncMock()
+        orchestrator = MagicMock()
+        session = AsyncMock()
+
+        bot = DuckingBotParticipant(room_name="room-1", host_identity="user-1")
+        # ducking_active is NOT set (default)
+
+        response = MagicMock()
+        response.tool_call = None
+        response.text = None
+        response.server_content = None
+        response.data = b"audio-bytes"
+
+        await _forward_response(ws, response, orchestrator, session, bot=bot)
+
+        ws.send_json.assert_called_once()
+        call_args = ws.send_json.call_args[0][0]
+        assert call_args["type"] == "audio"
+
+
+class TestForwardResponseNativeAudio:
+    """Tests for native audio extraction in _forward_response."""
+
+    @pytest.mark.asyncio
+    async def test_inline_data_audio_forwarded(self) -> None:
+        """Audio in server_content.model_turn.parts[].inline_data is forwarded."""
+        from src.routers.live import _forward_response
+
+        ws = AsyncMock()
+        orchestrator = MagicMock()
+        session = AsyncMock()
+
+        inline = MagicMock()
+        inline.data = b"native-audio-bytes"
+
+        part = MagicMock()
+        part.inline_data = inline
+
+        model_turn = MagicMock()
+        model_turn.parts = [part]
+
+        sc = MagicMock()
+        sc.output_transcription = None
+        sc.model_turn = model_turn
+
+        response = MagicMock()
+        response.tool_call = None
+        response.text = None
+        response.server_content = sc
+        response.data = None
+
+        await _forward_response(ws, response, orchestrator, session)
+
+        ws.send_json.assert_called_once()
+        call_data = ws.send_json.call_args[0][0]
+        assert call_data["type"] == "audio"
+
+    @pytest.mark.asyncio
+    async def test_output_transcription_forwarded(self) -> None:
+        """Text in server_content.output_transcription is forwarded."""
+        from src.routers.live import _forward_response
+
+        ws = AsyncMock()
+        orchestrator = MagicMock()
+        session = AsyncMock()
+
+        ot = MagicMock()
+        ot.text = "Transcribed text"
+
+        sc = MagicMock()
+        sc.output_transcription = ot
+        sc.model_turn = None
+
+        response = MagicMock()
+        response.tool_call = None
+        response.text = None
+        response.server_content = sc
+        response.data = None
+
+        await _forward_response(ws, response, orchestrator, session)
+
+        ws.send_json.assert_called_once_with(
+            {"type": "text", "text": "Transcribed text"}
+        )
+
+    @pytest.mark.asyncio
+    async def test_ducking_suppresses_inline_audio(self) -> None:
+        """Ducking active should suppress inline_data audio."""
+        from src.routers.live import _forward_response
+
+        ws = AsyncMock()
+        orchestrator = MagicMock()
+        session = AsyncMock()
+
+        bot = DuckingBotParticipant(room_name="room-1", host_identity="user-1")
+        bot.ducking_active.set()
+
+        inline = MagicMock()
+        inline.data = b"audio-bytes"
+        part = MagicMock()
+        part.inline_data = inline
+        model_turn = MagicMock()
+        model_turn.parts = [part]
+
+        sc = MagicMock()
+        sc.output_transcription = None
+        sc.model_turn = model_turn
+
+        response = MagicMock()
+        response.tool_call = None
+        response.text = None
+        response.server_content = sc
+        response.data = None
+
+        await _forward_response(ws, response, orchestrator, session, bot=bot)
+
+        ws.send_json.assert_not_called()
+
+
+class TestForwardResponseToolCallCommit:
+    """Tests for db.commit() after tool call in _forward_response."""
+
+    @pytest.mark.asyncio
+    async def test_db_commit_after_tool_call(self) -> None:
+        """db.commit() must be called after handle_tool_call."""
+        from src.routers.live import _forward_response
+
+        ws = AsyncMock()
+        orchestrator = AsyncMock()
+        session = AsyncMock()
+        db = AsyncMock()
+
+        response = MagicMock()
+        response.tool_call = MagicMock()  # truthy tool_call
+
+        await _forward_response(ws, response, orchestrator, session, db=db)
+
+        orchestrator.handle_tool_call.assert_called_once_with(session, response)
+        db.commit.assert_called_once()
+        ws.send_json.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_no_db_no_commit(self) -> None:
+        """When db is None, commit should not be attempted."""
+        from src.routers.live import _forward_response
+
+        ws = AsyncMock()
+        orchestrator = AsyncMock()
+        session = AsyncMock()
+
+        response = MagicMock()
+        response.tool_call = MagicMock()
+
+        await _forward_response(ws, response, orchestrator, session, db=None)
+
+        orchestrator.handle_tool_call.assert_called_once()
+
+
+class TestDuckingBotParticipant:
+    """Unit tests for DuckingBotParticipant."""
+
+    def test_ducking_event_default_unset(self) -> None:
+        bot = DuckingBotParticipant(room_name="room-1", host_identity="user-1")
+        assert not bot.ducking_active.is_set()
+
+    def test_ducking_toggle(self) -> None:
+        bot = DuckingBotParticipant(room_name="room-1", host_identity="user-1")
+        bot.ducking_active.set()
+        assert bot.ducking_active.is_set()
+        bot.ducking_active.clear()
+        assert not bot.ducking_active.is_set()
 
 
 class AsyncIteratorMock:

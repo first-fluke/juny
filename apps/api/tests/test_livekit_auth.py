@@ -74,6 +74,16 @@ class TestCreateLiveToken:
         assert "microphone" in sources
         assert "camera" not in sources
 
+    def test_ai_bridge_token_grants(self) -> None:
+        with self._patch_settings():
+            token = create_live_token("room-1", "ai-bridge", "ai-bridge:user-1")
+
+        payload = jwt.decode(token, options={"verify_signature": False})
+        video = payload.get("video", {})
+        assert video.get("canPublish") is False
+        assert video.get("canPublishData") is True
+        assert video.get("canSubscribe") is True
+
 
 class TestLiveTokenEndpoint:
     """Integration tests for GET /api/v1/live/token."""

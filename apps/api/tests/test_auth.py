@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncGenerator, Generator
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import jwt as pyjwt
 import pytest
+from fastapi import HTTPException
 
 from src.auth.repository import create_user, find_by_email, find_by_id
 from src.auth.service import get_user_by_id, issue_tokens, login_or_create_user
@@ -13,7 +16,11 @@ from src.lib.auth import (
     OAuthUserInfo,
     create_access_token,
     create_refresh_token,
+    decode_token,
+    get_current_user,
+    get_optional_user,
 )
+from src.lib.config import settings
 from src.lib.database import get_db
 from src.main import app
 from src.users.model import User
@@ -262,7 +269,7 @@ class TestAuthRouter:
     def test_refresh_invalid_token_401(self, client: TestClient) -> None:
         response = client.post(
             "/api/v1/auth/refresh",
-            json={"refresh_token": "not-a-valid-jwe-token"},
+            json={"refresh_token": "not-a-valid-jwt-token"},
         )
         assert response.status_code == 401
 
@@ -274,3 +281,108 @@ class TestAuthRouter:
         response = client.post("/api/v1/auth/logout")
         assert response.status_code == 204
         assert response.content == b""
+
+
+# ---------------------------------------------------------------------------
+# JWT Token Unit Tests
+# ---------------------------------------------------------------------------
+
+
+class TestJWTTokens:
+    """Direct unit tests for JWT token creation, decoding, and validation."""
+
+    def test_create_access_token_decodable(self) -> None:
+        token = create_access_token(str(MOCK_USER_ID), role="host")
+        payload = decode_token(token)
+        assert payload.user_id == str(MOCK_USER_ID)
+        assert payload.token_type == "access"  # noqa: S105
+        assert payload.role == "host"
+
+    def test_create_refresh_token_decodable(self) -> None:
+        token = create_refresh_token(str(MOCK_USER_ID))
+        payload = decode_token(token)
+        assert payload.user_id == str(MOCK_USER_ID)
+        assert payload.token_type == "refresh"  # noqa: S105
+        assert payload.role is None
+
+    def test_access_token_without_role(self) -> None:
+        token = create_access_token(str(MOCK_USER_ID))
+        payload = decode_token(token)
+        assert payload.role is None
+
+    def test_decode_expired_token_raises(self) -> None:
+        expired_payload = {
+            "user_id": str(MOCK_USER_ID),
+            "token_type": "access",
+            "exp": int((datetime.now(UTC) - timedelta(hours=1)).timestamp()),
+            "iat": int((datetime.now(UTC) - timedelta(hours=2)).timestamp()),
+        }
+        token = pyjwt.encode(expired_payload, settings.JWT_SECRET, algorithm="HS256")
+        with pytest.raises(HTTPException) as exc_info:
+            decode_token(token)
+        assert exc_info.value.status_code == 401
+
+    @pytest.mark.filterwarnings("ignore::jwt.warnings.InsecureKeyLengthWarning")
+    def test_decode_invalid_signature_raises(self) -> None:
+        token = pyjwt.encode(
+            {
+                "user_id": str(MOCK_USER_ID),
+                "token_type": "access",
+                "exp": int((datetime.now(UTC) + timedelta(hours=1)).timestamp()),
+                "iat": int(datetime.now(UTC).timestamp()),
+            },
+            "wrong-secret-key",
+            algorithm="HS256",
+        )
+        with pytest.raises(HTTPException) as exc_info:
+            decode_token(token)
+        assert exc_info.value.status_code == 401
+
+    def test_decode_garbage_token_raises(self) -> None:
+        with pytest.raises(HTTPException) as exc_info:
+            decode_token("completely.invalid.token")
+        assert exc_info.value.status_code == 401
+
+    @pytest.mark.asyncio
+    async def test_get_current_user_no_header(self) -> None:
+        request = MagicMock()
+        request.headers = {}
+        with pytest.raises(HTTPException) as exc_info:
+            await get_current_user(request)
+        assert exc_info.value.status_code == 401
+        assert exc_info.value.detail["error_code"] == "AUTH_001"
+
+    @pytest.mark.asyncio
+    async def test_get_current_user_refresh_token_rejected(self) -> None:
+        refresh = create_refresh_token(str(MOCK_USER_ID))
+        request = MagicMock()
+        request.headers = {"Authorization": f"Bearer {refresh}"}
+        with pytest.raises(HTTPException) as exc_info:
+            await get_current_user(request)
+        assert exc_info.value.status_code == 401
+        assert exc_info.value.detail["error_code"] == "AUTH_003"
+
+    @pytest.mark.asyncio
+    async def test_get_current_user_success(self) -> None:
+        token = create_access_token(str(MOCK_USER_ID), role="host")
+        request = MagicMock()
+        request.headers = {"Authorization": f"Bearer {token}"}
+        user = await get_current_user(request)
+        assert user.id == str(MOCK_USER_ID)
+        assert user.role == "host"
+
+    @pytest.mark.asyncio
+    async def test_get_optional_user_returns_none(self) -> None:
+        request = MagicMock()
+        request.headers = {}
+        result = await get_optional_user(request)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_get_optional_user_returns_user(self) -> None:
+        token = create_access_token(str(MOCK_USER_ID), role="host")
+        request = MagicMock()
+        request.headers = {"Authorization": f"Bearer {token}"}
+        result = await get_optional_user(request)
+        assert result is not None
+        assert result.id == str(MOCK_USER_ID)
