@@ -1,288 +1,226 @@
-# Antigravity 멀티 에이전트 스킬 사용 가이드
+# juny 사용 가이드
+
+[English](./USAGE.md) | [한국어](./USAGE.ko.md)
+
+juny는 실시간 멀티모달 AI 어시스턴트입니다. **Host**(카메라/오디오 스트리밍 주 사용자)와 **Concierge**(모니터링 및 오디오 개입)가 같은 LiveKit Room에 접속하고, AI가 Host의 스트림을 실시간 분석합니다.
+
+---
+
+## 사전 요구 사항
+
+- [mise](https://mise.jdx.dev/) (폴리글랏 도구 관리자)
+- Docker (로컬 PostgreSQL, Redis, MinIO 용)
+
+```bash
+# 모든 도구 버전 설치 (Node, Python, Flutter, Terraform 등)
+mise install
+```
+
+---
 
 ## 빠른 시작
 
-1. **Antigravity IDE에서 열기**
-   ```bash
-   antigravity open /path/to/subagent-orchestrator
-   ```
-
-2. **스킬이 자동으로 감지됩니다.** Antigravity가 `.agent/skills/`를 스캔하여 모든 스킬을 인덱싱합니다.
-
-3. **IDE에서 채팅하세요.** 만들고 싶은 것을 설명하면 됩니다.
-
----
-
-## 사용 예시
-
-### 예시 1: 간단한 단일 도메인 작업
-
-**입력:**
-```
-"Tailwind CSS로 이메일, 비밀번호 필드가 있는 로그인 폼 만들어줘"
-```
-
-**결과:**
-- Antigravity가 `frontend-agent` 매칭
-- 자동으로 스킬 로드 (Progressive Disclosure)
-- TypeScript, Tailwind, 폼 검증이 있는 React 컴포넌트 받음
-
-### 예시 2: 복잡한 멀티 도메인 프로젝트
-
-**입력:**
-```
-"사용자 인증이 있는 TODO 앱 만들어줘"
-```
-
-**결과:**
-
-1. **Workflow Guide 활성화** — 멀티 도메인 복잡도 감지
-2. **PM Agent 기획** — 우선순위와 함께 태스크 분해
-3. **Agent Manager에서 에이전트 생성**:
-   - Backend Agent: JWT 인증 API
-   - Frontend Agent: 로그인 및 TODO UI
-4. **에이전트들이 병렬 작업** — Knowledge Base에 저장
-5. **조율** — `.gemini/antigravity/brain/` 일관성 확인
-6. **QA Agent 검토** — 보안/성능 감사
-7. **수정 & 반복** — 필요시 에이전트 재생성
-
-### 예시 3: 버그 수정
-
-**입력:**
-```
-"로그인 버튼 클릭하면 'Cannot read property map of undefined' 에러 나요"
-```
-
-**결과:**
-
-1. **debug-agent 활성화** — 에러 분석
-2. **근본 원인 발견** — `todos` 데이터 로드 전에 map 시도
-3. **수정 제공** — 로딩, 에러, 빈 상태 추가
-4. **회귀 테스트 작성** — 버그 재발 방지
-5. **유사 패턴 발견** — 다른 3개 컴포넌트도 사전 수정
-
-### 예시 4: CLI 기반 병렬 실행
+### 1. 로컬 인프라 실행
 
 ```bash
-# 단일 에이전트
-./scripts/spawn-subagent.sh backend "JWT 인증 API 구현" ./backend
-
-# 병렬 에이전트
-./scripts/spawn-subagent.sh backend "인증 API 구현" ./backend &
-./scripts/spawn-subagent.sh frontend "로그인 폼 생성" ./frontend &
-./scripts/spawn-subagent.sh mobile "인증 화면 구축" ./mobile &
-wait
+mise infra:up
 ```
 
-**실시간 모니터링:**
-```bash
-# 터미널 (별도 창)
-bun run dashboard
+Docker Compose로 다음 서비스가 시작됩니다:
 
-# 또는 브라우저
-bun run dashboard:web
-# → http://localhost:9847
-```
+| 서비스 | 호스트 포트 | 인증 정보 |
+|--------|-----------|-----------|
+| PostgreSQL 16 | `5433` | postgres / postgres |
+| Redis 7 | `6380` | — |
+| MinIO (S3 호환) | `9010` (API), `9011` (콘솔) | minioadmin / minioadmin |
 
----
-
-## 실시간 대시보드
-
-### 터미널 대시보드
+### 2. 환경 설정
 
 ```bash
-bun run dashboard
+cp apps/api/.env.example apps/api/.env
+# .env 편집 — JWT_SECRET, GEMINI_API_KEY, LIVEKIT_* 등 설정
 ```
 
-`fswatch` (macOS) 또는 `inotifywait` (Linux)로 `.serena/memories/`를 감시합니다. 세션 상태, 에이전트 상태, 턴 수, 최신 활동을 실시간 테이블로 표시합니다. 메모리 파일 변경 시 자동으로 업데이트됩니다.
-
-**요구 사항:**
-- macOS: `brew install fswatch`
-- Linux: `apt install inotify-tools`
-
-### 웹 대시보드
+### 3. 데이터베이스 마이그레이션
 
 ```bash
-bun install          # 최초 1회
-bun run dashboard:web
+mise db:migrate
 ```
 
-브라우저에서 `http://localhost:9847` 열기. 기능:
+### 4. 개발 서버 시작
 
-- **WebSocket 실시간 업데이트** (폴링 아님)
-- **자동 재연결** — 연결 끊어지면 자동 복구
-- **Serena 테마 UI** — 보라색 강조
-- **세션 상태** — ID와 실행/완료/실패 상태
-- **에이전트 테이블** — 이름, 상태 (컬러 도트), 턴 수, 태스크 설명
-- **활동 로그** — progress 및 result 파일의 최신 변경 사항
+```bash
+# API + Worker (백엔드)
+mise dev
 
-서버는 chokidar로 `.serena/memories/`를 감시하며 debounce (100ms)를 적용합니다. 변경된 파일만 읽으므로 — 전체 재스캔 없음.
+# 또는 API + Mobile (풀 스택)
+mise dev:mobile
+```
+
+API 서버는 **포트 8200** (`http://localhost:8200`)에서 실행됩니다.
 
 ---
 
-## 핵심 개념
+## 핵심 워크플로우
 
-### Progressive Disclosure (점진적 공개)
-Antigravity가 자동으로 요청을 스킬에 매칭시킵니다. 스킬을 수동으로 선택할 필요 없습니다. 필요한 스킬만 컨텍스트에 로드됩니다.
+### 인증 (OAuth + JWT)
 
-### 토큰 최적화 스킬 설계
-각 스킬은 토큰 효율을 극대화하는 2계층 아키텍처를 사용합니다:
-- **SKILL.md** (~40줄): 정체성, 라우팅, 핵심 규칙 — 즉시 로드
-- **resources/**: 실행 프로토콜, 예시, 체크리스트, 에러 플레이북 — 필요 시 로드
+1. 사용자가 모바일에서 OAuth 제공자(Google, GitHub, Facebook)로 인증
+2. 모바일이 OAuth 토큰을 `POST /api/v1/auth/login`으로 전송
+3. 백엔드가 제공자와 재검증, 사용자 생성/조회 후 JWT 토큰 발급
+4. 이후 모든 API 호출에 `Authorization: Bearer <access_token>` 사용
 
-공통 리소스는 `_shared/`에 위치하며 (스킬이 아님) 모든 에이전트가 참조합니다:
-- 4단계 워크플로우의 Chain-of-thought 실행 프로토콜
-- 중간급 모델 가이드를 위한 Few-shot 입출력 예시
-- "3 strikes" 에스컬레이션 규칙의 에러 복구 플레이북
-- 구조화된 다단계 분석을 위한 추론 템플릿
-- Flash/Pro 모델 등급별 컨텍스트 예산 관리
-- `verify.sh`를 통한 자동 검증
-- 크로스 세션 교훈 누적 시스템
+자세한 내용은 [AUTH.ko.md](./AUTH.ko.md) 참고.
 
-### Agent Manager UI
-Antigravity IDE의 Mission Control 대시보드입니다. 에이전트 생성, 워크스페이스 할당, 인박스로 모니터링, 산출물 검토.
+### 실시간 AI 세션 (LiveKit + Gemini)
 
-### Knowledge Base
-에이전트 산출물이 `.gemini/antigravity/brain/`에 저장됩니다. 기획서, 코드, 리포트, 조율 메모 포함.
+1. 인증된 사용자가 LiveKit 토큰 요청: `GET /api/v1/live/token?room_name=...&role=host`
+2. Host가 카메라와 마이크로 LiveKit Room에 접속
+3. Host가 WebSocket 브릿지 연결: `WS /api/v1/live/ws?token=...&room=...`
+4. 백엔드가 Host의 오디오/비디오를 Gemini Multimodal Live API로 스트리밍
+5. Gemini가 스트림을 분석하고 도구 호출 가능:
+   - **log_wellness** — 건강 관찰 기록 (normal / warning / emergency)
+   - **register_medication** — 복약 일정 추가
+   - **scan_medication_schedule** — 카메라 피드에서 복약 정보 일괄 추출
+6. Concierge가 같은 Room에 접속하여 모니터링 및 오디오로 개입
 
-### Serena Memory
-구조화된 런타임 상태가 `.serena/memories/`에 저장됩니다. Orchestrator가 세션 정보, 태스크 보드, 에이전트별 진행 상황, 결과를 기록합니다. 대시보드들이 이 파일들을 감시하여 모니터링합니다.
+### 복약 관리
 
-### Workspaces (워크스페이스)
-에이전트들이 별도 디렉토리에서 작업하여 충돌을 피합니다:
 ```
-./backend    → Backend Agent 워크스페이스
-./frontend   → Frontend Agent 워크스페이스
-./mobile     → Mobile Agent 워크스페이스
+POST   /api/v1/medications          — 복약 일정 생성
+GET    /api/v1/medications?host_id= — 복약 목록 조회 (페이지네이션)
+GET    /api/v1/medications/{id}     — 단건 조회
+PATCH  /api/v1/medications/{id}     — 수정 (예: 복용 완료 표시)
+DELETE /api/v1/medications/{id}     — 삭제
 ```
+
+### 웰니스 로깅
+
+```
+POST   /api/v1/wellness             — 웰니스 로그 생성
+GET    /api/v1/wellness?host_id=    — 로그 목록 조회 (페이지네이션)
+GET    /api/v1/wellness/{id}        — 단건 조회
+```
+
+### 돌봄 관계 (RBAC)
+
+```
+POST   /api/v1/relations            — Host-Caregiver 관계 생성
+GET    /api/v1/relations?host_id=   — Host 기준 조회
+GET    /api/v1/relations?caregiver_id= — Caregiver 기준 조회
+PATCH  /api/v1/relations/{id}       — 수정 (비활성화, 역할 변경)
+DELETE /api/v1/relations/{id}       — 삭제
+```
+
+역할: `host`, `concierge`, `care_worker`, `organization`. Host는 caregiver 역할을 가질 수 없습니다.
 
 ---
 
-## 사용 가능한 스킬
+## 주요 명령어
 
-| 스킬 | 자동 활성화 조건 | 산출물 |
-|------|----------------|--------|
-| workflow-guide | 복잡한 멀티 도메인 프로젝트 | 에이전트 조율 가이드 |
-| pm-agent | "기획해줘", "분석해줘" | `.agent/plan.json` |
-| frontend-agent | UI, 컴포넌트, 스타일링 | React 컴포넌트, 테스트 |
-| backend-agent | API, 데이터베이스, 인증 | API 엔드포인트, 모델, 테스트 |
-| mobile-agent | 모바일 앱, iOS/Android | Flutter 화면, 상태 관리 |
-| qa-agent | "보안 검토", "감사" | 우선순위가 있는 QA 리포트 |
-| debug-agent | 버그 리포트, 에러 메시지 | 수정된 코드, 회귀 테스트 |
-| orchestrator | CLI 서브에이전트 실행 | `.agent/results/`에 결과 저장 |
-
----
-
-## 워크플로우 명령어
-
-Antigravity IDE 채팅에서 입력하여 단계별 워크플로우를 실행합니다:
+모든 명령어는 mise를 사용합니다. `mise tasks --all`로 전체 목록을 확인할 수 있습니다.
 
 | 명령어 | 설명 |
 |--------|------|
-| `/coordinate` | Agent Manager UI를 통한 멀티 에이전트 조율 |
-| `/orchestrate` | CLI 기반 자동 병렬 에이전트 실행 |
-| `/plan` | PM 태스크 분해 + API 계약 정의 |
-| `/review` | 전체 QA 파이프라인 (보안, 성능, 접근성, 코드 품질) |
-| `/debug` | 구조화된 버그 수정 (재현 → 진단 → 수정 → 회귀 테스트) |
+| `mise dev` | API + Worker 시작 |
+| `mise dev:mobile` | API + Mobile 시작 |
+| `mise test` | 전체 백엔드 테스트 |
+| `mise lint` | 전체 린트 |
+| `mise format` | 전체 포맷 |
+| `mise typecheck` | API 타입 체크 (mypy) |
+| `mise db:migrate` | Alembic 마이그레이션 실행 |
+| `mise gen:api` | OpenAPI 스키마 + 모바일 클라이언트 재생성 |
+| `mise i18n:build` | i18n 파일 빌드 |
+| `mise tokens:build` | 디자인 토큰 빌드 |
+| `mise infra:up` / `infra:down` | 로컬 Docker 서비스 시작 / 중지 |
 
-이것들은 **스킬** (자동 활성화)과 별개입니다. 워크플로우는 다단계 프로세스에 대한 명시적 제어를 제공합니다.
-
----
-
-## 일반적인 워크플로우
-
-### 워크플로우 A: 단일 스킬
-
-```
-입력: "버튼 컴포넌트 만들어줘"
-  → Antigravity가 frontend-agent 로드
-  → 컴포넌트 즉시 받음
-```
-
-### 워크플로우 B: 멀티 에이전트 프로젝트 (자동)
-
-```
-입력: "인증이 있는 TODO 앱 만들어줘"
-  → workflow-guide 자동 활성화
-  → PM Agent 기획
-  → Agent Manager에서 에이전트 생성
-  → 에이전트 병렬 작업
-  → QA Agent 검토
-  → 이슈 수정 & 반복
-```
-
-### 워크플로우 B-2: 멀티 에이전트 프로젝트 (명시적)
-
-```
-입력: /coordinate
-  → 단계별 가이드 워크플로우
-  → PM 기획 → 계획 검토 → 에이전트 생성 → 모니터링 → QA 검토
-```
-
-### 워크플로우 C: 버그 수정
-
-```
-입력: "로그인 버튼에서 TypeError 발생"
-  → debug-agent 활성화
-  → 근본 원인 분석
-  → 수정 + 회귀 테스트
-```
-
-### 워크플로우 D: CLI Orchestration + 대시보드
-
-```
-터미널 1: bun run dashboard:web
-터미널 2: ./scripts/spawn-subagent.sh backend "task" ./backend &
-         ./scripts/spawn-subagent.sh frontend "task" ./frontend &
-브라우저:  http://localhost:9847 → 실시간 상태
-```
-
----
-
-## 팁
-
-1. **구체적으로** — "JWT 인증과 React 프론트엔드, FastAPI 백엔드가 있는 TODO 앱 만들어줘"가 "앱 만들어줘"보다 낫습니다.
-2. **멀티 도메인은 Agent Manager 사용** — 한 채팅에서 모든 것을 하려고 하지 마세요.
-3. **Knowledge Base 검토** — `.gemini/antigravity/brain/`에서 API 일관성 확인
-4. **재생성으로 반복** — 처음부터 다시 하지 말고, 명령을 다듬어 재생성하세요.
-5. **대시보드 사용** — `bun run dashboard` 또는 `bun run dashboard:web`로 orchestrator 세션 모니터링
-6. **별도 워크스페이스** — 각 에이전트에 고유 디렉토리 할당
-
----
-
-## 문제 해결
-
-| 문제 | 해결법 |
-|------|--------|
-| 스킬이 로드되지 않음 | `antigravity open .`, `.agent/skills/` 확인, IDE 재시작 |
-| Agent Manager를 찾을 수 없음 | View → Agent Manager 메뉴, Antigravity 2026+ 필요 |
-| 에이전트 산출물이 호환되지 않음 | Knowledge Base에서 둘 다 검토, 수정하여 재생성 |
-| 대시보드: "No agents" 표시 | 메모리 파일이 아직 생성되지 않음, orchestrator 실행 필요 |
-| 웹 대시보드가 시작 안 됨 | `bun install`로 chokidar, ws 설치 |
-| fswatch not found | macOS: `brew install fswatch`, Linux: `apt install inotify-tools` |
-| QA 리포트에 50개 이상 이슈 | CRITICAL/HIGH부터 처리, 나머지는 문서화 후 나중에 |
-
----
-
-## Bun 스크립트
+### 앱별 명령어
 
 ```bash
-bun run dashboard       # 터미널 실시간 대시보드
-bun run dashboard:web   # 웹 대시보드 → http://localhost:9847
-bun run validate        # 스킬 파일 검증
-bun run info            # 이 사용 가이드 출력
+mise //apps/api:dev | :test | :lint | :format | :typecheck | :migrate
+mise //apps/worker:dev | :test | :lint | :format
+mise //apps/mobile:dev | :build | :test | :lint | :format | :gen:api | :gen:l10n
+```
+
+### 단일 테스트 실행
+
+```bash
+# API
+cd apps/api && uv run pytest tests/test_health.py -v
+cd apps/api && uv run pytest tests/test_health.py::test_health_check -v
+
+# E2E (Docker PostgreSQL 필요)
+cd apps/api && uv run pytest tests/e2e/ -v
+
+# Mobile
+cd apps/mobile && flutter test test/core/utils_test.dart
 ```
 
 ---
 
-## 개발자용 (통합 가이드)
+## 코드 생성 파이프라인
 
-기존 Antigravity 프로젝트에 이 스킬들을 통합하고 싶다면 [AGENT_GUIDE.md](./AGENT_GUIDE.md)를 참고하세요. 다음을 포함합니다:
-- 빠른 3단계 통합
-- 전체 대시보드 통합
-- 본인 기술 스택에 맞게 스킬 커스터마이징
-- 문제 해결 및 모범 사례
+API 엔드포인트 변경 후:
+
+```bash
+mise gen:api
+```
+
+동작 과정:
+1. FastAPI가 `openapi.json` 내보내기
+2. `swagger_parser`가 모바일 Retrofit 클라이언트 + Freezed 모델 생성
 
 ---
 
-**Antigravity IDE에서 채팅하세요.** 모니터링을 위해 대시보드를 사용하고, CLI 실행을 위해 orchestrator 스크립트를 사용합니다. 기존 프로젝트에 통합하려면 [AGENT_GUIDE.md](./AGENT_GUIDE.md)를 참고하세요.
+## 프로젝트 구조
+
+```
+juny/
+├── apps/
+│   ├── api/           # FastAPI 백엔드 (포트 8200)
+│   ├── worker/        # 백그라운드 태스크 워커 (Cloud Tasks / Pub/Sub)
+│   ├── mobile/        # Flutter 모바일 앱
+│   └── infra/         # Terraform (GCP Cloud Run, Cloud SQL 등)
+├── packages/
+│   ├── design-tokens/ # OKLCH 토큰 → Flutter 테마
+│   └── i18n/          # ARB 소스 → Flutter 로컬라이제이션
+├── mise.toml          # 모노레포 태스크 러너
+└── CLAUDE.md          # AI 코딩 어시스턴트 지침
+```
+
+---
+
+## 환경 변수
+
+`apps/api/.env`의 주요 변수:
+
+| 변수 | 설명 | 기본값 |
+|------|------|--------|
+| `DATABASE_URL` | 비동기 PostgreSQL 연결 | `postgresql+asyncpg://...localhost:5433/juny` |
+| `JWT_SECRET` | JWT 서명 시크릿 | (프로덕션에서 변경 필수) |
+| `REDIS_URL` | Redis 연결 (선택) | `redis://localhost:6380` |
+| `LIVEKIT_API_URL` | LiveKit 서버 URL | — |
+| `LIVEKIT_API_KEY` | LiveKit API 키 | — |
+| `LIVEKIT_API_SECRET` | LiveKit API 시크릿 | — |
+| `AI_PROVIDER` | AI 백엔드 (`gemini` 또는 `openai`) | `gemini` |
+| `GEMINI_API_KEY` | Gemini API 키 (AI Studio) | — |
+| `STORAGE_BACKEND` | 오브젝트 스토리지 (`gcs`, `s3`, `minio`) | `minio` |
+
+전체 목록은 `apps/api/.env.example` 참고.
+
+---
+
+## 배포
+
+GitHub Actions가 `main` 브랜치 push 시 GCP Cloud Run으로 배포 (앱별 경로 필터). Workload Identity Federation 사용 (키리스, 서비스 계정 키 불필요).
+
+- **API** → Cloud Run (`us-central1`)
+- **Worker** → Cloud Run (`us-central1`)
+- **Mobile** → App Store / Google Play (Fastlane)
+
+---
+
+## 문서
+
+- [AUTH.ko.md](./AUTH.ko.md) — 인증 아키텍처
+- [WHY.ko.md](./WHY.ko.md) — 기술 스택 선정 이유

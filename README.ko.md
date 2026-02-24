@@ -9,14 +9,13 @@
 
 > 템플릿 버전은 [Release Please](https://github.com/googleapis/release-please)로 관리됩니다 — [CHANGELOG.md](./CHANGELOG.md)에서 릴리즈 히스토리를 확인하세요.
 
-실무에 바로 적용 가능한 풀스택 모노레포 템플릿입니다. Next.js 16, FastAPI, Flutter, GCP 인프라가 통합되어 있습니다.
+실무에 바로 적용 가능한 풀스택 모노레포 템플릿입니다. FastAPI, Flutter, GCP 인프라가 통합되어 있습니다.
 
 ### 3-Tier Architecture (3계층 아키텍처)
 
 ```mermaid
 graph TB
     subgraph Client["클라이언트"]
-        Web[Next.js 16<br/>React 19]
         Mobile[Flutter 3.38<br/>Riverpod]
     end
 
@@ -31,7 +30,6 @@ graph TB
         Storage[(Cloud Storage)]
     end
 
-    Web --> API
     Mobile --> API
     API --> DB
     API --> Cache
@@ -39,7 +37,6 @@ graph TB
     Worker --> DB
     API --> Storage
 
-    style Web fill:#0070f3,color:#fff
     style Mobile fill:#02569B,color:#fff
     style API fill:#009688,color:#fff
     style Worker fill:#009688,color:#fff
@@ -50,11 +47,11 @@ graph TB
 
 ## 주요 기능
 
-- **모던 스택**: Next.js 16 + React 19, FastAPI, Flutter 3.38, TailwindCSS v4
-- **타입 안전성**: TypeScript, Pydantic, Dart 등 전 영역 타입 지원
-- **통합 인증**: better-auth 기반 OAuth (Google, GitHub, Facebook)
-- **국제화 (i18n)**: next-intl (웹), Flutter ARB (모바일), 공용 패키지 통합
-- **API 클라이언트 자동화**: Orval (웹), swagger_parser (모바일) 코드 생성
+- **모던 스택**: FastAPI, Flutter 3.38
+- **타입 안전성**: Pydantic, Dart 등 전 영역 타입 지원
+- **통합 인증**: OAuth (Google, GitHub, Facebook)
+- **국제화 (i18n)**: Flutter ARB (모바일), 공용 패키지 통합
+- **API 클라이언트 자동화**: swagger_parser (모바일) 코드 생성
 - **IaC (Infrastructure as Code)**: Terraform + GCP (Cloud Run, SQL, Storage)
 - **CI/CD**: GitHub Actions + Workload Identity Federation (키리스 배포)
 - **AI 에이전트 가이드**: Gemini, Claude 등 AI 코딩 에이전트 최적화
@@ -64,7 +61,6 @@ graph TB
 
 | 레이어 | 기술 |
 |--------|------|
-| **프론트엔드** | Next.js 16, React 19, TailwindCSS v4, shadcn/ui, TanStack Query, Jotai |
 | **백엔드** | FastAPI, SQLAlchemy (async), PostgreSQL 16, Redis 7 |
 | **모바일** | Flutter 3.38, Riverpod 3, go_router 17, Firebase Crashlytics, Fastlane |
 | **워커** | FastAPI + CloudTasks/PubSub |
@@ -88,7 +84,7 @@ graph TB
     end
 
     subgraph Execution["병렬 실행"]
-        FE[프론트엔드 에이전트<br/>Next.js/Flutter]
+        FE[프론트엔드 에이전트<br/>Flutter]
         BE[백엔드 에이전트<br/>FastAPI]
         Infra[인프라 에이전트<br/>Terraform]
     end
@@ -171,9 +167,9 @@ mise infra:up
 ```
 
 실행되는 서비스:
-- PostgreSQL (5432)
-- Redis (6379)
-- MinIO (9000, 9001)
+- PostgreSQL (5433)
+- Redis (6380)
+- MinIO (9010, 9011)
 
 ### 4. 데이터베이스 마이그레이션
 
@@ -184,10 +180,7 @@ mise db:migrate
 ### 5. 개발 서버 실행
 
 ```bash
-# API와 웹 서버 실행 (웹 개발 시 권장)
-mise dev:web
-
-# API와 모바일 서버 실행 (모바일 개발 시 권장)
+# API와 모바일 서버 실행
 mise dev:mobile
 
 # 또는 모든 서비스 실행
@@ -200,7 +193,6 @@ mise dev
 juny/
 ├── apps/
 │   ├── api/           # FastAPI 백엔드
-│   ├── web/           # Next.js 프론트엔드
 │   ├── worker/        # 백그라운드 워커
 │   ├── mobile/        # Flutter 모바일 앱
 │   └── infra/         # Terraform 인프라
@@ -227,7 +219,6 @@ mise tasks --all
 |--------|------|
 | `mise db:migrate` | 데이터베이스 마이그레이션 실행 |
 | `mise dev` | 모든 서비스 시작 |
-| `mise dev:web` | API와 웹 서비스 시작 |
 | `mise dev:mobile` | API와 모바일 서비스 시작 |
 | `mise format` | 전체 앱 코드 포맷팅 |
 | `mise gen:api` | OpenAPI 스키마 및 클라이언트 생성 |
@@ -238,7 +229,7 @@ mise tasks --all
 | `mise run install` | 모든 의존성 설치 |
 | `mise test` | 전체 앱 테스트 실행 |
 | `mise tokens:build` | 디자인 토큰 빌드 |
-| `mise typecheck` | 타입 체크 |
+| `mise typecheck` | 타입 체크 (API + Worker) |
 
 ### 앱별 태스크
 
@@ -258,22 +249,6 @@ mise tasks --all
 | `mise //apps/api:gen:openapi` | OpenAPI 스키마 생성 |
 | `mise //apps/api:infra:up` | 로컬 인프라 시작 |
 | `mise //apps/api:infra:down` | 로컬 인프라 중지 |
-
-</details>
-
-<details>
-<summary>Web (apps/web)</summary>
-
-| 명령어 | 설명 |
-|--------|------|
-| `mise //apps/web:install` | 의존성 설치 |
-| `mise //apps/web:dev` | 개발 서버 시작 |
-| `mise //apps/web:build` | 프로덕션 빌드 |
-| `mise //apps/web:test` | 테스트 실행 |
-| `mise //apps/web:lint` | 린터 실행 |
-| `mise //apps/web:format` | 코드 포맷팅 |
-| `mise //apps/web:typecheck` | 타입 체크 |
-| `mise //apps/web:gen:api` | API 클라이언트 생성 |
 
 </details>
 
@@ -325,8 +300,7 @@ mise tasks --all
 | 명령어 | 설명 |
 |--------|------|
 | `mise //packages/i18n:install` | 의존성 설치 |
-| `mise //packages/i18n:build` | 웹/모바일용 다국어 파일 빌드 |
-| `mise //packages/i18n:build:web` | 웹용 파일만 생성 |
+| `mise //packages/i18n:build` | 모바일용 다국어 파일 빌드 |
 | `mise //packages/i18n:build:mobile` | 모바일용 파일만 생성 |
 
 </details>
@@ -337,7 +311,7 @@ mise tasks --all
 | 명령어 | 설명 |
 |--------|------|
 | `mise //packages/design-tokens:install` | 의존성 설치 |
-| `mise //packages/design-tokens:build` | 웹/모바일용 토큰 생성 |
+| `mise //packages/design-tokens:build` | 모바일용 토큰 생성 |
 | `mise //packages/design-tokens:dev` | 개발용 워치 모드 |
 | `mise //packages/design-tokens:test` | 테스트 실행 |
 
@@ -356,13 +330,12 @@ packages/i18n/src/ja.arb  # 일본어
 # 빌드 및 배포
 mise i18n:build
 # 생성 파일:
-# - apps/web/src/config/messages/*.json (Nested JSON)
 # - apps/mobile/lib/i18n/messages/app_*.arb (Flutter ARB)
 ```
 
 ## 디자인 토큰 (Design Tokens)
 
-`packages/design-tokens`는 디자인 토큰(색상, 간격 등)의 단일 기준점(SSOT)입니다.
+`packages/design-tokens`는 모바일 디자인 토큰(색상, 간격 등)의 단일 기준점(SSOT)입니다.
 
 ```bash
 # 토큰 편집
@@ -371,7 +344,6 @@ packages/design-tokens/src/tokens.ts
 # 빌드 및 배포
 mise tokens:build
 # 생성 파일:
-# - apps/web/src/app/[locale]/tokens.css (CSS 변수)
 # - apps/mobile/lib/core/theme/generated_theme.dart (Flutter 테마)
 ```
 
@@ -384,9 +356,6 @@ mise tokens:build
 ```bash
 # API
 cp apps/api/.env.example apps/api/.env
-
-# Web
-cp apps/web/.env.example apps/web/.env
 
 # Infra
 cp apps/infra/terraform.tfvars.example apps/infra/terraform.tfvars
@@ -428,7 +397,6 @@ flutterfire configure
 
 `main` 브랜치 푸시 시 자동 배포가 트리거됩니다.
 - `apps/api/` 변경 → API 배포
-- `apps/web/` 변경 → Web 배포
 - `apps/worker/` 변경 → Worker 배포
 - `apps/mobile/` 변경 → Firebase App Distribution 빌드/배포
 

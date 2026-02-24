@@ -9,14 +9,13 @@ English | [한국어](./README.ko.md)
 
 > Template versioning via [Release Please](https://github.com/googleapis/release-please) — see [CHANGELOG.md](./CHANGELOG.md) for release history.
 
-Production-ready fullstack monorepo template with Next.js 16, FastAPI, Flutter, and GCP infrastructure.
+Production-ready fullstack monorepo template with FastAPI, Flutter, and GCP infrastructure.
 
 ### 3-Tier Architecture
 
 ```mermaid
 graph TB
     subgraph Client
-        Web[Next.js 16<br/>React 19]
         Mobile[Flutter 3.38<br/>Riverpod]
     end
 
@@ -31,7 +30,6 @@ graph TB
         Storage[(Cloud Storage)]
     end
 
-    Web --> API
     Mobile --> API
     API --> DB
     API --> Cache
@@ -39,7 +37,6 @@ graph TB
     Worker --> DB
     API --> Storage
 
-    style Web fill:#0070f3,color:#fff
     style Mobile fill:#02569B,color:#fff
     style API fill:#009688,color:#fff
     style Worker fill:#009688,color:#fff
@@ -50,11 +47,11 @@ graph TB
 
 ## Key Features
 
-- **Modern Stack**: Next.js 16 + React 19, FastAPI, Flutter 3.38, TailwindCSS v4
-- **Type Safety**: Full type support with TypeScript, Pydantic, and Dart
-- **Authentication**: OAuth with better-auth (Google, GitHub, Facebook)
-- **Internationalization**: next-intl (web), Flutter ARB (mobile), shared i18n package
-- **Auto-generated API Clients**: Orval (web), swagger_parser (mobile)
+- **Modern Stack**: FastAPI, Flutter 3.38
+- **Type Safety**: Full type support with Pydantic and Dart
+- **Authentication**: OAuth (Google, GitHub, Facebook)
+- **Internationalization**: Flutter ARB (mobile), shared i18n package
+- **Auto-generated API Client**: swagger_parser (mobile)
 - **Infrastructure as Code**: Terraform + GCP (Cloud Run, Cloud SQL, Cloud Storage)
 - **CI/CD**: GitHub Actions + Workload Identity Federation (keyless deployment)
 - **AI Agent Support**: Guidelines for AI coding agents (Gemini, Claude, etc.)
@@ -64,7 +61,6 @@ graph TB
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | Next.js 16, React 19, TailwindCSS v4, shadcn/ui, TanStack Query, Jotai |
 | **Backend** | FastAPI, SQLAlchemy (async), PostgreSQL 16, Redis 7 |
 | **Mobile** | Flutter 3.38, Riverpod 3, go_router 17, Firebase Crashlytics, Fastlane |
 | **Worker** | FastAPI + CloudTasks/PubSub |
@@ -88,7 +84,7 @@ graph TB
     end
 
     subgraph Execution["Parallel Execution"]
-        FE[Frontend Agent<br/>Next.js/Flutter]
+        FE[Frontend Agent<br/>Flutter]
         BE[Backend Agent<br/>FastAPI]
         Infra[Infra Agent<br/>Terraform]
     end
@@ -171,9 +167,9 @@ mise infra:up
 ```
 
 This starts:
-- PostgreSQL (5432)
-- Redis (6379)
-- MinIO (9000, 9001)
+- PostgreSQL (5433)
+- Redis (6380)
+- MinIO (9010, 9011)
 
 ### 4. Run Database Migrations
 
@@ -184,10 +180,7 @@ mise db:migrate
 ### 5. Start Development Servers
 
 ```bash
-# Start API and Web services (recommended for web development)
-mise dev:web
-
-# Start API and Mobile services (recommended for mobile development)
+# Start API and Mobile services
 mise dev:mobile
 
 # Or start all services
@@ -200,7 +193,6 @@ mise dev
 juny/
 ├── apps/
 │   ├── api/           # FastAPI backend
-│   ├── web/           # Next.js frontend
 │   ├── worker/        # Background worker
 │   ├── mobile/        # Flutter mobile app
 │   └── infra/         # Terraform infrastructure
@@ -227,7 +219,6 @@ mise tasks --all
 |---------|-------------|
 | `mise db:migrate` | Run database migrations |
 | `mise dev` | Start all services |
-| `mise dev:web` | Start API and Web services |
 | `mise dev:mobile` | Start API and Mobile services |
 | `mise format` | Format all apps |
 | `mise gen:api` | Generate OpenAPI schema and API clients |
@@ -258,22 +249,6 @@ mise tasks --all
 | `mise //apps/api:gen:openapi` | Generate OpenAPI schema |
 | `mise //apps/api:infra:up` | Start local infrastructure |
 | `mise //apps/api:infra:down` | Stop local infrastructure |
-
-</details>
-
-<details>
-<summary>Web (apps/web)</summary>
-
-| Command | Description |
-|---------|-------------|
-| `mise //apps/web:install` | Install dependencies |
-| `mise //apps/web:dev` | Start development server |
-| `mise //apps/web:build` | Production build |
-| `mise //apps/web:test` | Run tests |
-| `mise //apps/web:lint` | Run linter |
-| `mise //apps/web:format` | Format code |
-| `mise //apps/web:typecheck` | Type check |
-| `mise //apps/web:gen:api` | Generate API client |
 
 </details>
 
@@ -325,9 +300,8 @@ mise tasks --all
 | Command | Description |
 |---------|-------------|
 | `mise //packages/i18n:install` | Install dependencies |
-| `mise //packages/i18n:build` | Build i18n files for web and mobile |
-| `mise //packages/i18n:build:web` | Build for web only |
-| `mise //packages/i18n:build:mobile` | Build for mobile only |
+| `mise //packages/i18n:build` | Build i18n files for mobile |
+| `mise //packages/i18n:build:mobile` | Build for mobile |
 
 </details>
 
@@ -337,7 +311,7 @@ mise tasks --all
 | Command | Description |
 |---------|-------------|
 | `mise //packages/design-tokens:install` | Install dependencies |
-| `mise //packages/design-tokens:build` | Build tokens for web and mobile |
+| `mise //packages/design-tokens:build` | Build tokens for mobile |
 | `mise //packages/design-tokens:dev` | Watch mode for development |
 | `mise //packages/design-tokens:test` | Run tests |
 
@@ -356,7 +330,6 @@ packages/i18n/src/ja.arb  # Japanese
 # Build and deploy to each app
 mise i18n:build
 # Generated files:
-# - apps/web/src/config/messages/*.json (Nested JSON)
 # - apps/mobile/lib/i18n/messages/app_*.arb (Flutter ARB)
 ```
 
@@ -371,7 +344,6 @@ packages/design-tokens/src/tokens.ts
 # Build and distribute
 mise tokens:build
 # Generated files:
-# - apps/web/src/app/[locale]/tokens.css (CSS variables)
 # - apps/mobile/lib/core/theme/generated_theme.dart (Flutter Theme)
 ```
 
@@ -384,9 +356,6 @@ Copy example files and configure:
 ```bash
 # API
 cp apps/api/.env.example apps/api/.env
-
-# Web
-cp apps/web/.env.example apps/web/.env
 
 # Infra
 cp apps/infra/terraform.tfvars.example apps/infra/terraform.tfvars
@@ -428,7 +397,6 @@ This generates `lib/firebase_options.dart` with your Firebase configuration.
 
 Push to `main` branch triggers automatic deployment:
 - `apps/api/` changes → Deploy API
-- `apps/web/` changes → Deploy Web
 - `apps/worker/` changes → Deploy Worker
 - `apps/mobile/` changes → Build & Deploy to Firebase App Distribution
 

@@ -2,50 +2,7 @@
 
 [English](./WHY.md) | [한국어](./WHY.ko.md)
 
-This document explains the reasoning behind each technology choice in this fullstack starter template.
-
-## Frontend
-
-### Next.js 16 + React 19
-
-- **Server Components**: Reduces client-side JavaScript bundle, improves initial load time
-- **App Router**: File-based routing with layouts, loading states, and error boundaries built-in
-- **Turbopack**: Faster dev server and builds compared to Webpack
-- **React 19**: Improved performance with concurrent features, Actions, and `use()` hook
-
-### TailwindCSS v4
-
-- **Zero runtime**: All styles compiled at build time
-- **Lightning CSS**: 100x faster than PostCSS-based v3
-- **CSS-first config**: Native CSS syntax instead of JavaScript config
-- **Smaller bundles**: Automatic unused style removal
-
-### shadcn/ui
-
-- **Copy-paste components**: No npm dependency, full ownership of code
-- **Radix primitives**: Accessible by default (ARIA, keyboard navigation)
-- **Tailwind-native**: Consistent with project styling approach
-- **Customizable**: Easy to modify without fighting a design system
-
-### TanStack Query
-
-- **Automatic caching**: Deduplication, background refetching, stale-while-revalidate
-- **DevTools**: Built-in query inspector for debugging
-- **Framework agnostic**: Same mental model works in React Native if needed
-- **Optimistic updates**: First-class support for responsive UIs
-
-### Jotai
-
-- **Bottom-up atomic model**: Build state by combining atoms, optimize renders based on atom dependency
-- **No extra re-renders**: Only components subscribed to changed atoms re-render
-- **TypeScript-first**: Excellent type inference
-- **Lightweight**: ~3KB, no providers required for basic usage
-
-### TanStack Form
-
-- **Headless & composable**: `withForm` HOC pattern for modular form composition with type safety
-- **Type-safe**: Full TypeScript inference for form values and validation
-- **Simple interface**: Cleaner API compared to React Hook Form or Formik
+This document explains the reasoning behind each technology choice in juny.
 
 ## Backend
 
@@ -162,8 +119,7 @@ We prioritize **speed** across the entire development workflow by choosing Rust-
 
 - **Biome**: Linter + formatter in one tool, 100x faster than ESLint + Prettier
 - **uv**: Python package manager, 10-100x faster than pip/poetry
-- **Turbopack**: Next.js bundler, faster than Webpack
-- **Lightning CSS**: TailwindCSS v4 compiler, 100x faster than PostCSS
+- **Ruff**: Python linter + formatter, 10-100x faster than flake8/black
 
 ### mise
 
@@ -174,7 +130,7 @@ We prioritize **speed** across the entire development workflow by choosing Rust-
 
 ### Polyglot Monorepo
 
-- **Single repository**: Web (TypeScript), API (Python), Mobile (Dart), Infra (HCL) in one place
+- **Single repository**: API (Python), Mobile (Dart), Worker (Python), Infra (HCL) in one place
 - **Bounded contexts**: Each language ecosystem is scoped to its directory, preventing cross-contamination
 - **Atomic changes**: Frontend + backend changes in single PR
 - **Unified tooling**: Same `mise` commands across all apps
@@ -183,10 +139,10 @@ We prioritize **speed** across the entire development workflow by choosing Rust-
 
 | Choice | Trade-off | Why We Accept It |
 |--------|-----------|------------------|
-| Next.js over Remix/SvelteKit | Larger bundle, more complexity | Ecosystem, React 19 compatibility |
-| Next.js over Flutter Web | Separate codebase from mobile | SEO, SSR, smaller bundle, web ecosystem compatibility |
-| FastAPI over Node.js | Two runtimes (Node + Python) | Python AI/ML ecosystem, scalability |
+| FastAPI over Node.js | Python-only backend | Python AI/ML ecosystem (Gemini, LiveKit), async-first |
 | Flutter over React Native | Larger app size, custom rendering | Korea eGovFrame v5, flexible versioning |
+| Gemini over OpenAI | Google ecosystem dependency | Native multimodal live streaming, Vertex AI integration |
+| LiveKit over Agora/Twilio | Self-hostable, less managed | Open-source WebRTC, fine-grained role control |
 
 ## Summary
 

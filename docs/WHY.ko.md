@@ -2,50 +2,7 @@
 
 [English](./WHY.md) | [한국어](./WHY.ko.md)
 
-이 문서는 풀스택 스타터 템플릿의 기술 선정 배경과 이유를 다룹니다.
-
-## 프론트엔드
-
-### Next.js 16 + React 19
-
-- **서버 컴포넌트 (RSC)**: 클라이언트 JS 번들 최소화, 초기 로딩 속도 최적화
-- **App Router**: 레이아웃, 로딩 UI, 에러 처리가 내장된 파일 시스템 기반 라우팅
-- **Turbopack**: Webpack 대비 월등히 빠른 개발 서버 구동 및 빌드 성능
-- **React 19**: Concurrent 기능, Actions, `use()` 훅 등 최신 성능 최적화 기능 활용
-
-### TailwindCSS v4
-
-- **Zero Runtime**: 모든 스타일을 빌드 시점에 컴파일하여 런타임 오버헤드 제거
-- **Lightning CSS**: PostCSS 기반 v3 대비 처리 속도 100배 향상
-- **CSS 우선**: 복잡한 JS 설정 없이 네이티브 CSS 문법 활용
-- **최적화된 번들**: 미사용 스타일 자동 제거로 최소한의 CSS 파일 생성
-
-### shadcn/ui
-
-- **코드 소유권**: npm 의존성 없이 컴포넌트 코드를 직접 프로젝트에 복사하여 완전한 제어권 확보
-- **Radix UI 기반**: 웹 접근성(ARIA, 키보드 탐색) 표준 준수
-- **Tailwind 네이티브**: 프로젝트 전반의 스타일링 방식과 일관성 유지
-- **유연한 커스터마이징**: 디자인 시스템 제약 없이 자유로운 수정 가능
-
-### TanStack Query
-
-- **강력한 캐싱**: 자동 중복 제거, 백그라운드 갱신, SWR(Stale-While-Revalidate) 전략 지원
-- **DevTools**: 쿼리 상태 시각화 및 디버깅 도구 내장
-- **플랫폼 독립성**: React Native(모바일)에서도 동일한 개념과 패턴 적용 가능
-- **Optimistic Updates**: 즉각적인 UI 반응성을 위한 낙관적 업데이트 지원
-
-### Jotai
-
-- **Atomic 모델**: 상태를 원자(Atom) 단위로 구성하여 의존성 기반의 정밀한 렌더링 최적화
-- **불필요한 리렌더 방지**: 변경된 Atom을 구독하는 컴포넌트만 정확히 업데이트
-- **TypeScript 친화적**: 별도 설정 없이 뛰어난 타입 추론 지원
-- **경량화**: 약 3KB의 작은 크기, Provider 없는 간편한 사용성
-
-### TanStack Form
-
-- **Headless & Composable**: `withForm` HOC 패턴으로 UI와 로직을 분리한 모듈형 폼 구성
-- **타입 안전성**: 폼 값 변화와 검증 로직에 대한 완벽한 TypeScript 추론
-- **간결한 API**: React Hook Form이나 Formik 대비 직관적이고 깔끔한 인터페이스
+이 문서는 juny의 기술 선정 배경과 이유를 다룹니다.
 
 ## 백엔드
 
@@ -162,8 +119,7 @@
 
 - **Biome**: 린터와 포매터 통합, 기존 ESLint+Prettier 대비 100배 빠른 속도
 - **uv**: Python 패키지 매니저, pip/poetry 대비 10~100배 빠른 설치 속도
-- **Turbopack**: Webpack보다 월등히 빠른 Next.js 전용 차세대 번들러
-- **Lightning CSS**: PostCSS 대비 100배 빠른 TailwindCSS v4 컴파일러
+- **Ruff**: Python 린터+포매터, flake8/black 대비 10~100배 빠른 속도
 
 ### mise
 
@@ -174,7 +130,7 @@
 
 ### 폴리글랏 모노레포
 
-- **단일 저장소**: Web, API, Mobile, Infra 코드를 한곳에서 통합 관리
+- **단일 저장소**: API, Mobile, Worker, Infra 코드를 한곳에서 통합 관리
 - **명확한 경계**: 각 언어/프레임워크의 의존성과 설정을 디렉토리별로 격리
 - **원자적 커밋**: 프론트엔드와 백엔드의 변경 사항을 하나의 PR로 처리하여 동기화 문제 해결
 - **도구 통일**: 언어에 상관없이 `mise` 명령어로 일관된 개발 경험 제공
@@ -183,10 +139,10 @@
 
 | 선택 | 대안 | 트레이드오프 | 수용 이유 |
 |------|------|-------------|-----------|
-| **Next.js** | Remix, SvelteKit | 상대적으로 큰 번들, 높은 복잡도 | React 19 최신 기능 지원, 방대한 생태계 |
-| **Next.js** | Flutter Web | 모바일과 별도 코드베이스 | SEO, SSR, 작은 번들, 웹 생태계 호환성 |
-| **FastAPI** | Node.js (NestJS) | 두 가지 런타임 관리 (Node+Python) | Python의 강력한 AI/ML 라이브러리 활용, 확장성 |
+| **FastAPI** | Node.js (NestJS) | Python 단일 백엔드 | Python AI/ML 생태계 (Gemini, LiveKit), async-first |
 | **Flutter** | React Native | 앱 용량 증가, 독자적인 렌더링 엔진 | 전자정부 표준 준수, OS 업데이트에 덜 민감한 UI 일관성 |
+| **Gemini** | OpenAI | Google 생태계 의존성 | 네이티브 멀티모달 라이브 스트리밍, Vertex AI 통합 |
+| **LiveKit** | Agora, Twilio | 셀프 호스팅, 관리형 서비스 부재 | 오픈소스 WebRTC, 세밀한 역할 기반 제어 |
 
 ## 요약
 

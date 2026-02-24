@@ -1,289 +1,226 @@
-# How to Use Antigravity Multi-Agent Skills
+# How to Use juny
+
+[English](./USAGE.md) | [한국어](./USAGE.ko.md)
+
+juny is a real-time multimodal AI assistant. A **Host** (primary user with camera/audio streaming) and a **Concierge** (caregiver monitoring and audio intervention) connect to the same LiveKit Room, where AI analyzes the Host's stream in real time.
+
+---
+
+## Prerequisites
+
+- [mise](https://mise.jdx.dev/) (polyglot tool manager)
+- Docker (for local PostgreSQL, Redis, MinIO)
+
+```bash
+# Install all tool versions (Node, Python, Flutter, Terraform, etc.)
+mise install
+```
+
+---
 
 ## Quick Start
 
-1. **Open in Antigravity IDE**
-   ```bash
-   antigravity open /path/to/subagent-orchestrator
-   ```
-
-2. **Skills are automatically detected.** Antigravity scans `.agent/skills/` and indexes all available skills.
-
-3. **Chat in the IDE.** Describe what you want to build.
-
----
-
-## Usage Examples
-
-### Example 1: Simple Single-Domain Task
-
-**You type:**
-```
-"Create a login form component with email and password fields using Tailwind CSS"
-```
-
-**What happens:**
-- Antigravity detects this matches `frontend-agent`
-- The skill loads automatically (Progressive Disclosure)
-- You get a React component with TypeScript, Tailwind, form validation
-
-### Example 2: Complex Multi-Domain Project
-
-**You type:**
-```
-"Build a TODO app with user authentication"
-```
-
-**What happens:**
-
-1. **Workflow Guide activates** — detects multi-domain complexity
-2. **PM Agent plans** — creates task breakdown with priorities
-3. **You spawn agents** in Agent Manager UI:
-   - Backend Agent: JWT authentication API
-   - Frontend Agent: Login and TODO UI
-4. **Agents work in parallel** — save outputs to Knowledge Base
-5. **You coordinate** — review `.gemini/antigravity/brain/` for consistency
-6. **QA Agent reviews** — security/performance audit
-7. **Fix & iterate** — re-spawn agents with corrections
-
-### Example 3: Bug Fixing
-
-**You type:**
-```
-"There's a bug — clicking login shows 'Cannot read property map of undefined'"
-```
-
-**What happens:**
-
-1. **debug-agent activates** — analyzes error
-2. **Root cause found** — component maps over `todos` before data loads
-3. **Fix provided** — loading states and null checks added
-4. **Regression test written** — ensures bug won't return
-5. **Similar patterns found** — proactively fixes 3 other components
-
-### Example 4: CLI-based Parallel Execution
+### 1. Start Local Infrastructure
 
 ```bash
-# Single agent
-./scripts/spawn-subagent.sh backend "Implement JWT auth API" ./backend
-
-# Parallel agents
-./scripts/spawn-subagent.sh backend "Implement auth API" ./backend &
-./scripts/spawn-subagent.sh frontend "Create login form" ./frontend &
-./scripts/spawn-subagent.sh mobile "Build auth screens" ./mobile &
-wait
+mise infra:up
 ```
 
-**Monitor in real-time:**
-```bash
-# Terminal (separate terminal window)
-bun run dashboard
+This launches via Docker Compose:
 
-# Or browser
-bun run dashboard:web
-# → http://localhost:9847
-```
+| Service | Host Port | Credentials |
+|---------|-----------|-------------|
+| PostgreSQL 16 | `5433` | postgres / postgres |
+| Redis 7 | `6380` | — |
+| MinIO (S3-compatible) | `9010` (API), `9011` (console) | minioadmin / minioadmin |
 
----
-
-## Real-time Dashboards
-
-### Terminal Dashboard
+### 2. Configure Environment
 
 ```bash
-bun run dashboard
+cp apps/api/.env.example apps/api/.env
+# Edit .env — set JWT_SECRET, GEMINI_API_KEY, LIVEKIT_* as needed
 ```
 
-Watches `.serena/memories/` using `fswatch` (macOS) or `inotifywait` (Linux). Displays a live table with session status, agent states, turns, and latest activity. Updates automatically when memory files change.
-
-**Requirements:**
-- macOS: `brew install fswatch`
-- Linux: `apt install inotify-tools`
-
-### Web Dashboard
+### 3. Run Database Migrations
 
 ```bash
-bun install          # first time only
-bun run dashboard:web
+mise db:migrate
 ```
 
-Open `http://localhost:9847` in your browser. Features:
+### 4. Start Development Servers
 
-- **Real-time updates** via WebSocket (event-driven, not polling)
-- **Auto-reconnect** if the connection drops
-- **Serena-themed UI** with purple accent colors
-- **Session status** — ID and running/completed/failed state
-- **Agent table** — name, status (with colored dots), turn count, task description
-- **Activity log** — latest changes from progress and result files
+```bash
+# API + Worker (backend)
+mise dev
 
-The server watches `.serena/memories/` using chokidar with debounce (100ms). Only changed files trigger reads — no full re-scan.
+# Or API + Mobile (full stack)
+mise dev:mobile
+```
+
+The API server runs on **port 8200** (`http://localhost:8200`).
 
 ---
 
-## Key Concepts
+## Core Workflows
 
-### Progressive Disclosure
-Antigravity automatically matches requests to skills. You never manually select a skill. Only the needed skill loads into context.
+### Authentication (OAuth + JWT)
 
-### Token-Optimized Skill Design
-Each skill uses a two-layer architecture for maximum token efficiency:
-- **SKILL.md** (~40 lines): Identity, routing, core rules — loaded immediately
-- **resources/**: Execution protocols, examples, checklists, error playbooks — loaded on-demand
+1. User authenticates via OAuth provider (Google, GitHub, Facebook) on mobile
+2. Mobile sends the OAuth token to `POST /api/v1/auth/login`
+3. Backend re-verifies with the provider, creates/finds the user, and issues JWT tokens
+4. All subsequent API calls use `Authorization: Bearer <access_token>`
 
-Shared resources live in `_shared/` (not a skill) and are referenced by all agents:
-- Chain-of-thought execution protocols with 4-step workflow
-- Few-shot input/output examples for mid-tier model guidance
-- Error recovery playbooks with "3 strikes" escalation
-- Reasoning templates for structured multi-step analysis
-- Context budget management for Flash/Pro model tiers
-- Automated verification via `verify.sh`
-- Cross-session lessons learned accumulation
+See [AUTH.md](./AUTH.md) for full details.
 
-### Agent Manager UI
-Mission Control dashboard in Antigravity IDE. Spawn agents, assign workspaces, monitor via inbox, review artifacts.
+### Real-time AI Session (LiveKit + Gemini)
 
-### Knowledge Base
-Agent outputs stored at `.gemini/antigravity/brain/`. Contains plans, code, reports, and coordination notes.
+1. Authenticated user requests a LiveKit token: `GET /api/v1/live/token?room_name=...&role=host`
+2. Host connects to the LiveKit Room with camera and microphone
+3. Host opens a WebSocket bridge: `WS /api/v1/live/ws?token=...&room=...`
+4. The backend streams Host's audio/video to Gemini Multimodal Live API
+5. Gemini analyzes the stream and can invoke tools:
+   - **log_wellness** — Record wellness observations (normal / warning / emergency)
+   - **register_medication** — Add a medication schedule
+   - **scan_medication_schedule** — Batch extract medications from camera feed
+6. Concierge joins the same Room to monitor and intervene via audio
 
-### Serena Memory
-Structured runtime state at `.serena/memories/`. The orchestrator writes session info, task boards, per-agent progress, and results. Dashboards watch these files for monitoring.
+### Medication Management
 
-### Workspaces
-Agents can work in separate directories to avoid conflicts:
 ```
-./backend    → Backend Agent workspace
-./frontend   → Frontend Agent workspace
-./mobile     → Mobile Agent workspace
+POST   /api/v1/medications          — Create medication schedule
+GET    /api/v1/medications?host_id= — List medications (paginated)
+GET    /api/v1/medications/{id}     — Get single medication
+PATCH  /api/v1/medications/{id}     — Update (e.g., mark as taken)
+DELETE /api/v1/medications/{id}     — Delete medication
 ```
+
+### Wellness Logging
+
+```
+POST   /api/v1/wellness             — Create wellness log
+GET    /api/v1/wellness?host_id=    — List logs (paginated)
+GET    /api/v1/wellness/{id}        — Get single log
+```
+
+### Care Relations (RBAC)
+
+```
+POST   /api/v1/relations            — Create host-caregiver relation
+GET    /api/v1/relations?host_id=   — List by host
+GET    /api/v1/relations?caregiver_id= — List by caregiver
+PATCH  /api/v1/relations/{id}       — Update (deactivate, change role)
+DELETE /api/v1/relations/{id}       — Delete relation
+```
+
+Roles: `host`, `concierge`, `care_worker`, `organization`. A Host cannot be assigned a caregiver role.
 
 ---
 
-## Available Skills
+## Common Commands
 
-| Skill | Auto-activates for | Output |
-|-------|-------------------|--------|
-| workflow-guide | Complex multi-domain projects | Step-by-step agent coordination |
-| pm-agent | "plan this", "break down" | `.agent/plan.json` |
-| frontend-agent | UI, components, styling | React components, tests |
-| backend-agent | APIs, databases, auth | API endpoints, models, tests |
-| mobile-agent | Mobile apps, iOS/Android | Flutter screens, state management |
-| qa-agent | "review security", "audit" | QA report with prioritized fixes |
-| debug-agent | Bug reports, error messages | Fixed code, regression tests |
-| orchestrator | CLI sub-agent execution | Results in `.agent/results/` |
-
----
-
-## Workflow Commands
-
-Type these in Antigravity IDE chat to trigger step-by-step workflows:
+All commands use mise. Run `mise tasks --all` for the full list.
 
 | Command | Description |
 |---------|-------------|
-| `/coordinate` | Multi-agent orchestration via Agent Manager UI |
-| `/orchestrate` | Automated CLI-based parallel agent execution |
-| `/plan` | PM task decomposition with API contracts |
-| `/review` | Full QA pipeline (security, performance, accessibility, code quality) |
-| `/debug` | Structured bug fixing (reproduce → diagnose → fix → regression test) |
+| `mise dev` | Start API + Worker |
+| `mise dev:mobile` | Start API + Mobile |
+| `mise test` | Run all backend tests |
+| `mise lint` | Lint all apps |
+| `mise format` | Format all apps |
+| `mise typecheck` | Type-check API (mypy) |
+| `mise db:migrate` | Run Alembic migrations |
+| `mise gen:api` | Regenerate OpenAPI schema + mobile client |
+| `mise i18n:build` | Build i18n files |
+| `mise tokens:build` | Build design tokens |
+| `mise infra:up` / `infra:down` | Start / stop local Docker services |
 
-These are separate from **skills** (which auto-activate). Workflows give you explicit control over multi-step processes.
-
----
-
-## Typical Workflows
-
-### Workflow A: Single Skill
-
-```
-You: "Create a button component"
-  → Antigravity loads frontend-agent
-  → Get component immediately
-```
-
-### Workflow B: Multi-Agent Project (Auto)
-
-```
-You: "Build a TODO app with authentication"
-  → workflow-guide activates automatically
-  → PM Agent creates plan
-  → You spawn agents in Agent Manager
-  → Agents work in parallel
-  → QA Agent reviews
-  → Fix issues, iterate
-```
-
-### Workflow B-2: Multi-Agent Project (Explicit)
-
-```
-You: /coordinate
-  → Step-by-step guided workflow
-  → PM planning → plan review → agent spawning → monitoring → QA review
-```
-
-### Workflow C: Bug Fixing
-
-```
-You: "Login button throws TypeError"
-  → debug-agent activates
-  → Root cause analysis
-  → Fix + regression test
-  → Similar patterns checked
-```
-
-### Workflow D: CLI Orchestration with Dashboard
-
-```
-Terminal 1: bun run dashboard:web
-Terminal 2: ./scripts/spawn-subagent.sh backend "task" ./backend &
-            ./scripts/spawn-subagent.sh frontend "task" ./frontend &
-Browser:    http://localhost:9847 → real-time status
-```
-
----
-
-## Tips
-
-1. **Be specific** — "Build a TODO app with JWT auth, React frontend, FastAPI backend" is better than "make an app"
-2. **Use Agent Manager** for multi-domain projects — don't try to do everything in one chat
-3. **Review Knowledge Base** — check `.gemini/antigravity/brain/` for API consistency
-4. **Iterate with re-spawns** — refine instructions, don't start over
-5. **Use dashboards** — `bun run dashboard` or `bun run dashboard:web` to monitor orchestrator sessions
-6. **Separate workspaces** — assign each agent its own directory
-
----
-
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| Skills not loading | `antigravity open .`, check `.agent/skills/`, restart IDE |
-| Agent Manager not found | View → Agent Manager menu, requires Antigravity 2026+ |
-| Incompatible agent outputs | Review both in Knowledge Base, re-spawn with corrections |
-| Dashboard: "No agents" | Memory files not created yet, run orchestrator first |
-| Web dashboard won't start | Run `bun install` to install chokidar and ws |
-| fswatch not found | macOS: `brew install fswatch`, Linux: `apt install inotify-tools` |
-| QA report has 50+ issues | Focus on CRITICAL/HIGH first, document rest for later |
-
----
-
-## Bun Scripts
+### Per-app commands
 
 ```bash
-bun run dashboard       # Terminal real-time dashboard
-bun run dashboard:web   # Web dashboard → http://localhost:9847
-bun run validate        # Validate skill files
-bun run info            # Show this usage guide
+mise //apps/api:dev | :test | :lint | :format | :typecheck | :migrate
+mise //apps/worker:dev | :test | :lint | :format
+mise //apps/mobile:dev | :build | :test | :lint | :format | :gen:api | :gen:l10n
+```
+
+### Running a single test
+
+```bash
+# API
+cd apps/api && uv run pytest tests/test_health.py -v
+cd apps/api && uv run pytest tests/test_health.py::test_health_check -v
+
+# E2E (requires Docker PostgreSQL)
+cd apps/api && uv run pytest tests/e2e/ -v
+
+# Mobile
+cd apps/mobile && flutter test test/core/utils_test.dart
 ```
 
 ---
 
-## For Developers (Integration Guide)
+## Code Generation Pipeline
 
-If you want to integrate these skills into your existing Antigravity project, see [AGENT_GUIDE.md](./AGENT_GUIDE.md) for:
-- Quick 3-step integration
-- Full dashboard integration
-- Customizing skills for your tech stack
-- Troubleshooting and best practices
+After changing API endpoints:
+
+```bash
+mise gen:api
+```
+
+This triggers:
+1. FastAPI exports `openapi.json`
+2. `swagger_parser` generates mobile Retrofit clients + Freezed models
 
 ---
 
-**Just chat in Antigravity IDE.** For monitoring, use the dashboards. For CLI execution, use the orchestrator scripts. To integrate into your existing project, see [AGENT_GUIDE.md](./AGENT_GUIDE.md).
+## Project Structure
+
+```
+juny/
+├── apps/
+│   ├── api/           # FastAPI backend (port 8200)
+│   ├── worker/        # Background task worker (Cloud Tasks / Pub/Sub)
+│   ├── mobile/        # Flutter mobile app
+│   └── infra/         # Terraform (GCP Cloud Run, Cloud SQL, etc.)
+├── packages/
+│   ├── design-tokens/ # OKLCH tokens → Flutter theme
+│   └── i18n/          # ARB source → Flutter localization
+├── mise.toml          # Monorepo task runner
+└── CLAUDE.md          # AI coding assistant instructions
+```
+
+---
+
+## Environment Variables
+
+Key variables in `apps/api/.env`:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | Async PostgreSQL connection | `postgresql+asyncpg://...localhost:5433/juny` |
+| `JWT_SECRET` | JWT signing secret | (change in production) |
+| `REDIS_URL` | Redis connection (optional) | `redis://localhost:6380` |
+| `LIVEKIT_API_URL` | LiveKit server URL | — |
+| `LIVEKIT_API_KEY` | LiveKit API key | — |
+| `LIVEKIT_API_SECRET` | LiveKit API secret | — |
+| `AI_PROVIDER` | AI backend (`gemini` or `openai`) | `gemini` |
+| `GEMINI_API_KEY` | Gemini API key (AI Studio) | — |
+| `STORAGE_BACKEND` | Object storage (`gcs`, `s3`, `minio`) | `minio` |
+
+See `apps/api/.env.example` for the full list.
+
+---
+
+## Deployment
+
+GitHub Actions deploys to GCP Cloud Run on push to `main` (per-app path filters). Uses Workload Identity Federation (keyless, no service account keys).
+
+- **API** → Cloud Run (`us-central1`)
+- **Worker** → Cloud Run (`us-central1`)
+- **Mobile** → App Store / Google Play via Fastlane
+
+---
+
+## Documentation
+
+- [AUTH.md](./AUTH.md) — Authentication architecture
+- [WHY.md](./WHY.md) — Tech stack rationale

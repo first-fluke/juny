@@ -2,27 +2,27 @@
 
 ## Overview
 
-This template implements a **stateless JWT/JWE authentication system** instead of **stateful session-based authentication**. Authentication processing is performed entirely on the backend, and the frontend is responsible only for storing and transmitting tokens.
+This template implements a **stateless JWT(JWS) authentication system** instead of **stateful session-based authentication**. Authentication processing is performed entirely on the backend, and the mobile client is responsible only for storing and transmitting tokens.
 
 ## Architecture
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant Frontend
-    participant BetterAuth
+    participant Mobile
+    participant OAuthProvider
     participant Backend
     participant API
 
-    User->>BetterAuth: Social Login (OAuth)
-    BetterAuth->>Frontend: OAuth Access Token
-    Frontend->>Backend: POST /api/auth/login (OAuth Token)
+    User->>OAuthProvider: Social Login (OAuth)
+    OAuthProvider->>Mobile: OAuth Access Token
+    Mobile->>Backend: POST /api/v1/auth/login (OAuth Token)
     Backend->>Backend: OAuth Token Re-verification (Provider API)
     Backend->>Backend: User Creation/Update (DB)
-    Backend->>Backend: JWE Token Issuance (access + refresh)
-    Backend->>Frontend: Return JWE Token
-    Frontend->>API: Authorization Header (access_token)
-    API->>API: JWE Token Verification
+    Backend->>Backend: JWT Token Issuance (access + refresh)
+    Backend->>Mobile: Return JWT Token
+    Mobile->>API: Authorization Header (access_token)
+    API->>API: JWT Token Verification
     API->>User: Return Protected Resource
 ```
 
@@ -32,71 +32,48 @@ sequenceDiagram
 
 **Essential Files:**
 
-- `src/lib/auth.py` - JWE token generation/validation, OAuth validation
+- `src/lib/auth.py` - JWT token generation/validation, OAuth validation
 - `src/auth/router.py` - Authentication endpoints
 - `src/users/model.py` - User DB model
 - `src/lib/dependencies.py` - Dependency injection for auth
 
 **Key Functions:**
 
-- `create_access_token(user_id)` - Create JWE access token (1 hour expiry)
-- `create_refresh_token(user_id)` - Create JWE refresh token (7 days expiry)
-- `decode_token(token)` - Verify JWE token and extract payload
+- `create_access_token(user_id)` - Create JWT access token (1 hour expiry)
+- `create_refresh_token(user_id)` - Create JWT refresh token (7 days expiry)
+- `decode_token(token)` - Verify JWT token and extract payload
 - `verify_oauth_token(provider, token)` - Re-verify OAuth token (Google/GitHub/Facebook)
 - `get_current_user(request)` - Extract user from Authorization header
 
 **Endpoints:**
 
-- `POST /api/auth/login` - OAuth login
-- `POST /api/auth/refresh` - Refresh token
-- `POST /api/auth/logout` - Logout
+- `POST /api/v1/auth/login` - OAuth login
+- `POST /api/v1/auth/refresh` - Refresh token
+- `POST /api/v1/auth/logout` - Logout
 
 **Security:**
 
-- JWE Encryption (A256GCM)
+- JWT Signing (HS256 / HMAC-SHA256)
 - Access Token: 1 hour expiry
 - Refresh Token: 7 days expiry
 - Authorization header based transmission
-
-### 2. Frontend (Next.js - `apps/web/`)
-
-**Essential Files:**
-
-- `src/lib/auth.ts` - Better Auth server config (OAuth providers)
-- `src/lib/auth-client.ts` - Better Auth client and token exchange logic
-- `src/lib/api-client.ts` - HTTP client with token management (interceptors)
-- `src/app/api/auth/[...all]/route.ts` - Better Auth route handler
-
-**Key Operations/Functions:**
-
-- Better Auth OAuth login (signIn.social)
-- OAuth → Backend JWT exchange (automated)
-- Authorization header auto-injection
-- Auto token refresh on 401 error
-- Token cleanup on logout
-
-**Security:**
-
-- localStorage storage (prefix: `fullstack_`)
-- JWE Token (issued by backend)
-- Authorization header auto-configuration
 
 ## Token Management
 
 ### Access Token
 
-- **Format:** JWE (JSON Web Encryption)
-- **Algorithm:** A256GCM (AES-256-GCM)
+- **Format:** JWT (JSON Web Token, JWS)
+- **Algorithm:** HS256 (HMAC-SHA256)
 - **Expiry:** 1 hour
-- **Storage:** `localStorage.fullstack_access_token`
+- **Storage:** Secure storage on mobile device
 - **Usage:** `Authorization: Bearer {token}` header in API requests
 
 ### Refresh Token
 
-- **Format:** JWE
-- **Algorithm:** A256GCM
+- **Format:** JWT (JWS)
+- **Algorithm:** HS256
 - **Expiry:** 7 days
-- **Storage:** `localStorage.fullstack_refresh_token`
+- **Storage:** Secure storage on mobile device
 - **Usage:** Used to renew access token when expired
 
 ## Auth Flow
@@ -104,39 +81,35 @@ sequenceDiagram
 ### 1. Social Login
 
 ```
-User: Click "Google Login"
+User: Tap "Google Login"
     ↓
-Frontend: signIn.social("google")
+Mobile: OAuth provider redirect
     ↓
-BetterAuth: OAuth redirect
+OAuthProvider: OAuth access token issued
     ↓
-BetterAuth: OAuth access creation (cookie)
+Mobile: OAuth access token received
     ↓
-Frontend: OAuth access token received
-    ↓
-Frontend: exchangeOAuthForBackendJwt() auto execute
-    ↓
-Backend: POST /api/auth/login { provider, access_token, email, name }
+Mobile: POST /api/v1/auth/login { provider, access_token, email, name }
     ↓
 Backend: OAuth token re-verification (Google API)
     ↓
 Backend: User DB lookup/creation
     ↓
-Backend: JWE token issuance (access: 1h, refresh: 7d)
+Backend: JWT token issuance (access: 1h, refresh: 7d)
     ↓
-Frontend: JWE token localStorage storage
+Mobile: JWT token secure storage
 ```
 
 ### 2. Protected API Request
 
 ```
-Frontend: API Request
+Mobile: API Request
     ↓
-apiClient: access_token auto add to Authorization header
+HTTP Client: access_token auto add to Authorization header
     ↓
 Backend: Authorization header verification
     ↓
-Backend: JWE token decoding
+Backend: JWT token decoding
     ↓
 Backend: user_id extraction
     ↓
@@ -152,13 +125,13 @@ Access Token Expired (1 hour)
     ↓
 401 error on API request
     ↓
-apiClient: auto use refresh_token
+HTTP Client: auto use refresh_token
     ↓
-Backend: POST /api/auth/refresh
+Backend: POST /api/v1/auth/refresh
     ↓
 Backend: New access_token issuance
     ↓
-Frontend: localStorage update
+Mobile: Secure storage update
     ↓
 Request auto retry
 ```
@@ -166,25 +139,23 @@ Request auto retry
 ### 4. Logout
 
 ```
-User: Click "Logout"
+User: Tap "Logout"
     ↓
-Frontend: signOut()
+Mobile: Clear stored tokens
     ↓
-Frontend: localStorage.clearTokens()
-    ↓
-Frontend: apiClient.post("/api/auth/logout")
+Mobile: POST /api/v1/auth/logout
     ↓
 Backend: Logout processing (client token invalidation if needed)
 ```
 
 ## Security Features
 
-### 1. JWE Encryption
+### 1. JWT Signing
 
-- **Full Encryption:** Encrypts the entire payload
-- **Algorithm:** A256GCM (AES-256-GCM)
-- **Advantage:** (Unlike standard JWT (JWS)) Payload is not exposed
-- **Authentication Tag (authTag):** Ensures integrity and forgery detection
+- **HMAC-SHA256:** Signs the payload with a shared secret key
+- **Algorithm:** HS256
+- **Integrity:** Signature ensures the token has not been tampered with
+- **HTTPS:** Transport-layer encryption protects the token payload in transit
 
 ### 2. Stateless Nature
 
@@ -209,6 +180,9 @@ class User(Base):
     name: String (nullable)
     image: String (nullable)
     email_verified: Boolean (default: False)
+    provider: String (nullable)       # OAuth provider: google | github | facebook
+    provider_id: String (nullable)    # Provider-specific user ID
+    role: String (default: "host")    # host | concierge | care_worker | organization
     created_at: DateTime
     updated_at: DateTime
 ```
@@ -218,39 +192,19 @@ class User(Base):
 ### Backend (apps/api/.env)
 
 ```bash
-# JWT/JWE (stateless authentication)
+# JWT (stateless authentication)
 JWT_SECRET=strong-secret-key-32-chars-or-more
-JWE_SECRET_KEY=strong-encryption-key-32-chars-or-more
 
 # Database
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/app
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5433/juny
 
-# Better Auth (OAuth only)
-BETTER_AUTH_URL=http://localhost:3200
-```
-
-### Frontend (apps/web/.env)
-
-```bash
-# API
-NEXT_PUBLIC_API_URL=http://localhost:8200
-
-# Better Auth
-NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3200
-BETTER_AUTH_SECRET=strong-secret-key-32-chars-or-more
-
-# OAuth Providers (optional)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
-FACEBOOK_CLIENT_ID=
-FACEBOOK_CLIENT_SECRET=
+# CORS
+CORS_ORIGINS=http://localhost:3200,http://localhost:8080
 ```
 
 ## API Endpoints
 
-### POST /api/auth/login
+### POST /api/v1/auth/login
 
 **Purpose:** Exchange OAuth token for Backend JWT
 
@@ -259,23 +213,23 @@ FACEBOOK_CLIENT_SECRET=
 ```json
 {
   "provider": "google" | "github" | "facebook",
-  "access_token": "<OAuth provider token>",
-  "email": "user@example.com",
-  "name": "John Doe"
+  "access_token": "<OAuth provider token>"
 }
 ```
+
+Email and name are obtained by re-verifying the OAuth token with the provider API.
 
 **Response:**
 
 ```json
 {
-  "access_token": "<JWE encrypted access token>",
-  "refresh_token": "<JWE encrypted refresh token>",
+  "access_token": "<JWT signed access token>",
+  "refresh_token": "<JWT signed refresh token>",
   "token_type": "bearer"
 }
 ```
 
-### POST /api/auth/refresh
+### POST /api/v1/auth/refresh
 
 **Purpose:** Issue new access token using refresh token
 
@@ -283,7 +237,7 @@ FACEBOOK_CLIENT_SECRET=
 
 ```json
 {
-  "refresh_token": "<JWE encrypted refresh token>"
+  "refresh_token": "<JWT signed refresh token>"
 }
 ```
 
@@ -291,46 +245,17 @@ FACEBOOK_CLIENT_SECRET=
 
 ```json
 {
-  "access_token": "<JWE encrypted new access token>",
-  "refresh_token": "<JWE encrypted refresh token>",
+  "access_token": "<JWT signed new access token>",
+  "refresh_token": "<JWT signed refresh token>",
   "token_type": "bearer"
 }
 ```
 
-### POST /api/auth/logout
+### POST /api/v1/auth/logout
 
 **Purpose:** Client-side token cleanup
 
 **Response:** 204 No Content
-
-## Client-side Token Management
-
-### auth.ts
-
-This file handles Better Auth server configuration.
-
-### auth-client.ts
-
-Handles Better Auth client initialization and the logic to exchange OAuth tokens for backend JWE tokens.
-
-### api-client.ts
-
-Manual Axios instance configured with interceptors for automatic token injection and refreshing.
-
-**Key Functions:**
-
-- `exchangeOAuthForBackendJwt()` - Auto OAuth → Backend JWT exchange
-- `setAccessToken()` - Store access token
-- `setRefreshToken()` - Store refresh token
-- `clearTokens()` - Clear all tokens
-- `hasBackendAccessToken()` - Check if backend token exists
-
-**Auto Features:**
-
-- Authorization header auto-injection (via `apiClient` interceptors)
-- Auto token refresh on 401 error
-- Retry queue management
-- In-memory token storage (Map + localStorage)
 
 ## OAuth Providers
 
@@ -346,7 +271,7 @@ Manual Axios instance configured with interceptors for automatic token injection
 
 ### 1. Performance Improvement
 
-- Reduced Better Auth server calls (~50-100ms savings)
+- Minimal overhead with stateless JWT verification
 - Reduced backend load
 
 ### 2. Scalability
@@ -359,15 +284,15 @@ Manual Axios instance configured with interceptors for automatic token injection
 - Authorization header method is optimal for mobile
 - Simpler than cookie-based authentication
 
-### 4. Enhanced Security
+### 4. Simplified Debugging
 
-- Data exposure prevention with JWE encryption
-- Short access token expiry time
+- JWT tokens can be inspected at jwt.io for debugging
+- Standard format compatible with all languages and frameworks
 
 ## FAQ
 
-**Q: Why use JWE instead of JWT?**
-A: JWE is safer because the payload is fully encrypted. It prevents payload exposure and is advantageous for ensuring integrity.
+**Q: Why use JWT(JWS)?**
+A: The token payload contains only `user_id` and `role` — no sensitive data that requires encryption. JWT(JWS) with HS256 signing provides integrity verification while enabling easier debugging (jwt.io), better library support across platforms, and simpler Flutter/mobile integration. HTTPS already protects the token in transit.
 
 **Q: Why re-verify the OAuth token?**
 A: To reinforce security by re-confirming user information through the OAuth provider API. It helps mitigate attacks in case of token theft.
@@ -377,9 +302,8 @@ A: A short expiry time is important for security. It minimizes the damage scope 
 
 ## References
 
-- [JWE (JSON Web Encryption) RFC 7516](https://datatracker.ietf.org/doc/html/rfc7516)
+- [JWS (JSON Web Signature) RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515)
 - [OAuth 2.0 RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
 - [JWT Best Practices](https://tools.ietf.org/html/rfc8725)
-- [Better Auth Documentation](https://www.better-auth.com/docs)
 
-**Last Updated:** 2025-01-15
+**Last Updated:** 2026-02-24
