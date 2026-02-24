@@ -9,7 +9,7 @@ module.exports = {
     "scope-enum": [
       2,
       "always",
-      ["api", "web", "mobile", "worker", "infra", "deps", "docs", "root"],
+      ["api", "mobile", "worker", "infra", "deps", "docs", "root"],
     ],
     "scope-empty": [1, "never"],
     "subject-case": [2, "always", "lower-case"],

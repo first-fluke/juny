@@ -29,7 +29,6 @@ async function main(): Promise<void> {
   const startTime = Date.now();
 
   try {
-    await runScript(resolve(__dirname, "build-css.ts"));
     await runScript(resolve(__dirname, "build-forui-theme.ts"));
 
     const duration = Date.now() - startTime;

@@ -14,8 +14,7 @@
       "!**/dist",
       "!**/build",
       "!**/coverage",
-      "!**/*.gen.ts",
-      "!**/apps/web/src/lib/api"
+      "!**/*.gen.ts"
     ]
   },
   "formatter": {
