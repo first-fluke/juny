@@ -1,8 +1,9 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 
 from src.auth import service
+from src.common.errors import AUTH_002, AUTH_003, SVC_003, raise_api_error
 from src.lib.auth import (
     OAuthLoginRequest,
     RefreshTokenRequest,
@@ -22,7 +23,7 @@ async def login(
 ) -> TokenResponse:
     """OAuth login endpoint.
 
-    Verify OAuth token, create/update user, and issue JWE tokens.
+    Verify OAuth token, create/update user, and issue JWT tokens.
     """
     user_info = await verify_oauth_token(request.provider, request.access_token)
 
@@ -33,10 +34,11 @@ async def login(
             user_info=user_info,
         )
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=str(e),
-        ) from e
+        raise_api_error(
+            SVC_003,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            message=str(e),
+        )
 
     access_token, refresh_token = service.issue_tokens(str(user.id), role=user.role)
 
@@ -55,17 +57,11 @@ async def refresh_token(
     payload = decode_token(request.refresh_token)
 
     if payload.token_type != "refresh":  # noqa: S105
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token type",
-        )
+        raise_api_error(AUTH_003, status.HTTP_401_UNAUTHORIZED)
 
     user = await service.get_user_by_id(db, UUID(payload.user_id))
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-        )
+        raise_api_error(AUTH_002, status.HTTP_401_UNAUTHORIZED)
 
     access_token, _ = service.issue_tokens(str(user.id), role=user.role)
 

@@ -1,7 +1,8 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 
+from src.common.errors import RES_002, raise_api_error
 from src.common.models import PaginatedResponse, PaginationParams
 from src.lib.authorization import authorize_host_access
 from src.lib.dependencies import CurrentUser, DBSession
@@ -65,9 +66,6 @@ async def get_wellness_log(
     """Get a specific wellness log by ID."""
     log_entry = await service.get_wellness_log(db, log_id)
     if not log_entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Wellness log not found",
-        )
+        raise_api_error(RES_002, status.HTTP_404_NOT_FOUND)
     await authorize_host_access(db, user=user, host_id=log_entry.host_id)
     return WellnessLogResponse.model_validate(log_entry)

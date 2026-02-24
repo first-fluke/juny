@@ -1,7 +1,8 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 
+from src.common.errors import RES_003, raise_api_error
 from src.common.models import PaginatedResponse, PaginationParams
 from src.lib.authorization import authorize_host_access
 from src.lib.dependencies import CurrentUser, DBSession
@@ -66,10 +67,7 @@ async def get_medication(
     """Get a specific medication by ID."""
     medication = await service.get_medication(db, medication_id)
     if not medication:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Medication not found",
-        )
+        raise_api_error(RES_003, status.HTTP_404_NOT_FOUND)
     await authorize_host_access(db, user=user, host_id=medication.host_id)
     return MedicationResponse.model_validate(medication)
 
@@ -87,10 +85,7 @@ async def update_medication(
     """Update a medication entry (e.g. mark as taken)."""
     medication = await service.get_medication(db, medication_id)
     if not medication:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Medication not found",
-        )
+        raise_api_error(RES_003, status.HTTP_404_NOT_FOUND)
     await authorize_host_access(db, user=user, host_id=medication.host_id)
     updated = await service.update_medication(db, medication, payload)
     return MedicationResponse.model_validate(updated)
@@ -108,9 +103,6 @@ async def delete_medication(
     """Delete a medication entry."""
     medication = await service.get_medication(db, medication_id)
     if not medication:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Medication not found",
-        )
+        raise_api_error(RES_003, status.HTTP_404_NOT_FOUND)
     await authorize_host_access(db, user=user, host_id=medication.host_id)
     await service.delete_medication(db, medication)

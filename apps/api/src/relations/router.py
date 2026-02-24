@@ -2,6 +2,7 @@ import uuid
 
 from fastapi import APIRouter, HTTPException, Query, status
 
+from src.common.errors import AUTHZ_001, RES_001, raise_api_error
 from src.lib.authorization import authorize_relation_access
 from src.lib.dependencies import CurrentUser, DBSession
 from src.relations import service
@@ -30,10 +31,7 @@ async def create_care_relation(
     """
     user_uuid = uuid.UUID(user.id)
     if user_uuid not in (payload.host_id, payload.caregiver_id):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You must be the host or caregiver in the relation",
-        )
+        raise_api_error(AUTHZ_001, status.HTTP_403_FORBIDDEN)
     try:
         relation = await service.create_relation(db, payload)
     except ValueError as e:
@@ -65,20 +63,14 @@ async def list_care_relations(
                 db, host_id, active_only=active_only
             )
             if not any(r.caregiver_id == user_uuid for r in relations):
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You do not have access to this host's relations",
-                )
+                raise_api_error(AUTHZ_001, status.HTTP_403_FORBIDDEN)
             return [CareRelationResponse.model_validate(r) for r in relations]
         relations = await service.list_relations_for_host(
             db, host_id, active_only=active_only
         )
     elif caregiver_id:
         if user_uuid != caregiver_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only list your own caregiver relations",
-            )
+            raise_api_error(AUTHZ_001, status.HTTP_403_FORBIDDEN)
         relations = await service.list_relations_for_caregiver(
             db, caregiver_id, active_only=active_only
         )
@@ -99,10 +91,7 @@ async def get_care_relation(
     """Get a specific care relation by ID."""
     relation = await service.get_relation(db, relation_id)
     if not relation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Care relation not found",
-        )
+        raise_api_error(RES_001, status.HTTP_404_NOT_FOUND)
     await authorize_relation_access(db, user=user, relation=relation)
     return CareRelationResponse.model_validate(relation)
 
@@ -120,10 +109,7 @@ async def update_care_relation(
     """Update a care relation (e.g. deactivate, change role)."""
     relation = await service.get_relation(db, relation_id)
     if not relation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Care relation not found",
-        )
+        raise_api_error(RES_001, status.HTTP_404_NOT_FOUND)
     await authorize_relation_access(db, user=user, relation=relation)
     try:
         updated = await service.update_relation(db, relation, payload)
@@ -147,9 +133,6 @@ async def delete_care_relation(
     """Delete a care relation."""
     relation = await service.get_relation(db, relation_id)
     if not relation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Care relation not found",
-        )
+        raise_api_error(RES_001, status.HTTP_404_NOT_FOUND)
     await authorize_relation_access(db, user=user, relation=relation)
     await service.delete_relation(db, relation)

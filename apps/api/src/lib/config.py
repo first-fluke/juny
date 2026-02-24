@@ -22,15 +22,20 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/app"
     DATABASE_URL_SYNC: str = "postgresql://postgres:postgres@localhost:5432/app"
 
+    # Database connection pool (Supabase PgBouncer compatible)
+    DB_POOL_SIZE: int = 10
+    DB_MAX_OVERFLOW: int = 20
+    DB_POOL_TIMEOUT: int = 30
+    DB_POOL_RECYCLE: int = 1800  # 30 minutes
+
     # CORS (comma-separated string in .env)
     CORS_ORIGINS: str = "http://localhost:3200"
 
     # Auth (better-auth)
     BETTER_AUTH_URL: str = "http://localhost:3200"
 
-    # JWT/JWE (stateless authentication)
+    # JWT (stateless authentication)
     JWT_SECRET: str = "your-super-secret-jwt-key-change-in-production"  # noqa: S105
-    JWE_SECRET_KEY: str = "your-super-secret-jwe-encryption-key-change-in-production"  # noqa: S105
 
     # Redis (optional)
     REDIS_URL: str | None = None

@@ -1,18 +1,17 @@
-import json
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Literal
 
 import httpx
+import jwt
 from fastapi import Depends, HTTPException, Request, status
-from jwcrypto import jwe, jwk
-from jwcrypto.common import JWException
 from pydantic import BaseModel
 
+from src.common.errors import AUTH_001, AUTH_002, AUTH_003, raise_api_error
 from src.lib.config import settings
 
 
 class TokenPayload(BaseModel):
-    """JWT/JWE token payload."""
+    """JWT token payload."""
 
     user_id: str
     token_type: Literal["access", "refresh"]
@@ -63,18 +62,8 @@ class CurrentUserInfo(BaseModel):
     email_verified: bool = False
 
 
-def _get_jwe_key() -> jwk.JWK:
-    """Get JWK key for JWE encryption/decryption."""
-    key_bytes = settings.JWE_SECRET_KEY.encode("utf-8")
-    if len(key_bytes) < 32:
-        key_bytes = key_bytes.ljust(32, b"\0")
-    elif len(key_bytes) > 32:
-        key_bytes = key_bytes[:32]
-    return jwk.JWK(kty="oct", k=jwk.base64url_encode(key_bytes))
-
-
 def create_access_token(user_id: str, *, role: str | None = None) -> str:
-    """Create JWE access token."""
+    """Create JWT access token."""
     now = datetime.now(UTC)
     payload: dict[str, str | int] = {
         "user_id": user_id,
@@ -85,55 +74,33 @@ def create_access_token(user_id: str, *, role: str | None = None) -> str:
     if role is not None:
         payload["role"] = role
 
-    key = _get_jwe_key()
-    jwe_token = jwe.JWE(
-        json.dumps(payload).encode("utf-8"),
-        recipient=key,
-        protected={"alg": "A256KW", "enc": "A256GCM"},
-    )
-    return str(jwe_token.serialize(compact=True))
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm="HS256")
 
 
 def create_refresh_token(user_id: str) -> str:
-    """Create JWE refresh token."""
+    """Create JWT refresh token."""
     now = datetime.now(UTC)
-    payload = {
+    payload: dict[str, str | int] = {
         "user_id": user_id,
         "token_type": "refresh",
         "exp": int((now + timedelta(days=7)).timestamp()),
         "iat": int(now.timestamp()),
     }
 
-    key = _get_jwe_key()
-    jwe_token = jwe.JWE(
-        json.dumps(payload).encode("utf-8"),
-        recipient=key,
-        protected={"alg": "A256KW", "enc": "A256GCM"},
-    )
-    return str(jwe_token.serialize(compact=True))
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm="HS256")
 
 
 def decode_token(token: str) -> TokenPayload:
-    """Decode and validate JWE token."""
+    """Decode and validate JWT token."""
     try:
-        key = _get_jwe_key()
-        jwe_token = jwe.JWE()
-        jwe_token.deserialize(token)
-        jwe_token.decrypt(key)
-        payload = json.loads(jwe_token.payload.decode("utf-8"))
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"])
         return TokenPayload(**payload)
-    except JWException:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+    except jwt.InvalidTokenError:
+        raise_api_error(
+            AUTH_002,
+            status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "Bearer"},
-        ) from None
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from None
+        )
 
 
 async def verify_google_token(access_token: str) -> OAuthUserInfo:
@@ -223,9 +190,9 @@ async def get_current_user(request: Request) -> CurrentUserInfo:
     """Get current authenticated user from Authorization header."""
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
+        raise_api_error(
+            AUTH_001,
+            status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -233,17 +200,7 @@ async def get_current_user(request: Request) -> CurrentUserInfo:
     payload = decode_token(token)
 
     if payload.token_type != "access":  # noqa: S105
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token type",
-        )
-
-    if datetime.now(UTC).timestamp() > payload.exp:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise_api_error(AUTH_003, status.HTTP_401_UNAUTHORIZED)
 
     return CurrentUserInfo(id=payload.user_id, role=payload.role)
 

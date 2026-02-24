@@ -76,7 +76,7 @@
           "authentication"
         ],
         "summary": "Login",
-        "description": "OAuth login endpoint.\n\nVerify OAuth token, create/update user, and issue JWE tokens.",
+        "description": "OAuth login endpoint.\n\nVerify OAuth token, create/update user, and issue JWT tokens.",
         "operationId": "login_api_v1_auth_login_post",
         "requestBody": {
           "content": {
@@ -196,7 +196,8 @@
               "enum": [
                 "host",
                 "concierge",
-                "organization"
+                "organization",
+                "ai-bridge"
               ],
               "type": "string",
               "title": "Role"
@@ -1052,7 +1053,8 @@
             "enum": [
               "host",
               "concierge",
-              "organization"
+              "organization",
+              "ai-bridge"
             ],
             "title": "Role"
           }

@@ -29,7 +29,13 @@ logger = get_logger(__name__)
 # ── Deterministic UUIDs for demo data ────────────────────────────
 HOST_ID = uuid.UUID("00000000-0000-4000-8000-000000000100")
 CONCIERGE_ID = uuid.UUID("00000000-0000-4000-8000-000000000101")
+CARE_WORKER_ID = uuid.UUID("00000000-0000-4000-8000-000000000102")
+ORGANIZATION_ID = uuid.UUID("00000000-0000-4000-8000-000000000103")
+
 RELATION_ID = uuid.UUID("00000000-0000-4000-8000-000000000200")
+RELATION_CW_ID = uuid.UUID("00000000-0000-4000-8000-000000000201")
+RELATION_ORG_ID = uuid.UUID("00000000-0000-4000-8000-000000000202")
+
 WELLNESS_IDS = [
     uuid.UUID("00000000-0000-4000-8000-000000000300"),
     uuid.UUID("00000000-0000-4000-8000-000000000301"),
@@ -40,8 +46,8 @@ MEDICATION_IDS = [
     uuid.UUID("00000000-0000-4000-8000-000000000401"),
 ]
 
-ALL_USER_IDS = [HOST_ID, CONCIERGE_ID]
-ALL_RELATION_IDS = [RELATION_ID]
+ALL_USER_IDS = [HOST_ID, CONCIERGE_ID, CARE_WORKER_ID, ORGANIZATION_ID]
+ALL_RELATION_IDS = [RELATION_ID, RELATION_CW_ID, RELATION_ORG_ID]
 ALL_WELLNESS_IDS = WELLNESS_IDS
 ALL_MEDICATION_IDS = MEDICATION_IDS
 
@@ -79,9 +85,33 @@ async def _insert_demo_data(db: AsyncSession) -> None:
         provider_id="demo-concierge-001",
         role=UserRole.CONCIERGE.value,
     )
-    db.add_all([host, concierge])
+    care_worker = User(
+        id=CARE_WORKER_ID,
+        email="worker.park@demo.juny.app",
+        name="박요양보호사",
+        email_verified=True,
+        provider="google",
+        provider_id="demo-care-worker-001",
+        role=UserRole.CARE_WORKER.value,
+    )
+    organization = User(
+        id=ORGANIZATION_ID,
+        email="admin@gangnam-welfare.demo.juny.app",
+        name="강남복지센터",
+        email_verified=True,
+        provider="google",
+        provider_id="demo-organization-001",
+        role=UserRole.ORGANIZATION.value,
+    )
+    db.add_all([host, concierge, care_worker, organization])
     await db.flush()
-    logger.info("seed_users_created", host=host.name, concierge=concierge.name)
+    logger.info(
+        "seed_users_created",
+        host=host.name,
+        concierge=concierge.name,
+        care_worker=care_worker.name,
+        organization=organization.name,
+    )
 
     # ── CareRelation ──────────────────────────────────────────────
     relation = CareRelation(
@@ -91,9 +121,23 @@ async def _insert_demo_data(db: AsyncSession) -> None:
         role=UserRole.CONCIERGE.value,
         is_active=True,
     )
-    db.add(relation)
+    relation_cw = CareRelation(
+        id=RELATION_CW_ID,
+        host_id=HOST_ID,
+        caregiver_id=CARE_WORKER_ID,
+        role=UserRole.CARE_WORKER.value,
+        is_active=True,
+    )
+    relation_org = CareRelation(
+        id=RELATION_ORG_ID,
+        host_id=HOST_ID,
+        caregiver_id=ORGANIZATION_ID,
+        role=UserRole.ORGANIZATION.value,
+        is_active=True,
+    )
+    db.add_all([relation, relation_cw, relation_org])
     await db.flush()
-    logger.info("seed_care_relation_created")
+    logger.info("seed_care_relations_created", count=3)
 
     # ── WellnessLogs (3 entries) ──────────────────────────────────
     wellness_entries = [

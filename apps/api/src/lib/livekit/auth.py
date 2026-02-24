@@ -9,12 +9,13 @@ from src.lib.config import settings
 
 logger = structlog.get_logger(__name__)
 
-LiveRole = Literal["host", "concierge", "organization"]
+LiveRole = Literal["host", "concierge", "organization", "ai-bridge"]
 
 _ROLE_SOURCES: dict[LiveRole, list[str]] = {
     "host": ["camera", "microphone"],
     "concierge": ["microphone"],
     "organization": ["microphone"],
+    "ai-bridge": [],
 }
 
 
@@ -42,13 +43,22 @@ def create_live_token(
     if not api_key or not api_secret:
         raise ValueError("LIVEKIT_API_KEY and LIVEKIT_API_SECRET must be configured")
 
-    grants = VideoGrants(
-        room_join=True,
-        room=room_name,
-        can_publish=True,
-        can_subscribe=True,
-        can_publish_sources=_ROLE_SOURCES[role],
-    )
+    if role == "ai-bridge":
+        grants = VideoGrants(
+            room_join=True,
+            room=room_name,
+            can_publish=False,
+            can_publish_data=True,
+            can_subscribe=True,
+        )
+    else:
+        grants = VideoGrants(
+            room_join=True,
+            room=room_name,
+            can_publish=True,
+            can_subscribe=True,
+            can_publish_sources=_ROLE_SOURCES[role],
+        )
 
     token = (
         AccessToken(api_key=api_key, api_secret=api_secret)

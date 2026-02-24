@@ -76,6 +76,7 @@ class ErrorResponse(BaseModel):
     """Standard error response format."""
 
     error: str
+    error_code: str | None = None
     message: str
     request_id: str | None = None
     trace_id: str | None = None

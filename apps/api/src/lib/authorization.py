@@ -7,10 +7,11 @@ or as a caregiver with an active CareRelation.
 
 import uuid
 
-from fastapi import HTTPException, status
+from fastapi import status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.common.errors import AUTHZ_001, raise_api_error
 from src.lib.auth import CurrentUserInfo
 from src.relations.model import CareRelation
 
@@ -47,10 +48,7 @@ async def authorize_host_access(
     if result.scalar_one_or_none() is not None:
         return
 
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="You do not have access to this host's resources",
-    )
+    raise_api_error(AUTHZ_001, status.HTTP_403_FORBIDDEN)
 
 
 async def authorize_relation_access(
@@ -69,7 +67,4 @@ async def authorize_relation_access(
     if user_uuid in (relation.host_id, relation.caregiver_id):
         return
 
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="You do not have access to this care relation",
-    )
+    raise_api_error(AUTHZ_001, status.HTTP_403_FORBIDDEN)

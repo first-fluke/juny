@@ -22,9 +22,10 @@ dependencies = [
     "opentelemetry-instrumentation-httpx>=0.49b0",
     "opentelemetry-instrumentation-redis>=0.49b0",
     "opentelemetry-exporter-otlp>=1.28.0",
-    "jwcrypto>=1.5.6",
+    "pyjwt>=2.8.0",
     "psycopg2-binary>=2.9.9",
     "google-genai>=1.64.0",
+    "livekit>=1.0.0",
     "livekit-api>=1.1.0",
     "websockets>=14.0",
 ]
@@ -89,10 +90,6 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["redis.asyncio.*"]
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = ["jwcrypto.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
