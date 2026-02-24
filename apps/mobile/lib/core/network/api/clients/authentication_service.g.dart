@@ -20,7 +20,7 @@ class _AuthenticationService implements AuthenticationService {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<TokenResponse> loginApiAuthLoginPost({
+  Future<TokenResponse> loginApiV1AuthLoginPost({
     required OAuthLoginRequest body,
   }) async {
     final _extra = <String, dynamic>{};
@@ -31,7 +31,7 @@ class _AuthenticationService implements AuthenticationService {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/auth/login',
+            '/api/v1/auth/login',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -49,7 +49,7 @@ class _AuthenticationService implements AuthenticationService {
   }
 
   @override
-  Future<TokenResponse> refreshTokenApiAuthRefreshPost({
+  Future<TokenResponse> refreshTokenApiV1AuthRefreshPost({
     required RefreshTokenRequest body,
   }) async {
     final _extra = <String, dynamic>{};
@@ -60,7 +60,7 @@ class _AuthenticationService implements AuthenticationService {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/auth/refresh',
+            '/api/v1/auth/refresh',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -78,7 +78,7 @@ class _AuthenticationService implements AuthenticationService {
   }
 
   @override
-  Future<void> logoutApiAuthLogoutPost() async {
+  Future<void> logoutApiV1AuthLogoutPost() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -87,7 +87,7 @@ class _AuthenticationService implements AuthenticationService {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/auth/logout',
+            '/api/v1/auth/logout',
             queryParameters: queryParameters,
             data: _data,
           )

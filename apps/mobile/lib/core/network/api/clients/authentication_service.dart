@@ -13,24 +13,23 @@ part 'authentication_service.g.dart';
 
 @RestApi()
 abstract class AuthenticationService {
-  factory AuthenticationService(Dio dio, {String? baseUrl}) =
-      _AuthenticationService;
+  factory AuthenticationService(Dio dio, {String? baseUrl}) = _AuthenticationService;
 
   /// Login.
   ///
   /// OAuth login endpoint.
   ///
-  /// Verify OAuth token, create/update user, and issue JWE tokens.
-  @POST('/api/auth/login')
-  Future<TokenResponse> loginApiAuthLoginPost({
+  /// Verify OAuth token, create/update user, and issue JWT tokens.
+  @POST('/api/v1/auth/login')
+  Future<TokenResponse> loginApiV1AuthLoginPost({
     @Body() required OAuthLoginRequest body,
   });
 
   /// Refresh Token.
   ///
   /// Refresh access token using refresh token.
-  @POST('/api/auth/refresh')
-  Future<TokenResponse> refreshTokenApiAuthRefreshPost({
+  @POST('/api/v1/auth/refresh')
+  Future<TokenResponse> refreshTokenApiV1AuthRefreshPost({
     @Body() required RefreshTokenRequest body,
   });
 
@@ -39,6 +38,6 @@ abstract class AuthenticationService {
   /// Logout endpoint.
   ///
   /// Client should remove tokens from localStorage.
-  @POST('/api/auth/logout')
-  Future<void> logoutApiAuthLogoutPost();
+  @POST('/api/v1/auth/logout')
+  Future<void> logoutApiV1AuthLogoutPost();
 }

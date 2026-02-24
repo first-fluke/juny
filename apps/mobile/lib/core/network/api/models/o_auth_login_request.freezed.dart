@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OAuthLoginRequest {
 
- OAuthLoginRequestProvider get provider;@JsonKey(name: 'access_token') String get accessToken; String get email; String? get name;
+ OAuthLoginRequestProvider get provider;@JsonKey(name: 'access_token') String get accessToken;
 /// Create a copy of OAuthLoginRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OAuthLoginRequestCopyWith<OAuthLoginRequest> get copyWith => _$OAuthLoginReques
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OAuthLoginRequest&&(identical(other.provider, provider) || other.provider == provider)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OAuthLoginRequest&&(identical(other.provider, provider) || other.provider == provider)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,provider,accessToken,email,name);
+int get hashCode => Object.hash(runtimeType,provider,accessToken);
 
 @override
 String toString() {
-  return 'OAuthLoginRequest(provider: $provider, accessToken: $accessToken, email: $email, name: $name)';
+  return 'OAuthLoginRequest(provider: $provider, accessToken: $accessToken)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OAuthLoginRequestCopyWith<$Res>  {
   factory $OAuthLoginRequestCopyWith(OAuthLoginRequest value, $Res Function(OAuthLoginRequest) _then) = _$OAuthLoginRequestCopyWithImpl;
 @useResult
 $Res call({
- OAuthLoginRequestProvider provider,@JsonKey(name: 'access_token') String accessToken, String email, String? name
+ OAuthLoginRequestProvider provider,@JsonKey(name: 'access_token') String accessToken
 });
 
 
@@ -65,13 +65,11 @@ class _$OAuthLoginRequestCopyWithImpl<$Res>
 
 /// Create a copy of OAuthLoginRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? provider = null,Object? accessToken = null,Object? email = null,Object? name = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? provider = null,Object? accessToken = null,}) {
   return _then(_self.copyWith(
 provider: null == provider ? _self.provider : provider // ignore: cast_nullable_to_non_nullable
 as OAuthLoginRequestProvider,accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
-as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
-as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String?,
+as String,
   ));
 }
 
@@ -156,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OAuthLoginRequestProvider provider, @JsonKey(name: 'access_token')  String accessToken,  String email,  String? name)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OAuthLoginRequestProvider provider, @JsonKey(name: 'access_token')  String accessToken)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OAuthLoginRequest() when $default != null:
-return $default(_that.provider,_that.accessToken,_that.email,_that.name);case _:
+return $default(_that.provider,_that.accessToken);case _:
   return orElse();
 
 }
@@ -177,10 +175,10 @@ return $default(_that.provider,_that.accessToken,_that.email,_that.name);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OAuthLoginRequestProvider provider, @JsonKey(name: 'access_token')  String accessToken,  String email,  String? name)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OAuthLoginRequestProvider provider, @JsonKey(name: 'access_token')  String accessToken)  $default,) {final _that = this;
 switch (_that) {
 case _OAuthLoginRequest():
-return $default(_that.provider,_that.accessToken,_that.email,_that.name);case _:
+return $default(_that.provider,_that.accessToken);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +195,10 @@ return $default(_that.provider,_that.accessToken,_that.email,_that.name);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OAuthLoginRequestProvider provider, @JsonKey(name: 'access_token')  String accessToken,  String email,  String? name)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OAuthLoginRequestProvider provider, @JsonKey(name: 'access_token')  String accessToken)?  $default,) {final _that = this;
 switch (_that) {
 case _OAuthLoginRequest() when $default != null:
-return $default(_that.provider,_that.accessToken,_that.email,_that.name);case _:
+return $default(_that.provider,_that.accessToken);case _:
   return null;
 
 }
@@ -212,13 +210,11 @@ return $default(_that.provider,_that.accessToken,_that.email,_that.name);case _:
 @JsonSerializable()
 
 class _OAuthLoginRequest implements OAuthLoginRequest {
-  const _OAuthLoginRequest({required this.provider, @JsonKey(name: 'access_token') required this.accessToken, required this.email, this.name});
+  const _OAuthLoginRequest({required this.provider, @JsonKey(name: 'access_token') required this.accessToken});
   factory _OAuthLoginRequest.fromJson(Map<String, dynamic> json) => _$OAuthLoginRequestFromJson(json);
 
 @override final  OAuthLoginRequestProvider provider;
 @override@JsonKey(name: 'access_token') final  String accessToken;
-@override final  String email;
-@override final  String? name;
 
 /// Create a copy of OAuthLoginRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +229,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OAuthLoginRequest&&(identical(other.provider, provider) || other.provider == provider)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OAuthLoginRequest&&(identical(other.provider, provider) || other.provider == provider)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,provider,accessToken,email,name);
+int get hashCode => Object.hash(runtimeType,provider,accessToken);
 
 @override
 String toString() {
-  return 'OAuthLoginRequest(provider: $provider, accessToken: $accessToken, email: $email, name: $name)';
+  return 'OAuthLoginRequest(provider: $provider, accessToken: $accessToken)';
 }
 
 
@@ -253,7 +249,7 @@ abstract mixin class _$OAuthLoginRequestCopyWith<$Res> implements $OAuthLoginReq
   factory _$OAuthLoginRequestCopyWith(_OAuthLoginRequest value, $Res Function(_OAuthLoginRequest) _then) = __$OAuthLoginRequestCopyWithImpl;
 @override @useResult
 $Res call({
- OAuthLoginRequestProvider provider,@JsonKey(name: 'access_token') String accessToken, String email, String? name
+ OAuthLoginRequestProvider provider,@JsonKey(name: 'access_token') String accessToken
 });
 
 
@@ -270,13 +266,11 @@ class __$OAuthLoginRequestCopyWithImpl<$Res>
 
 /// Create a copy of OAuthLoginRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? provider = null,Object? accessToken = null,Object? email = null,Object? name = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? provider = null,Object? accessToken = null,}) {
   return _then(_OAuthLoginRequest(
 provider: null == provider ? _self.provider : provider // ignore: cast_nullable_to_non_nullable
 as OAuthLoginRequestProvider,accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
-as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
-as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
-as String?,
+as String,
   ));
 }
 
