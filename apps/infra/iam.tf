@@ -10,13 +10,6 @@ resource "google_service_account" "api" {
   description  = "Service account for API Cloud Run service"
 }
 
-# Service Account for Web
-resource "google_service_account" "web" {
-  account_id   = "${local.name_prefix}-web"
-  display_name = "Web Service Account"
-  description  = "Service account for Web Cloud Run service"
-}
-
 # Service Account for Worker
 resource "google_service_account" "worker" {
   account_id   = "${local.name_prefix}-worker"

@@ -11,55 +11,8 @@ resource "google_compute_managed_ssl_certificate" "main" {
 
   managed {
     domains = [
-      var.domain,
       "${var.api_subdomain}.${var.domain}",
     ]
-  }
-}
-
-# Backend Service for Web (Cloud Run NEG)
-resource "google_compute_region_network_endpoint_group" "web" {
-  count                 = var.domain != "" ? 1 : 0
-  name                  = "${local.name_prefix}-web-neg"
-  network_endpoint_type = "SERVERLESS"
-  region                = var.region
-
-  cloud_run {
-    service = google_cloud_run_v2_service.web.name
-  }
-}
-
-resource "google_compute_backend_service" "web" {
-  count       = var.domain != "" ? 1 : 0
-  name        = "${local.name_prefix}-web-backend"
-  protocol    = "HTTPS"
-  timeout_sec = 30
-
-  backend {
-    group = google_compute_region_network_endpoint_group.web[0].id
-  }
-
-  enable_cdn = true
-
-  cdn_policy {
-    cache_mode                   = "CACHE_ALL_STATIC"
-    default_ttl                  = 3600
-    max_ttl                      = 86400
-    client_ttl                   = 3600
-    negative_caching             = true
-    serve_while_stale            = 86400
-    signed_url_cache_max_age_sec = 0
-
-    cache_key_policy {
-      include_host         = true
-      include_protocol     = true
-      include_query_string = true
-    }
-  }
-
-  log_config {
-    enable      = true
-    sample_rate = 1.0
   }
 }
 
@@ -112,26 +65,16 @@ resource "google_compute_backend_bucket" "static" {
 resource "google_compute_url_map" "main" {
   count           = var.domain != "" ? 1 : 0
   name            = "${local.name_prefix}-url-map"
-  default_service = google_compute_backend_service.web[0].id
+  default_service = google_compute_backend_service.api[0].id
 
   host_rule {
     hosts        = ["${var.api_subdomain}.${var.domain}"]
     path_matcher = "api"
   }
 
-  host_rule {
-    hosts        = [var.domain]
-    path_matcher = "web"
-  }
-
   path_matcher {
     name            = "api"
     default_service = google_compute_backend_service.api[0].id
-  }
-
-  path_matcher {
-    name            = "web"
-    default_service = google_compute_backend_service.web[0].id
 
     path_rule {
       paths   = ["/static/*"]

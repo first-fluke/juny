@@ -79,30 +79,6 @@ variable "api_max_instances" {
   default     = 10
 }
 
-variable "web_cpu" {
-  description = "Web Cloud Run CPU"
-  type        = string
-  default     = "1"
-}
-
-variable "web_memory" {
-  description = "Web Cloud Run memory"
-  type        = string
-  default     = "512Mi"
-}
-
-variable "web_min_instances" {
-  description = "Web minimum instances"
-  type        = number
-  default     = 0
-}
-
-variable "web_max_instances" {
-  description = "Web maximum instances"
-  type        = number
-  default     = 10
-}
-
 variable "worker_cpu" {
   description = "Worker Cloud Run CPU"
   type        = string

@@ -100,59 +100,6 @@ resource "google_cloud_run_v2_service" "api" {
   ]
 }
 
-# Cloud Run Service - Web
-resource "google_cloud_run_v2_service" "web" {
-  name     = "${local.name_prefix}-web"
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
-
-  template {
-    service_account = google_service_account.web.email
-
-    scaling {
-      min_instance_count = var.web_min_instances
-      max_instance_count = var.web_max_instances
-    }
-
-    containers {
-      image = local.web_image
-
-      resources {
-        limits = {
-          cpu    = var.web_cpu
-          memory = var.web_memory
-        }
-        cpu_idle          = true
-        startup_cpu_boost = true
-      }
-
-      env {
-        name  = "NEXT_PUBLIC_API_URL"
-        value = google_cloud_run_v2_service.api.uri
-      }
-
-      startup_probe {
-        http_get {
-          path = "/api/health"
-        }
-        initial_delay_seconds = 5
-        period_seconds        = 10
-        failure_threshold     = 3
-      }
-
-      liveness_probe {
-        http_get {
-          path = "/api/health"
-        }
-        period_seconds    = 30
-        failure_threshold = 3
-      }
-    }
-  }
-
-  labels = local.labels
-}
-
 # Cloud Run Service - Worker
 resource "google_cloud_run_v2_service" "worker" {
   name     = "${local.name_prefix}-worker"
@@ -251,14 +198,6 @@ resource "google_cloud_run_v2_service" "worker" {
 resource "google_cloud_run_v2_service_iam_member" "api_public" {
   location = google_cloud_run_v2_service.api.location
   name     = google_cloud_run_v2_service.api.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-}
-
-# Allow public access to Web
-resource "google_cloud_run_v2_service_iam_member" "web_public" {
-  location = google_cloud_run_v2_service.web.location
-  name     = google_cloud_run_v2_service.web.name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
