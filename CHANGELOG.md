@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.0 (2026-02-24)
+
+
+### Features
+
+* **api:** add domain modules and enhance core features ([97fbdf9](https://github.com/first-fluke/juny/commit/97fbdf9e16ef95309f37600c0d7946524fa1ef1a))
+* **api:** add domain modules, AI orchestrator, LiveKit, and authorization ([93eff36](https://github.com/first-fluke/juny/commit/93eff36830c15d3687d528b5d47f0c40538ab38f))
+* **api:** add initial alembic migration and seed script ([2179424](https://github.com/first-fluke/juny/commit/21794245f643874197dc1155674021cb85ddaa98))
+
+
+### Bug Fixes
+
+* license edit. not mit ([6a4b137](https://github.com/first-fluke/juny/commit/6a4b137c61797f838523ec3a9399f11e3c829f54))
+* **mobile:** resolve lint errors in apps/mobile ([ea58769](https://github.com/first-fluke/juny/commit/ea58769200f599e8a2c6829a80db96ed1030eacb))
+
 ## [2.11.0](https://github.com/first-fluke/juny/compare/v2.10.0...v2.11.0) (2026-02-21)
 
 
