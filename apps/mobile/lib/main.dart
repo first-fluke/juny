@@ -10,6 +10,7 @@ import 'package:forui/forui.dart';
 import 'package:mobile/core/router/router.dart';
 import 'package:mobile/core/theme/app_theme.dart';
 import 'package:mobile/firebase_options.dart';
+import 'package:mobile/i18n/generated/app_localizations.dart';
 
 Future<void> main() async {
   await runZonedGuarded(
@@ -66,11 +67,12 @@ class MyApp extends ConsumerWidget {
     return FTheme(
       data: fTheme,
       child: MaterialApp.router(
-        title: 'Fullstack Starter',
+        title: 'Juny',
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         routerConfig: router,
         localizationsDelegates: const [
+          AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,

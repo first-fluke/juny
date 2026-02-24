@@ -27,7 +27,8 @@ abstract class WellnessService {
   ///
   /// List wellness logs for a host (paginated, newest first).
   @GET('/api/v1/wellness')
-  Future<PaginatedResponseWellnessLogResponse> listWellnessLogsApiV1WellnessGet({
+  Future<PaginatedResponseWellnessLogResponse>
+  listWellnessLogsApiV1WellnessGet({
     @Query('host_id') required String hostId,
     @Query('page') int? page = 1,
     @Query('limit') int? limit = 20,

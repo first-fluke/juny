@@ -12,19 +12,14 @@ part 'medication_response.g.dart';
 abstract class MedicationResponse with _$MedicationResponse {
   const factory MedicationResponse({
     required String id,
-    @JsonKey(name: 'host_id')
-    required String hostId,
-    @JsonKey(name: 'pill_name')
-    required String pillName,
-    @JsonKey(name: 'schedule_time')
-    required DateTime scheduleTime,
-    @JsonKey(name: 'is_taken')
-    required bool isTaken,
-    @JsonKey(name: 'created_at')
-    required DateTime createdAt,
-    @JsonKey(name: 'taken_at')
-    DateTime? takenAt,
+    @JsonKey(name: 'host_id') required String hostId,
+    @JsonKey(name: 'pill_name') required String pillName,
+    @JsonKey(name: 'schedule_time') required DateTime scheduleTime,
+    @JsonKey(name: 'is_taken') required bool isTaken,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'taken_at') DateTime? takenAt,
   }) = _MedicationResponse;
-  
-  factory MedicationResponse.fromJson(Map<String, Object?> json) => _$MedicationResponseFromJson(json);
+
+  factory MedicationResponse.fromJson(Map<String, Object?> json) =>
+      _$MedicationResponseFromJson(json);
 }

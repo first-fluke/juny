@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Fullstack Starter",
+  "appTitle": "Juny",
   "@appTitle": {
     "description": "The app title"
   },
@@ -31,5 +31,129 @@
   "delete": "Delete",
   "@delete": {
     "description": "Delete button text"
+  },
+  "login": "Sign In",
+  "@login": {
+    "description": "Login button text"
+  },
+  "logout": "Sign Out",
+  "@logout": {
+    "description": "Logout button text"
+  },
+  "loginWithGoogle": "Sign in with Google",
+  "@loginWithGoogle": {
+    "description": "Google login button"
+  },
+  "loginWithGithub": "Sign in with GitHub",
+  "@loginWithGithub": {
+    "description": "GitHub login button"
+  },
+  "welcomeHost": "Hello! How are you today?",
+  "@welcomeHost": {
+    "description": "Welcome message for host (senior)"
+  },
+  "welcomeConcierge": "Caregiver Dashboard",
+  "@welcomeConcierge": {
+    "description": "Welcome message for concierge (caregiver)"
+  },
+  "startLive": "Start Live",
+  "@startLive": {
+    "description": "Start live session button"
+  },
+  "endLive": "End Live",
+  "@endLive": {
+    "description": "End live session button"
+  },
+  "watchLive": "Watch Live",
+  "@watchLive": {
+    "description": "Watch live session button"
+  },
+  "speakToSenior": "Speak",
+  "@speakToSenior": {
+    "description": "Button for caregiver to speak to senior"
+  },
+  "medications": "Medications",
+  "@medications": {
+    "description": "Medications section title"
+  },
+  "wellness": "Wellness",
+  "@wellness": {
+    "description": "Wellness section title"
+  },
+  "liveSession": "Live Session",
+  "@liveSession": {
+    "description": "Live session title"
+  },
+  "connecting": "Connecting...",
+  "@connecting": {
+    "description": "Connection status text"
+  },
+  "connected": "Connected",
+  "@connected": {
+    "description": "Connected status text"
+  },
+  "disconnected": "Disconnected",
+  "@disconnected": {
+    "description": "Disconnected status text"
+  },
+  "noMedications": "No medications scheduled.",
+  "@noMedications": {
+    "description": "Empty state for medications"
+  },
+  "noWellnessLogs": "No wellness records yet.",
+  "@noWellnessLogs": {
+    "description": "Empty state for wellness logs"
+  },
+  "errAuth001": "Your session has expired. Please sign in again.",
+  "@errAuth001": {
+    "description": "Authentication expired error"
+  },
+  "errAuth002": "Invalid credentials. Please try again.",
+  "@errAuth002": {
+    "description": "Invalid token error"
+  },
+  "errAuth003": "Invalid session type. Please sign in again.",
+  "@errAuth003": {
+    "description": "Invalid token type error"
+  },
+  "errAuthz001": "You do not have permission for this action.",
+  "@errAuthz001": {
+    "description": "Authorization error"
+  },
+  "errRes001": "Care relation not found.",
+  "@errRes001": {
+    "description": "Relation not found error"
+  },
+  "errRes002": "Wellness record not found. Let's try again.",
+  "@errRes002": {
+    "description": "Wellness log not found error"
+  },
+  "errRes003": "Medication not found.",
+  "@errRes003": {
+    "description": "Medication not found error"
+  },
+  "errVal001": "Invalid caregiver role.",
+  "@errVal001": {
+    "description": "Invalid caregiver role error"
+  },
+  "errVal002": "You cannot create a relation with yourself.",
+  "@errVal002": {
+    "description": "Self-relation error"
+  },
+  "errSvc001": "Live service is currently unavailable. Please try again later.",
+  "@errSvc001": {
+    "description": "LiveKit service unavailable error"
+  },
+  "errSvc002": "AI service is not available right now.",
+  "@errSvc002": {
+    "description": "Gemini API unavailable error"
+  },
+  "errSvc003": "Could not get your email from the login provider.",
+  "@errSvc003": {
+    "description": "OAuth email missing error"
+  },
+  "errUnknown": "An unknown error occurred.",
+  "@errUnknown": {
+    "description": "Unknown error fallback"
   }
 }

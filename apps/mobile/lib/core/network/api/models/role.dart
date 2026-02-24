@@ -14,20 +14,24 @@ enum Role {
   organization('organization'),
   @JsonValue('ai-bridge')
   aiBridge('ai-bridge'),
+
   /// Default value for all unparsed values, allows backward compatibility when adding new values on the backend.
-  $unknown(null);
+  $unknown(null)
+  ;
 
   const Role(this.json);
 
   factory Role.fromJson(String json) => values.firstWhere(
-        (e) => e.json == json,
-        orElse: () => $unknown,
-      );
+    (e) => e.json == json,
+    orElse: () => $unknown,
+  );
 
   final String? json;
 
   @override
   String toString() => json?.toString() ?? super.toString();
+
   /// Returns all defined enum values excluding the $unknown value.
-  static List<Role> get $valuesDefined => values.where((value) => value != $unknown).toList();
+  static List<Role> get $valuesDefined =>
+      values.where((value) => value != $unknown).toList();
 }

@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// The app title
   ///
   /// In en, this message translates to:
-  /// **'Fullstack Starter'**
+  /// **'Juny'**
   String get appTitle;
 
   /// Loading indicator text
@@ -147,6 +147,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
+
+  /// Login button text
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get login;
+
+  /// Logout button text
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get logout;
+
+  /// Google login button
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get loginWithGoogle;
+
+  /// GitHub login button
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with GitHub'**
+  String get loginWithGithub;
+
+  /// Welcome message for host (senior)
+  ///
+  /// In en, this message translates to:
+  /// **'Hello! How are you today?'**
+  String get welcomeHost;
+
+  /// Welcome message for concierge (caregiver)
+  ///
+  /// In en, this message translates to:
+  /// **'Caregiver Dashboard'**
+  String get welcomeConcierge;
+
+  /// Start live session button
+  ///
+  /// In en, this message translates to:
+  /// **'Start Live'**
+  String get startLive;
+
+  /// End live session button
+  ///
+  /// In en, this message translates to:
+  /// **'End Live'**
+  String get endLive;
+
+  /// Watch live session button
+  ///
+  /// In en, this message translates to:
+  /// **'Watch Live'**
+  String get watchLive;
+
+  /// Button for caregiver to speak to senior
+  ///
+  /// In en, this message translates to:
+  /// **'Speak'**
+  String get speakToSenior;
+
+  /// Medications section title
+  ///
+  /// In en, this message translates to:
+  /// **'Medications'**
+  String get medications;
+
+  /// Wellness section title
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness'**
+  String get wellness;
+
+  /// Live session title
+  ///
+  /// In en, this message translates to:
+  /// **'Live Session'**
+  String get liveSession;
+
+  /// Connection status text
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting...'**
+  String get connecting;
+
+  /// Connected status text
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// Disconnected status text
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get disconnected;
+
+  /// Empty state for medications
+  ///
+  /// In en, this message translates to:
+  /// **'No medications scheduled.'**
+  String get noMedications;
+
+  /// Empty state for wellness logs
+  ///
+  /// In en, this message translates to:
+  /// **'No wellness records yet.'**
+  String get noWellnessLogs;
+
+  /// Authentication expired error
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please sign in again.'**
+  String get errAuth001;
+
+  /// Invalid token error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid credentials. Please try again.'**
+  String get errAuth002;
+
+  /// Invalid token type error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid session type. Please sign in again.'**
+  String get errAuth003;
+
+  /// Authorization error
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission for this action.'**
+  String get errAuthz001;
+
+  /// Relation not found error
+  ///
+  /// In en, this message translates to:
+  /// **'Care relation not found.'**
+  String get errRes001;
+
+  /// Wellness log not found error
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness record not found. Let\'s try again.'**
+  String get errRes002;
+
+  /// Medication not found error
+  ///
+  /// In en, this message translates to:
+  /// **'Medication not found.'**
+  String get errRes003;
+
+  /// Invalid caregiver role error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid caregiver role.'**
+  String get errVal001;
+
+  /// Self-relation error
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot create a relation with yourself.'**
+  String get errVal002;
+
+  /// LiveKit service unavailable error
+  ///
+  /// In en, this message translates to:
+  /// **'Live service is currently unavailable. Please try again later.'**
+  String get errSvc001;
+
+  /// Gemini API unavailable error
+  ///
+  /// In en, this message translates to:
+  /// **'AI service is not available right now.'**
+  String get errSvc002;
+
+  /// OAuth email missing error
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get your email from the login provider.'**
+  String get errSvc003;
+
+  /// Unknown error fallback
+  ///
+  /// In en, this message translates to:
+  /// **'An unknown error occurred.'**
+  String get errUnknown;
 }
 
 class _AppLocalizationsDelegate

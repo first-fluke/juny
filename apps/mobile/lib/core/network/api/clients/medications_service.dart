@@ -28,7 +28,8 @@ abstract class MedicationsService {
   ///
   /// List medications for a host (paginated, newest first).
   @GET('/api/v1/medications')
-  Future<PaginatedResponseMedicationResponse> listMedicationsApiV1MedicationsGet({
+  Future<PaginatedResponseMedicationResponse>
+  listMedicationsApiV1MedicationsGet({
     @Query('host_id') required String hostId,
     @Query('page') int? page = 1,
     @Query('limit') int? limit = 20,

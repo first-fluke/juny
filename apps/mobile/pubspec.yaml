@@ -1,6 +1,6 @@
 name: mobile
 description: Flutter mobile app
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -21,10 +21,12 @@ dependencies:
   freezed_annotation: ^3.0.0
   get_it: ^9.2.1
   go_router: ^17.0.1
+  google_sign_in: ^7.2.0
   injectable: ^2.6.0
   intl: any
   jiffy: ^6.3.2
   json_annotation: ^4.9.0
+  livekit_client: ^2.6.3
   retrofit: ^4.5.0
   riverpod_annotation: ^4.0.2
 
