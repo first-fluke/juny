@@ -17,7 +17,7 @@ module.exports = {
     'scope-enum': [
       2,
       'always',
-      ['web', 'api', 'mobile', 'worker', 'shared', 'infra', 'deps']
+      ['api', 'mobile', 'worker', 'infra', 'deps']
     ]
   }
 };
@@ -74,9 +74,9 @@ if echo "$changed" | grep -q "^apps/api/"; then
     mise //apps/api:lint || exit 1
 fi
 
-if echo "$changed" | grep -q "^apps/web/"; then
-    echo "[pre-commit] apps/web detected, running lint..."
-    mise //apps/web:lint || exit 1
+if echo "$changed" | grep -q "^apps/worker/"; then
+    echo "[pre-commit] apps/worker detected, running lint..."
+    mise //apps/worker:lint || exit 1
 fi
 
 if echo "$changed" | grep -q "^apps/mobile/"; then
@@ -100,9 +100,9 @@ if echo "$changed" | grep -q "^apps/api/"; then
     mise //apps/api:test || exit 1
 fi
 
-if echo "$changed" | grep -q "^apps/web/"; then
-    echo "[pre-push] apps/web detected, running test..."
-    mise //apps/web:test || exit 1
+if echo "$changed" | grep -q "^apps/worker/"; then
+    echo "[pre-push] apps/worker detected, running test..."
+    mise //apps/worker:test || exit 1
 fi
 
 if echo "$changed" | grep -q "^apps/mobile/"; then
@@ -146,7 +146,6 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      web: ${{ steps.changes.outputs.web }}
       api: ${{ steps.changes.outputs.api }}
       mobile: ${{ steps.changes.outputs.mobile }}
     steps:
@@ -155,21 +154,10 @@ jobs:
         id: changes
         with:
           filters: |
-            web:
-              - 'apps/web/**'
             api:
               - 'apps/api/**'
             mobile:
               - 'apps/mobile/**'
-
-  lint-web:
-    needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.web == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-      - run: mise run //apps/web:lint
 
   lint-api:
     needs: detect-changes
@@ -179,15 +167,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
       - run: mise run //apps/api:lint
-
-  test-web:
-    needs: [detect-changes, lint-web]
-    if: ${{ needs.detect-changes.outputs.web == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-      - run: mise run //apps/web:test
 ```
 
 ## Reusable Tasks
@@ -199,11 +178,6 @@ description = "Lint only changed apps"
 run = '''
 #!/usr/bin/env bash
 changed_files=$(git diff --name-only HEAD~1)
-
-if echo "$changed_files" | grep -q "^apps/web/"; then
-  echo "→ Linting web..."
-  mise run //apps/web:lint || exit 1
-fi
 
 if echo "$changed_files" | grep -q "^apps/api/"; then
   echo "→ Linting api..."
@@ -221,11 +195,6 @@ description = "Test only changed apps"
 run = '''
 #!/usr/bin/env bash
 changed_files=$(git diff --name-only HEAD~1)
-
-if echo "$changed_files" | grep -q "^apps/web/"; then
-  echo "→ Testing web..."
-  mise run //apps/web:test || exit 1
-fi
 
 if echo "$changed_files" | grep -q "^apps/api/"; then
   echo "→ Testing api..."
@@ -277,15 +246,15 @@ EOF
 
 [tasks.dev]
 description = "Start all development services"
-depends = ["//apps/api:dev", "//apps/web:dev"]
+depends = ["//apps/api:dev", "//apps/worker:dev"]
 
 [tasks.lint]
 description = "Lint all apps"
-depends = ["//apps/api:lint", "//apps/web:lint", "//apps/mobile:lint"]
+depends = ["//apps/api:lint", "//apps/mobile:lint"]
 
 [tasks.test]
 description = "Test all apps"
-depends = ["//apps/api:test", "//apps/web:test", "//apps/mobile:test"]
+depends = ["//apps/api:test", "//apps/mobile:test"]
 
 [tasks."git:commit-msg"]
 description = "Validate commit message"
@@ -297,12 +266,12 @@ run = '''
 #!/usr/bin/env bash
 changed=$(git diff --cached --name-only)
 
-if echo "$changed" | grep -q "^apps/web/"; then
-    mise //apps/web:lint || exit 1
-fi
-
 if echo "$changed" | grep -q "^apps/api/"; then
     mise //apps/api:lint || exit 1
+fi
+
+if echo "$changed" | grep -q "^apps/mobile/"; then
+    mise //apps/mobile:lint || exit 1
 fi
 '''
 
@@ -314,12 +283,12 @@ bunx @gracefullight/validate-branch || exit 1
 
 changed=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1)
 
-if echo "$changed" | grep -q "^apps/web/"; then
-    mise //apps/web:test || exit 1
-fi
-
 if echo "$changed" | grep -q "^apps/api/"; then
     mise //apps/api:test || exit 1
+fi
+
+if echo "$changed" | grep -q "^apps/mobile/"; then
+    mise //apps/mobile:test || exit 1
 fi
 '''
 
@@ -328,10 +297,6 @@ description = "Lint only changed apps"
 run = '''
 #!/usr/bin/env bash
 changed_files=$(git diff --name-only HEAD~1)
-
-if echo "$changed_files" | grep -q "^apps/web/"; then
-  mise run //apps/web:lint || exit 1
-fi
 
 if echo "$changed_files" | grep -q "^apps/api/"; then
   mise run //apps/api:lint || exit 1
@@ -343,10 +308,6 @@ description = "Test only changed apps"
 run = '''
 #!/usr/bin/env bash
 changed_files=$(git diff --name-only HEAD~1)
-
-if echo "$changed_files" | grep -q "^apps/web/"; then
-  mise run //apps/web:test || exit 1
-fi
 
 if echo "$changed_files" | grep -q "^apps/api/"; then
   mise run //apps/api:test || exit 1

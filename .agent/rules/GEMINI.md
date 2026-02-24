@@ -1,18 +1,9 @@
 # Fullstack Starter - Project Overview
 
 ## Description
-Modern fullstack monorepo template with Next.js 16, FastAPI, Flutter, and GCP infrastructure.
+Fullstack monorepo with FastAPI, Flutter, and GCP infrastructure.
 
 ## Tech Stack
-
-### Frontend (apps/web)
-- **Framework**: Next.js 16 with React 19
-- **Styling**: TailwindCSS v4 + shadcn/ui
-- **State**: Jotai (global), TanStack Query (server)
-- **Auth**: better-auth
-- **i18n**: next-intl
-- **API Client**: Orval (OpenAPI codegen)
-- **Testing**: Vitest
 
 ### Backend (apps/api)
 - **Framework**: FastAPI with Python 3.12
@@ -47,11 +38,9 @@ Modern fullstack monorepo template with Next.js 16, FastAPI, Flutter, and GCP in
 
 ### Shared Packages (packages/)
 - **i18n**: Single source of truth for translations (ARB format)
-  - Auto-generates JSON for web (next-intl)
   - Auto-generates ARB for mobile (Flutter intl)
 - **design-tokens**: Single source of truth for design tokens (OKLCH color space)
   - Edit at: `packages/design-tokens/src/tokens.ts`
-  - Auto-generates CSS variables for web (TailwindCSS v4)
   - Auto-generates Flutter Theme for mobile (Material3)
 
 ## Project Structure
@@ -62,11 +51,6 @@ juny/
 │   │   └── src/
 │   │       ├── common/models/  # Base models, pagination
 │   │       └── lib/            # Auth, config, rate_limit, telemetry
-│   ├── web/          # Next.js frontend
-│   │   └── src/
-│   │       ├── app/            # App router pages
-│   │       ├── lib/            # Utilities, API client, auth
-│   │       └── hooks/          # Custom hooks
 │   ├── worker/       # Background worker
 │   ├── mobile/       # Flutter mobile app
 │   │   ├── lib/
@@ -93,14 +77,6 @@ juny/
 - Rate limiting: `src/lib/rate_limit.py` (in-memory or Redis)
 - Pagination: `src/common/models/pagination.py` (PaginatedResponse[T])
 
-### Web Layer
-- App Router with Route Groups
-- Server Components by default
-- Client Components only when needed (interactivity, hooks)
-- Colocation of components with routes
-- Styling: TailwindCSS v4 with design-tokens (OKLCH color space)
-- Proxy configuration in `src/proxy.ts` (security headers, i18n)
-
 ### Mobile Layer
 - Feature-first architecture
 - Riverpod for DI and state
@@ -113,7 +89,6 @@ juny/
 ```
 packages/i18n/src/*.arb (edit here)
         ↓ mise i18n:build
-apps/web/src/config/messages/*.json (auto-generated)
 apps/mobile/lib/i18n/messages/*.arb (auto-generated)
 ```
 
@@ -121,7 +96,6 @@ apps/mobile/lib/i18n/messages/*.arb (auto-generated)
 ```
 packages/design-tokens/src/tokens.ts (edit here)
         ↓ mise //packages/design-tokens:build
-apps/web/src/app/[locale]/tokens.css (CSS variables - auto-generated)
 apps/mobile/lib/core/theme/generated_theme.dart (Flutter Theme - auto-generated)
 ```
 
@@ -133,12 +107,6 @@ apps/mobile/lib/core/theme/generated_theme.dart (Flutter Theme - auto-generated)
 - Functions/Variables: camelCase (e.g., `getUserProfile`)
 - Python: snake_case (e.g., `get_user_profile`)
 - Constants: SCREAMING_SNAKE_CASE (e.g., `MAX_RETRY_COUNT`)
-
-### TypeScript
-- Prefer `interface` over `type` for object shapes
-- Use `type` for unions, intersections, and utility types
-- No `any` - use `unknown` and narrow types
-- Prefer named exports over default exports
 
 ### Python
 - Type hints required for all function signatures
@@ -155,7 +123,6 @@ apps/mobile/lib/core/theme/generated_theme.dart (Flutter Theme - auto-generated)
 
 ### Configuration
 - `mise.toml` - Runtime versions and task runner (monorepo mode)
-- `biome.json` - JS/TS linting and formatting
 - `apps/api/ruff.toml` - Python linting
 - `apps/mobile/analysis_options.yaml` - Dart linting (very_good_analysis)
 

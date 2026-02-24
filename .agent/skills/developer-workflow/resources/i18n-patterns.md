@@ -7,45 +7,19 @@ Internationalization workflows for monorepos.
 ```toml
 # packages/i18n/mise.toml
 [tasks.build]
-description = "Build i18n files for all platforms"
-depends = ["build:web", "build:mobile"]
-
-[tasks.build:web]
-description = "Build for web (next-intl JSON)"
-run = "bun scripts/build-web.js"
+description = "Build i18n files for mobile"
+depends = ["build:mobile"]
 
 [tasks.build:mobile]
 description = "Build for mobile (Flutter ARB)"
-run = "bun scripts/build-mobile.js"
-
-[tasks.watch]
-description = "Watch for changes and rebuild"
-run = "bun scripts/watch.js"
+run = "bun scripts/build.ts"
 ```
 
 ## Usage in Apps
 
 ```bash
-# Build i18n for all apps
+# Build i18n for mobile
 mise run //packages/i18n:build
-
-# Watch for changes during development
-mise run //packages/i18n:watch
-```
-
-## Web Integration
-
-```toml
-# apps/web/mise.toml
-[tasks.dev]
-description = "Start Next.js dev server"
-depends = ["//packages/i18n:build"]
-run = "bun dev"
-
-[tasks.build]
-description = "Production build"
-depends = ["//packages/i18n:build"]
-run = "bun run build"
 ```
 
 ## Mobile Integration

@@ -1,28 +1,5 @@
 # Code Style & Conventions
 
-## JavaScript/TypeScript (Web) - Biome
-
-### Configuration: `biome.json`
-
-| Setting | Value |
-|---------|-------|
-| Indent | 2 spaces |
-| Quotes | double |
-| Semicolons | always |
-| Trailing commas | ES5 |
-| Line width | 100 |
-
-### Key Rules
-- `noUnusedImports`: error
-- `noUnusedVariables`: error
-- `noExplicitAny`: error
-- `useImportType`: error (use `import type` for types)
-- `useExhaustiveDependencies`: warn
-
-### Ignored Patterns
-- `node_modules/`, `.next/`, `dist/`, `build/`, `coverage/`
-- Generated files: `*.gen.ts`, `apps/web/src/lib/api/**`
-
 ## Python (API, Worker) - Ruff
 
 ### Configuration: `ruff.toml`
@@ -70,16 +47,13 @@
 ## General Conventions
 
 ### Naming
-- TypeScript: camelCase for functions/variables, PascalCase for classes/components
 - Python: snake_case for functions/variables, PascalCase for classes
 - Dart: camelCase for functions/variables, PascalCase for classes
 
 ### Documentation
-- TypeScript: JSDoc for public APIs
 - Python: Docstrings (Google style recommended)
 - Dart: Dartdoc comments
 
 ### Type Safety
-- **NEVER** use `as any`, `@ts-ignore`, `@ts-expect-error` in TypeScript
 - **ALWAYS** use type hints in Python
 - **ALWAYS** use strict types in Dart

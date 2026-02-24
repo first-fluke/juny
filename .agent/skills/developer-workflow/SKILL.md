@@ -60,8 +60,6 @@ project-root/
 ├── apps/
 │   ├── api/            # Backend application
 │   │   └── mise.toml   # App-specific tasks
-│   ├── web/            # Frontend application
-│   │   └── mise.toml
 │   └── mobile/         # Mobile application
 │       └── mise.toml
 ├── packages/
@@ -85,7 +83,7 @@ mise run build       # Production builds
 # Syntax: mise run //{path}:{task}
 mise run //apps/api:dev
 mise run //apps/api:test
-mise run //apps/web:build
+mise run //apps/mobile:build
 ```
 
 ### Common Task Patterns
@@ -93,7 +91,7 @@ mise run //apps/web:build
 | Task Type | Purpose | Example |
 |-----------|---------|---------|
 | `dev` | Start development server | `mise run //apps/api:dev` |
-| `build` | Production build | `mise run //apps/web:build` |
+| `build` | Production build | `mise run //apps/mobile:build` |
 | `test` | Run test suite | `mise run //apps/api:test` |
 | `lint` | Run linter | `mise run lint` |
 | `format` | Format code | `mise run format` |
@@ -121,7 +119,7 @@ depends = ["lint", "test"]
 run = "echo 'Building after lint and test pass'"
 
 [tasks.dev]
-depends = ["//apps/api:dev", "//apps/web:dev"]
+depends = ["//apps/api:dev", "//apps/worker:dev"]
 ```
 
 ### Parallel vs Sequential Execution
@@ -142,7 +140,7 @@ mise run lint && mise run test && mise run build
 ```bash
 # Start dev servers in background
 mise run //apps/api:dev &
-mise run //apps/web:dev &
+mise run //apps/worker:dev &
 wait
 ```
 

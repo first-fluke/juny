@@ -8,11 +8,10 @@ This project uses **mise monorepo mode** with `//path:task` syntax.
 # Install mise (if not installed)
 curl https://mise.run | sh
 
-# Install all runtimes (Node 24, Python 3.12, Flutter 3, pnpm 10, uv, Terraform)
+# Install all runtimes (Node 24, Python 3.12, Flutter 3, bun, uv, Terraform)
 mise install
 
 # Install dependencies
-cd apps/web && pnpm install
 cd apps/api && uv sync --frozen
 cd apps/worker && uv sync --frozen
 cd apps/mobile && flutter pub get
@@ -45,18 +44,6 @@ cd apps/mobile && flutter pub get
 | `mise //apps/api:gen:openapi` | Generate OpenAPI schema |
 | `mise //apps/api:infra:up` | Start local infra (PostgreSQL, Redis, MinIO) |
 | `mise //apps/api:infra:down` | Stop local infrastructure |
-
-## Web (apps/web) - Next.js/TypeScript
-
-| Command | Description |
-|---------|-------------|
-| `mise //apps/web:dev` | Start development server |
-| `mise //apps/web:build` | Production build |
-| `mise //apps/web:test` | Run Vitest tests |
-| `mise //apps/web:lint` | Run Biome linter |
-| `mise //apps/web:format` | Format with Biome |
-| `mise //apps/web:typecheck` | Type check with tsc |
-| `mise //apps/web:gen:api` | Generate API client (Orval) |
 
 ## Worker (apps/worker) - Python/FastAPI
 
@@ -93,9 +80,8 @@ cd apps/mobile && flutter pub get
 
 | Command | Description |
 |---------|-------------|
-| `mise //packages/i18n:build` | Build i18n files for web and mobile |
-| `mise //packages/i18n:build:web` | Build for web only |
-| `mise //packages/i18n:build:mobile` | Build for mobile only |
+| `mise //packages/i18n:build` | Build i18n files for mobile |
+| `mise //packages/i18n:build:mobile` | Build for mobile |
 
 ## Fastlane (Mobile CI/CD)
 

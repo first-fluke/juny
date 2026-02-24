@@ -52,45 +52,8 @@ jobs:
             **/*.gen.ts
             .terraform.lock.hcl
             **/.terraform.lock.hcl
-            apps/web/src/config/messages/*.json
             apps/mobile/lib/i18n/messages/*.arb
-            apps/web/src/app/[locale]/tokens.css
             apps/mobile/lib/core/theme/generated_theme.dart
-
-  biome:
-    name: Biome (JS/TS)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        working-directory: apps/web
-        run: bun install --frozen-lockfile
-
-      - uses: reviewdog/action-setup@v1
-
-      - name: Run Biome with reviewdog
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: apps/web
-        run: |
-          bun run biome check src --reporter=json 2>&1 | \
-          jq -r '.diagnostics[] | {
-            message: .message,
-            location: {
-              path: .location.path.file,
-              range: {
-                start: { line: .location.span[0].line, column: .location.span[0].column },
-                end: { line: .location.span[1].line, column: .location.span[1].column }
-              }
-            },
-            severity: (if .severity == "error" then "ERROR" elif .severity == "warning" then "WARNING" else "INFO" end)
-          }' | \
-          reviewdog -f=rdjsonl -reporter=github-pr-review -fail-level=error
 
   ruff:
     name: Ruff (Python)

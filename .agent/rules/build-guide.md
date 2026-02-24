@@ -88,34 +88,6 @@ mise //apps/api:infra:down
 docker build -t api apps/api
 ```
 
-### Web (apps/web)
-
-```bash
-# Start development server
-mise //apps/web:dev
-
-# Production build
-mise //apps/web:build
-
-# Run tests
-mise //apps/web:test
-
-# Lint
-mise //apps/web:lint
-
-# Format
-mise //apps/web:format
-
-# Type check
-mise //apps/web:typecheck
-
-# Generate API client from OpenAPI
-mise //apps/web:gen:api
-
-# Build Docker image
-docker build -t web apps/web
-```
-
 ### Worker (apps/worker)
 
 ```bash
@@ -199,11 +171,8 @@ mise //apps/infra:apply:prod
 ### i18n (packages/i18n)
 
 ```bash
-# Build i18n files for web and mobile
+# Build i18n files for mobile
 mise //packages/i18n:build
-
-# Build for web only
-mise //packages/i18n:build:web
 
 # Build for mobile only
 mise //packages/i18n:build:mobile

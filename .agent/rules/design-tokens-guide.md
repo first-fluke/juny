@@ -7,13 +7,11 @@ description: when working with design tokens, colors, or theming.
 
 ## Source of Truth
 The single source of truth for all design tokens is located in `packages/design-tokens/src/tokens.ts`.
-- **Do NOT** edit `apps/web/src/app/[locale]/tokens.css` directly - it's auto-generated.
 - **Do NOT** edit `apps/mobile/lib/core/theme/generated_theme.dart` directly - it's auto-generated.
 - **ALWAYS** make changes in `packages/design-tokens/src/tokens.ts`.
 
 ## Color Space
 - **SSOT Format**: OKLCH (Lightness, Chroma, Hue)
-- **Web Output**: CSS OKLCH variables (P3 wide-gamut support)
 - **Mobile Output**: Flutter `Color.from(colorSpace: ColorSpace.displayP3)` for P3 colors
 
 ## Token Structure
@@ -187,7 +185,6 @@ mise //packages/design-tokens:build
 ```
 
 This generates:
-- **Web**: `apps/web/src/app/[locale]/tokens.css` (OKLCH CSS variables)
 - **Mobile**: `apps/mobile/lib/core/theme/generated_theme.dart` (ForUI FThemeData)
 
 ### 3. Watch Mode (Development)
@@ -232,11 +229,6 @@ mise //packages/design-tokens:build
 ```
 
 ### Step 3: Use in Code
-
-**Web (CSS variable):**
-```css
-background-color: oklch(var(--color-newColor) / var(--alpha));
-```
 
 **Mobile (Flutter theme):**
 ```dart

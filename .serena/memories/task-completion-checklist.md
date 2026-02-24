@@ -13,7 +13,6 @@ mise format
 
 # Or specific app
 mise //apps/api:lint && mise //apps/api:format
-mise //apps/web:lint && mise //apps/web:format
 mise //apps/mobile:lint && mise //apps/mobile:format
 mise //apps/worker:lint && mise //apps/worker:format
 ```
@@ -26,7 +25,6 @@ mise typecheck
 
 # Or specific app
 mise //apps/api:typecheck    # mypy for Python
-mise //apps/web:typecheck    # tsc for TypeScript
 ```
 
 ### 3. Run Tests
@@ -37,7 +35,6 @@ mise test
 
 # Or specific app
 mise //apps/api:test
-mise //apps/web:test
 mise //apps/mobile:test
 mise //apps/worker:test
 ```
@@ -45,7 +42,6 @@ mise //apps/worker:test
 ### 4. Build (if applicable)
 
 ```bash
-mise //apps/web:build    # Production build for web
 mise //apps/mobile:build # Build mobile app
 ```
 
@@ -58,9 +54,8 @@ If you modified the API:
    mise //apps/api:gen:openapi
    ```
 
-2. Regenerate API clients:
+2. Regenerate API client:
    ```bash
-   mise //apps/web:gen:api     # Orval for web
    mise //apps/mobile:gen:api  # swagger_parser for mobile
    ```
 
@@ -94,7 +89,7 @@ If you modified models:
 ## Pre-commit Hooks
 
 The project has pre-commit hooks that automatically:
-- Run lint for changed apps (api, web, worker, mobile)
+- Run lint for changed apps (api, worker, mobile)
 - Validate commit message format (commitlint)
 
 Commit message format: [Conventional Commits](https://www.conventionalcommits.org/)

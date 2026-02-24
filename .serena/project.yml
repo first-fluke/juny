@@ -65,13 +65,6 @@ structure:
     framework: fastapi
     description: FastAPI backend with PostgreSQL, Redis, and async SQLAlchemy
 
-  - name: web
-    path: apps/web
-    language: typescript
-    framework: nextjs
-    description: Next.js 16 frontend with React 19, TailwindCSS v4, and 
-      shadcn/ui
-
   - name: worker
     path: apps/worker
     language: python
@@ -122,9 +115,6 @@ conventions:
       formatter: terraform fmt
 
   testing:
-    web:
-      unit: vitest
-      e2e: playwright
     api:
       unit: pytest
       async: pytest-asyncio
@@ -145,51 +135,39 @@ tools:
 
 commands:
   install:
-    root: bun install
     api: uv sync --frozen
-    web: bun install
     worker: uv sync --frozen
     mobile: flutter pub get
 
   dev:
     api: poe dev
-    web: bun dev
     worker: poe dev
     mobile: flutter run
 
   build:
-    root: bun build
     api: docker build -t api .
-    web: bun build
     worker: docker build -t worker .
     mobile: flutter build
 
   test:
-    root: bun test
     api: poe test
-    web: bun test
     worker: poe test
     mobile: flutter test
 
   lint:
-    root: bun lint
     api: poe lint
-    web: bun lint
     mobile: flutter analyze
 
   format:
-    root: bun format
     api: poe format
     mobile: dart format .
 
 important_files:
 - mise.toml: Runtime versions and task runner
 - biome.json: JS/TS linting and formatting
-- bun-workspace.yaml: bun workspace configuration
 - apps/api/pyproject.toml: Python dependencies and tasks
-- apps/api/docker-compose.infra.yml: Local infrastructure (PostgreSQL, Redis, 
+- apps/api/docker-compose.infra.yml: Local infrastructure (PostgreSQL, Redis,
     MinIO)
-- apps/web/package.json: Web dependencies and scripts
 - apps/infra/variables.tf: Infrastructure configuration
 
 documentation:

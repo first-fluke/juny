@@ -8,10 +8,7 @@ Generate API clients from OpenAPI schemas.
 # 1. Generate OpenAPI schema from backend
 mise run //apps/api:gen:openapi
 
-# 2. Generate TypeScript client for web
-mise run //apps/web:gen:api
-
-# 3. Generate Dart client for mobile
+# 2. Generate Dart client for mobile
 mise run //apps/mobile:gen:api
 ```
 
@@ -22,16 +19,6 @@ mise run //apps/mobile:gen:api
 [tasks.gen:openapi]
 description = "Generate OpenAPI schema"
 run = "uv run python -c 'from src.main import app; import json; print(json.dumps(app.openapi()))' > openapi.json"
-```
-
-## Web Tasks
-
-```toml
-# apps/web/mise.toml
-[tasks.gen:api]
-description = "Generate API client from OpenAPI"
-depends = ["//apps/api:gen:openapi"]
-run = "bunx orval"
 ```
 
 ## Mobile Tasks
@@ -49,10 +36,9 @@ run = "flutter pub run swagger_parser"
 ```toml
 # Root mise.toml
 [tasks.gen:api]
-description = "Generate API clients for all apps"
+description = "Generate API clients for mobile"
 depends = [
   "//apps/api:gen:openapi",
-  "//apps/web:gen:api",
-  "//apps/mobile:gen:api"
 ]
+run = [{ tasks = ["//apps/mobile:gen:api"] }]
 ```

@@ -191,7 +191,6 @@ chmod +x .git/hooks/commit-msg
 The pre-commit task runs lint for changed apps:
 
 - `apps/api/` changes → `mise //apps/api:lint`
-- `apps/web/` changes → `mise //apps/web:lint`
 - `apps/worker/` changes → `mise //apps/worker:lint`
 - `apps/mobile/` changes → `mise //apps/mobile:lint`
 

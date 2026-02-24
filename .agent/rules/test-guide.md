@@ -9,7 +9,6 @@ description: when working for testing or coverage.
 
 Testing stack:
 
-- **Web**: Vitest (unit/integration)
 - **API**: pytest + pytest-asyncio
 - **Worker**: pytest + pytest-asyncio
 - **Mobile**: flutter_test
@@ -24,7 +23,6 @@ mise test
 
 # Or individually
 mise //apps/api:test
-mise //apps/web:test
 mise //apps/worker:test
 mise //apps/mobile:test
 ```
@@ -32,9 +30,6 @@ mise //apps/mobile:test
 ### Watch Mode
 
 ```bash
-# Web
-cd apps/web && bun test:watch
-
 # API (use pytest-watch)
 cd apps/api && uv run ptw
 ```
@@ -42,76 +37,11 @@ cd apps/api && uv run ptw
 ### Coverage
 
 ```bash
-# Web
-cd apps/web && bun test:coverage
-
 # API
 cd apps/api && uv run poe test-cov
 
 # Flutter
 cd apps/mobile && flutter test --coverage
-```
-
-## Web Testing (Vitest)
-
-### Configuration
-
-See `apps/web/vitest.config.mts`.
-
-### File Patterns
-
-- Unit tests: `**/*.test.{ts,tsx}`
-- Integration tests: `**/*.spec.{ts,tsx}`
-
-### Example Unit Test
-
-```typescript
-// src/lib/utils.test.ts
-import { describe, it, expect } from 'vitest';
-import { cn } from './utils';
-
-describe('cn', () => {
-  it('should merge class names', () => {
-    expect(cn('foo', 'bar')).toBe('foo bar');
-  });
-
-  it('should handle conditional classes', () => {
-    expect(cn('foo', false && 'bar', 'baz')).toBe('foo baz');
-  });
-});
-```
-
-### Example Component Test
-
-```typescript
-// src/components/button.test.tsx
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { Button } from './button';
-
-describe('Button', () => {
-  it('should render children', () => {
-    render(<Button>Click me</Button>);
-    expect(screen.getByRole('button')).toHaveTextContent('Click me');
-  });
-});
-```
-
-### Mocking
-
-```typescript
-import { vi } from 'vitest';
-
-// Mock module
-vi.mock('@/lib/api-client', () => ({
-  apiClient: {
-    get: vi.fn(),
-    post: vi.fn(),
-  },
-}));
-
-// Mock function
-const mockFn = vi.fn().mockResolvedValue({ data: 'test' });
 ```
 
 ## API Testing (pytest)
@@ -247,9 +177,6 @@ void main() {
 GitHub Actions runs tests on every PR:
 
 ```yaml
-- name: Test Web
-  run: mise //apps/web:test
-
 - name: Test API
   run: mise //apps/api:test
 
