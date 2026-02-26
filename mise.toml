@@ -1,10 +1,7 @@
 experimental_monorepo_root = true
 
 [monorepo]
-config_roots = [
-    "apps/*",
-    "packages/*",
-]
+config_roots = ["apps/*", "packages/*"]
 
 [settings]
 experimental = true
@@ -46,19 +43,64 @@ hadolint = "latest"
 "github:Infisical/cli" = "latest"
 
 [tasks]
-"db:migrate" = { depends = ["//apps/api:migrate"], description = "Run database migrations" }
-"dev:mobile" = { depends = ["//apps/api:dev", "//apps/mobile:dev"], description = "Start API and Mobile services" }
-dev = { depends = ["//apps/api:dev", "//apps/worker:dev"], description = "Start all services" }
-format = { depends = ["//apps/api:format", "//apps/worker:format"], description = "Format all apps" }
-"gen:api" = { depends = ["//apps/api:gen:openapi"], run = [{ tasks = ["//apps/mobile:gen:api"] }], description = "Generate OpenAPI schema and mobile API client" }
-"i18n:build" = { depends = ["//packages/i18n:build"], description = "Build i18n files" }
-"infra:down" = { depends = ["//apps/api:infra:down"], description = "Stop local infrastructure" }
-"infra:up" = { depends = ["//apps/api:infra:up"], description = "Start local infrastructure" }
-install = { depends = ["//apps/api:install", "//apps/worker:install", "//apps/mobile:install", "//packages/design-tokens:install", "//packages/i18n:install"], description = "Install all dependencies" }
-lint = { depends = ["//apps/api:lint", "//apps/worker:lint"], description = "Lint all apps" }
-test = { depends = ["//apps/api:test", "//apps/worker:test"], description = "Test all apps" }
-"tokens:build" = { depends = ["//packages/design-tokens:build"], description = "Build design tokens" }
-typecheck = { depends = ["//apps/api:typecheck"], description = "Type check all apps" }
+"db:migrate" = { run = [
+  { task = "infra:up" },
+  { task = "//apps/api:migrate" },
+], description = "Run database migrations" }
+"dev:mobile" = { depends = [
+  "//apps/api:dev",
+  "//apps/mobile:dev",
+], description = "Start API and Mobile services" }
+dev = { depends = [
+  "db:migrate",
+], run = [
+  { tasks = [
+    "//apps/api:dev",
+    "//apps/worker:dev",
+    "//apps/mobile:dev",
+  ] },
+], description = "Start all services" }
+format = { depends = [
+  "//apps/api:format",
+  "//apps/worker:format",
+], description = "Format all apps" }
+"gen:api" = { depends = [
+  "//apps/api:gen:openapi",
+], run = [
+  { tasks = [
+    "//apps/mobile:gen:api",
+  ] },
+], description = "Generate OpenAPI schema and mobile API client" }
+"i18n:build" = { depends = [
+  "//packages/i18n:build",
+], description = "Build i18n files" }
+"infra:down" = { depends = [
+  "//apps/api:infra:down",
+], description = "Stop local infrastructure" }
+"infra:up" = { depends = [
+  "//apps/api:infra:up",
+], description = "Start local infrastructure" }
+install = { depends = [
+  "//apps/api:install",
+  "//apps/worker:install",
+  "//apps/mobile:install",
+  "//packages/design-tokens:install",
+  "//packages/i18n:install",
+], description = "Install all dependencies" }
+lint = { depends = [
+  "//apps/api:lint",
+  "//apps/worker:lint",
+], description = "Lint all apps" }
+test = { depends = [
+  "//apps/api:test",
+  "//apps/worker:test",
+], description = "Test all apps" }
+"tokens:build" = { depends = [
+  "//packages/design-tokens:build",
+], description = "Build design tokens" }
+typecheck = { depends = [
+  "//apps/api:typecheck",
+], description = "Type check all apps" }
 
 [tasks."git:commit-msg"]
 description = "Validate commit message using commitlint"

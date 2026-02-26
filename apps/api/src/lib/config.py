@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     PROJECT_ENV: Literal["local", "staging", "prod"] = "local"
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/app"
-    DATABASE_URL_SYNC: str = "postgresql://postgres:postgres@localhost:5432/app"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5433/juny"
+    DATABASE_URL_SYNC: str = "postgresql://postgres:postgres@localhost:5433/juny"
 
     # Database connection pool (Supabase PgBouncer compatible)
     DB_POOL_SIZE: int = 10

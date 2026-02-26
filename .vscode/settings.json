@@ -12,5 +12,8 @@
   },
   "files.associations": {
     "*.arb": "json"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
   }
 }
