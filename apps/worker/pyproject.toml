@@ -11,9 +11,11 @@ dependencies = [
     "tenacity>=9.0.0",
     "google-cloud-tasks>=2.16.0",
     "google-cloud-pubsub>=2.25.0",
+    "structlog>=25.0.0",
 ]
 
 [dependency-groups]
+fcm = ["firebase-admin>=6.5.0"]
 dev = [
     "ruff>=0.9.0",
     "poethepoet>=0.32.0",
@@ -38,7 +40,16 @@ test = "pytest tests/ --suppress-no-test-exit-code"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "-v"
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
+
+[[tool.mypy.overrides]]
+module = ["firebase_admin.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["google.cloud.*"]
+ignore_missing_imports = true
