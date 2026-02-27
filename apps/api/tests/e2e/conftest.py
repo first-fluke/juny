@@ -29,9 +29,16 @@ TEST_ASYNC_URL = f"{_BASE_ASYNC_URL}/{TEST_DB_NAME}"
 HOST_USER_ID = uuid.UUID("00000000-0000-4000-8000-000000000e01")
 CAREGIVER_USER_ID = uuid.UUID("00000000-0000-4000-8000-000000000e02")
 UNRELATED_USER_ID = uuid.UUID("00000000-0000-4000-8000-000000000e03")
+ORGANIZATION_USER_ID = uuid.UUID("00000000-0000-4000-8000-000000000e04")
 
 # All table names for truncation (order doesn't matter with CASCADE)
-_ALL_TABLES = ["wellness_logs", "medications", "care_relations", "users"]
+_ALL_TABLES = [
+    "device_tokens",
+    "wellness_logs",
+    "medications",
+    "care_relations",
+    "users",
+]
 
 
 # ── Session-scoped: create / drop test database (sync) ─────────────
@@ -188,9 +195,7 @@ def _create_token(user_id: str, role: str | None) -> str:
 
 
 @pytest.fixture
-async def host_client(
-    client: AsyncClient, seed_host: User
-) -> AsyncClient:
+async def host_client(client: AsyncClient, seed_host: User) -> AsyncClient:
     """AsyncClient with host bearer token."""
     token = _create_token(str(seed_host.id), seed_host.role)
     client.headers["Authorization"] = f"Bearer {token}"
@@ -198,9 +203,7 @@ async def host_client(
 
 
 @pytest.fixture
-async def caregiver_client(
-    client: AsyncClient, seed_caregiver: User
-) -> AsyncClient:
+async def caregiver_client(client: AsyncClient, seed_caregiver: User) -> AsyncClient:
     """AsyncClient with caregiver bearer token."""
     token = _create_token(str(seed_caregiver.id), seed_caregiver.role)
     client.headers["Authorization"] = f"Bearer {token}"
@@ -213,5 +216,33 @@ async def unrelated_client(
 ) -> AsyncClient:
     """AsyncClient with an unrelated user's bearer token."""
     token = _create_token(str(seed_unrelated_user.id), seed_unrelated_user.role)
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client
+
+
+@pytest.fixture
+async def seed_organization_user(db_session: AsyncSession) -> User:
+    """Insert an ORGANIZATION user into the test database."""
+    user = User(
+        id=ORGANIZATION_USER_ID,
+        email="org@test.com",
+        name="Test Organization",
+        role="organization",
+        provider="google",
+        provider_id="google-org-001",
+        email_verified=True,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+async def organization_client(
+    client: AsyncClient, seed_organization_user: User
+) -> AsyncClient:
+    """AsyncClient with organization bearer token."""
+    token = _create_token(str(seed_organization_user.id), seed_organization_user.role)
     client.headers["Authorization"] = f"Bearer {token}"
     return client

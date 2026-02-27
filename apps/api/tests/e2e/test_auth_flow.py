@@ -116,9 +116,7 @@ class TestProtectedEndpoint:
         # Should get 403 (no relation) not 401
         assert resp.status_code == 403
 
-    async def test_unauthenticated_access_rejected(
-        self, client: AsyncClient
-    ) -> None:
+    async def test_unauthenticated_access_rejected(self, client: AsyncClient) -> None:
         """Request without a token should be rejected with 401."""
         resp = await client.get(
             "/api/v1/medications",

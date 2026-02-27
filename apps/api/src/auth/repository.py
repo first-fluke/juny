@@ -1,37 +1,18 @@
-"""Data access layer for authentication."""
+"""Data access layer for authentication.
 
-import uuid
+Delegates to users/repository to avoid duplication.
+"""
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.users import repository as users_repo
 from src.users.model import User
 
-
-async def find_by_email(
-    db: AsyncSession,
-    email: str,
-) -> User | None:
-    """Find a user by email address."""
-    result = await db.execute(select(User).where(User.email == email))
-    return result.scalar_one_or_none()
+# Re-use read helpers directly (same signature).
+find_by_email = users_repo.find_by_email
+find_by_id = users_repo.find_by_id
 
 
-async def find_by_id(
-    db: AsyncSession,
-    user_id: uuid.UUID,
-) -> User | None:
-    """Find a user by primary key."""
-    result = await db.execute(select(User).where(User.id == user_id))
-    return result.scalar_one_or_none()
-
-
-async def create_user(
-    db: AsyncSession,
-    user: User,
-) -> User:
+async def create_user(db: AsyncSession, user: User) -> User:
     """Persist a new user."""
-    db.add(user)
-    await db.flush()
-    await db.refresh(user)
-    return user
+    return await users_repo.save(db, user)

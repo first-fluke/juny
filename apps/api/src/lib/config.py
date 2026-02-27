@@ -58,8 +58,16 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
     OPENAI_API_KEY: str | None = None
 
+    # Notifications
+    NOTIFICATION_PROVIDER: Literal["mock", "fcm"] = "mock"
+
+    # Worker dispatch
+    WORKER_URL: str = "http://localhost:8280"
+    CLOUD_TASKS_QUEUE: str | None = None
+    CLOUD_TASKS_LOCATION: str = "asia-northeast3"
+
     # Storage (optional)
-    STORAGE_BACKEND: Literal["gcs", "s3", "minio"] = "minio"
+    STORAGE_BACKEND: Literal["gcs", "minio"] = "minio"
     GCS_BUCKET_NAME: str | None = None
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"

@@ -11,9 +11,19 @@ from fastapi import status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.common.errors import AUTHZ_001, raise_api_error
+from src.common.errors import AUTHZ_001, AUTHZ_002, raise_api_error
 from src.lib.auth import CurrentUserInfo
 from src.relations.model import CareRelation
+
+
+def require_role(user: CurrentUserInfo, *, allowed_roles: set[str]) -> None:
+    """Verify that *user* has one of the *allowed_roles*.
+
+    Raises:
+        HTTPException 403 if the user's role is not in the allowed set.
+    """
+    if user.role not in allowed_roles:
+        raise_api_error(AUTHZ_002, status.HTTP_403_FORBIDDEN)
 
 
 async def authorize_host_access(

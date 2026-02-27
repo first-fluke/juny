@@ -1,7 +1,6 @@
 import uuid as uuid_lib
 from datetime import datetime
 
-from pydantic import BaseModel
 from sqlalchemy import DateTime, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -44,18 +43,3 @@ class User(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
-
-
-class UserResponse(BaseModel):
-    """User response model."""
-
-    id: str
-    email: str
-    name: str | None = None
-    image: str | None = None
-    email_verified: bool = False
-    provider: str | None = None
-    provider_id: str | None = None
-    role: str = UserRole.HOST.value
-    created_at: datetime
-    updated_at: datetime

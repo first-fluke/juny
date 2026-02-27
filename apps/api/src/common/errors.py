@@ -14,11 +14,14 @@ AUTH_003: ErrorTuple = ("AUTH_003", "Invalid token type")
 
 # ── Authorization ──────────────────────────────────────────────────
 AUTHZ_001: ErrorTuple = ("AUTHZ_001", "Access denied")
+AUTHZ_002: ErrorTuple = ("AUTHZ_002", "Insufficient role")
 
 # ── Resources ──────────────────────────────────────────────────────
 RES_001: ErrorTuple = ("RES_001", "Relation not found")
 RES_002: ErrorTuple = ("RES_002", "Wellness log not found")
 RES_003: ErrorTuple = ("RES_003", "Medication not found")
+RES_004: ErrorTuple = ("RES_004", "User not found")
+RES_005: ErrorTuple = ("RES_005", "Device token not found")
 
 # ── Validation ─────────────────────────────────────────────────────
 VAL_001: ErrorTuple = ("VAL_001", "Invalid caregiver role")
@@ -28,6 +31,8 @@ VAL_002: ErrorTuple = ("VAL_002", "Self-relation not allowed")
 SVC_001: ErrorTuple = ("SVC_001", "LiveKit is not configured")
 SVC_002: ErrorTuple = ("SVC_002", "Gemini API is not configured")
 SVC_003: ErrorTuple = ("SVC_003", "OAuth provider did not return an email address")
+SVC_004: ErrorTuple = ("SVC_004", "Storage provider is not configured")
+SVC_005: ErrorTuple = ("SVC_005", "File upload failed")
 
 
 def raise_api_error(

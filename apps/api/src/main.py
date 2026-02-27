@@ -19,8 +19,11 @@ from src.lib.database import async_session_factory
 from src.lib.logging import configure_logging, get_logger
 from src.lib.telemetry import configure_telemetry, instrument_app
 from src.medications.router import router as medications_router
+from src.notifications.router import router as notifications_router
 from src.relations.router import router as relations_router
+from src.routers.files import router as files_router
 from src.routers.live import router as live_router
+from src.users.router import router as users_router
 from src.wellness.router import router as wellness_router
 
 # Configure logging first
@@ -234,5 +237,10 @@ api_v1.include_router(live_router, prefix="/live", tags=["live"])
 api_v1.include_router(relations_router, prefix="/relations", tags=["relations"])
 api_v1.include_router(wellness_router, prefix="/wellness", tags=["wellness"])
 api_v1.include_router(medications_router, prefix="/medications", tags=["medications"])
+api_v1.include_router(users_router, prefix="/users", tags=["users"])
+api_v1.include_router(
+    notifications_router, prefix="/notifications", tags=["notifications"]
+)
+api_v1.include_router(files_router, prefix="/files", tags=["files"])
 
 app.include_router(api_v1)
