@@ -21,15 +21,17 @@ abstract class PaginationMeta with _$PaginationMeta {
     required int total,
 
     /// Total number of pages
-    @JsonKey(name: 'total_pages') required int totalPages,
+    @JsonKey(name: 'total_pages')
+    required int totalPages,
 
     /// Whether there is a next page
-    @JsonKey(name: 'has_next') required bool hasNext,
+    @JsonKey(name: 'has_next')
+    required bool hasNext,
 
     /// Whether there is a previous page
-    @JsonKey(name: 'has_prev') required bool hasPrev,
+    @JsonKey(name: 'has_prev')
+    required bool hasPrev,
   }) = _PaginationMeta;
-
-  factory PaginationMeta.fromJson(Map<String, Object?> json) =>
-      _$PaginationMetaFromJson(json);
+  
+  factory PaginationMeta.fromJson(Map<String, Object?> json) => _$PaginationMetaFromJson(json);
 }

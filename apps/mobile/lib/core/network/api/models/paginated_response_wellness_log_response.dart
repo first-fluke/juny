@@ -11,14 +11,11 @@ part 'paginated_response_wellness_log_response.freezed.dart';
 part 'paginated_response_wellness_log_response.g.dart';
 
 @Freezed()
-abstract class PaginatedResponseWellnessLogResponse
-    with _$PaginatedResponseWellnessLogResponse {
+abstract class PaginatedResponseWellnessLogResponse with _$PaginatedResponseWellnessLogResponse {
   const factory PaginatedResponseWellnessLogResponse({
     required List<WellnessLogResponse> data,
     required PaginationMeta meta,
   }) = _PaginatedResponseWellnessLogResponse;
-
-  factory PaginatedResponseWellnessLogResponse.fromJson(
-    Map<String, Object?> json,
-  ) => _$PaginatedResponseWellnessLogResponseFromJson(json);
+  
+  factory PaginatedResponseWellnessLogResponse.fromJson(Map<String, Object?> json) => _$PaginatedResponseWellnessLogResponseFromJson(json);
 }
