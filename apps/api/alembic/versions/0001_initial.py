@@ -232,8 +232,67 @@ def upgrade() -> None:
         unique=False,
     )
 
+    # --- device_tokens ---
+    op.create_table(
+        "device_tokens",
+        sa.Column(
+            "id",
+            sa.UUID(),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column("user_id", sa.UUID(), nullable=False),
+        sa.Column(
+            "token",
+            sa.String(length=512),
+            nullable=False,
+        ),
+        sa.Column(
+            "platform",
+            sa.String(length=10),
+            nullable=False,
+            comment="ios | android | web",
+        ),
+        sa.Column(
+            "is_active",
+            sa.Boolean(),
+            server_default=sa.text("true"),
+            nullable=False,
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["users.id"],
+            name=op.f("fk_device_tokens_user_id_users"),
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_device_tokens")),
+        sa.UniqueConstraint("token", name=op.f("uq_device_tokens_token")),
+    )
+    op.create_index(
+        "ix_device_tokens_user_id",
+        "device_tokens",
+        ["user_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_device_tokens_token"),
+        "device_tokens",
+        ["token"],
+        unique=True,
+    )
+
 
 def downgrade() -> None:
+    op.drop_index(op.f("ix_device_tokens_token"), table_name="device_tokens")
+    op.drop_index("ix_device_tokens_user_id", table_name="device_tokens")
+    op.drop_table("device_tokens")
     op.drop_index("ix_medications_schedule_time", table_name="medications")
     op.drop_index("ix_medications_host_id", table_name="medications")
     op.drop_table("medications")
