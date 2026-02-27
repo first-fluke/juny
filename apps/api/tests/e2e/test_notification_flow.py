@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from tests.e2e.conftest import CAREGIVER_USER_ID, HOST_USER_ID, _create_token
+
 if TYPE_CHECKING:
     from httpx import AsyncClient
 
@@ -94,19 +96,28 @@ class TestDeviceTokenDeletion:
 
     async def test_delete_other_users_token_404(
         self,
-        host_client: AsyncClient,
-        caregiver_client: AsyncClient,
+        client: AsyncClient,
+        seed_host: object,
+        seed_caregiver: object,
     ) -> None:
+        host_headers = {
+            "Authorization": f"Bearer {_create_token(str(HOST_USER_ID), 'host')}"
+        }
+        cg_token = _create_token(str(CAREGIVER_USER_ID), "concierge")
+        cg_headers = {"Authorization": f"Bearer {cg_token}"}
+
         # Host registers a token
-        reg_resp = await host_client.post(
+        reg_resp = await client.post(
             "/api/v1/notifications/device-tokens",
             json={"token": "fcm-cross-001", "platform": "ios"},
+            headers=host_headers,
         )
         token_id = reg_resp.json()["id"]
 
         # Caregiver tries to delete it
-        del_resp = await caregiver_client.delete(
-            f"/api/v1/notifications/device-tokens/{token_id}"
+        del_resp = await client.delete(
+            f"/api/v1/notifications/device-tokens/{token_id}",
+            headers=cg_headers,
         )
         assert del_resp.status_code == 404
 
