@@ -13,10 +13,12 @@ from opentelemetry import trace
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from src.admin.router import router as admin_router
 from src.auth.router import router as auth_router
 from src.lib.config import settings
 from src.lib.database import async_session_factory
 from src.lib.logging import configure_logging, get_logger
+from src.lib.rate_limit import rate_limit_middleware
 from src.lib.telemetry import configure_telemetry, instrument_app
 from src.medications.router import router as medications_router
 from src.notifications.router import router as notifications_router
@@ -72,6 +74,15 @@ async def request_id_middleware(
     response = await call_next(request)
     response.headers["X-Request-ID"] = request_id
     return response
+
+
+# Rate limiting middleware (100 req/60s global)
+@app.middleware("http")
+async def rate_limit_mw(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    """Global rate limiting."""
+    return await rate_limit_middleware(request, call_next)
 
 
 # Error response model
@@ -242,5 +253,6 @@ api_v1.include_router(
     notifications_router, prefix="/notifications", tags=["notifications"]
 )
 api_v1.include_router(files_router, prefix="/files", tags=["files"])
+api_v1.include_router(admin_router, prefix="/admin", tags=["admin"])
 
 app.include_router(api_v1)
