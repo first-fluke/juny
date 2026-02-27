@@ -28,9 +28,12 @@ dependencies = [
     "livekit>=1.0.0",
     "livekit-api>=1.1.0",
     "websockets>=14.0",
+    "minio>=7.2.0",
 ]
 
 [dependency-groups]
+gcs = ["google-cloud-storage>=2.18.0"]
+fcm = ["firebase-admin>=6.5.0"]
 dev = [
     "ruff>=0.11.12",
     "poethepoet>=0.35.0",
@@ -98,4 +101,16 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["google.genai.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["minio.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["google.cloud.storage.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["firebase_admin.*"]
 ignore_missing_imports = true
