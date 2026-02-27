@@ -11,13 +11,14 @@ part 'care_relation_create.g.dart';
 @Freezed()
 abstract class CareRelationCreate with _$CareRelationCreate {
   const factory CareRelationCreate({
-    @JsonKey(name: 'host_id') required String hostId,
-    @JsonKey(name: 'caregiver_id') required String caregiverId,
+    @JsonKey(name: 'host_id')
+    required String hostId,
+    @JsonKey(name: 'caregiver_id')
+    required String caregiverId,
 
     /// Caregiver role
     required String role,
   }) = _CareRelationCreate;
-
-  factory CareRelationCreate.fromJson(Map<String, Object?> json) =>
-      _$CareRelationCreateFromJson(json);
+  
+  factory CareRelationCreate.fromJson(Map<String, Object?> json) => _$CareRelationCreateFromJson(json);
 }

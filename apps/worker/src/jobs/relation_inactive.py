@@ -26,13 +26,15 @@ class RelationInactiveCheckJob(BaseJob):
             threshold_days=threshold_days,
         )
 
-        # Placeholder: In production, query the API for relations
-        # with no wellness logs in the threshold period, and notify
-        # the relevant caregivers.
+        headers: dict[str, str] = {}
+        if settings.INTERNAL_API_KEY:
+            headers["X-Internal-Key"] = settings.INTERNAL_API_KEY
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{settings.API_BASE_URL}/api/v1/admin/inactive-relations",
                 params={"threshold_days": threshold_days},
+                headers=headers,
                 timeout=15.0,
             )
 

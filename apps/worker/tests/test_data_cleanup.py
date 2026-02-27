@@ -28,3 +28,24 @@ class TestDataCleanupJob:
         result = await job.execute({"retention_days": 60})
         assert result["cleaned"] is True
         assert result["retention_days"] == 60
+
+    @pytest.mark.asyncio
+    @patch("src.jobs.data_cleanup.settings")
+    @patch("src.jobs.data_cleanup.httpx.AsyncClient")
+    async def test_execute_sends_internal_key(
+        self, mock_client_cls: AsyncMock, mock_settings: AsyncMock
+    ) -> None:
+        mock_settings.INTERNAL_API_KEY = "test-key"
+        mock_settings.API_BASE_URL = "http://localhost:8200"
+        mock_client = AsyncMock()
+        mock_client_cls.return_value.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
+        mock_response = AsyncMock()
+        mock_response.status_code = 200
+        mock_client.post.return_value = mock_response
+
+        job = DataCleanupJob()
+        await job.execute({"retention_days": 90})
+
+        call_kwargs = mock_client.post.call_args
+        assert call_kwargs.kwargs["headers"]["X-Internal-Key"] == "test-key"

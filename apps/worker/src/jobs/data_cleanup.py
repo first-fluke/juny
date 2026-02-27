@@ -28,8 +28,10 @@ class DataCleanupJob(BaseJob):
             resource_type=resource_type,
         )
 
-        # Placeholder: In production, call API admin endpoints
-        # to purge stale data beyond the retention period.
+        headers: dict[str, str] = {}
+        if settings.INTERNAL_API_KEY:
+            headers["X-Internal-Key"] = settings.INTERNAL_API_KEY
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{settings.API_BASE_URL}/api/v1/admin/cleanup",
@@ -37,6 +39,7 @@ class DataCleanupJob(BaseJob):
                     "retention_days": retention_days,
                     "resource_type": resource_type,
                 },
+                headers=headers,
                 timeout=30.0,
             )
 

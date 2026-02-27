@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.lib.auth import create_access_token
+from src.lib.rate_limit import reset_rate_limiters
 from src.main import app
 
 TEST_USER_ID = "00000000-0000-4000-8000-000000000099"
@@ -12,6 +13,12 @@ TEST_CAREGIVER_ID = "00000000-0000-4000-8000-000000000098"
 TEST_HOST_ID_ALT = "00000000-0000-4000-8000-000000000097"
 TEST_CARE_WORKER_ID = "00000000-0000-4000-8000-000000000096"
 TEST_ORGANIZATION_ID = "00000000-0000-4000-8000-000000000095"
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiters() -> None:
+    """Reset rate limiter state between tests to avoid stale event loops."""
+    reset_rate_limiters()
 
 
 @pytest.fixture

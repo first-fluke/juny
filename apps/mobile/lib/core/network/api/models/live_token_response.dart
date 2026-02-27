@@ -13,11 +13,11 @@ part 'live_token_response.g.dart';
 abstract class LiveTokenResponse with _$LiveTokenResponse {
   const factory LiveTokenResponse({
     required String token,
-    @JsonKey(name: 'room_name') required String roomName,
+    @JsonKey(name: 'room_name')
+    required String roomName,
     required String identity,
     required LiveTokenResponseRole role,
   }) = _LiveTokenResponse;
-
-  factory LiveTokenResponse.fromJson(Map<String, Object?> json) =>
-      _$LiveTokenResponseFromJson(json);
+  
+  factory LiveTokenResponse.fromJson(Map<String, Object?> json) => _$LiveTokenResponseFromJson(json);
 }

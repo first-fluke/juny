@@ -11,11 +11,13 @@ part 'medication_create.g.dart';
 @Freezed()
 abstract class MedicationCreate with _$MedicationCreate {
   const factory MedicationCreate({
-    @JsonKey(name: 'host_id') required String hostId,
-    @JsonKey(name: 'pill_name') required String pillName,
-    @JsonKey(name: 'schedule_time') required DateTime scheduleTime,
+    @JsonKey(name: 'host_id')
+    required String hostId,
+    @JsonKey(name: 'pill_name')
+    required String pillName,
+    @JsonKey(name: 'schedule_time')
+    required DateTime scheduleTime,
   }) = _MedicationCreate;
-
-  factory MedicationCreate.fromJson(Map<String, Object?> json) =>
-      _$MedicationCreateFromJson(json);
+  
+  factory MedicationCreate.fromJson(Map<String, Object?> json) => _$MedicationCreateFromJson(json);
 }

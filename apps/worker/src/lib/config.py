@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # API (for HTTP-based data access)
     API_BASE_URL: str = "http://localhost:8200"
 
+    # Internal service auth (Worker → API)
+    INTERNAL_API_KEY: str | None = None
+
     # Notifications
     NOTIFICATION_PROVIDER: Literal["mock", "fcm"] = "mock"
 

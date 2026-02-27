@@ -8,11 +8,14 @@ part of 'auth_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Authentication notifier that manages the [AuthState].
 
 @ProviderFor(Auth)
 final authProvider = AuthProvider._();
 
+/// Authentication notifier that manages the [AuthState].
 final class AuthProvider extends $NotifierProvider<Auth, AuthState> {
+  /// Authentication notifier that manages the [AuthState].
   AuthProvider._()
     : super(
         from: null,
@@ -42,6 +45,8 @@ final class AuthProvider extends $NotifierProvider<Auth, AuthState> {
 
 String _$authHash() => r'6edb8a401e7459c1050617ff429ceee5fbfdc2bd';
 
+/// Authentication notifier that manages the [AuthState].
+
 abstract class _$Auth extends $Notifier<AuthState> {
   AuthState build();
   @$mustCallSuper
@@ -60,8 +65,12 @@ abstract class _$Auth extends $Notifier<AuthState> {
   }
 }
 
+/// Provider for the [ApiClientWrapper].
+
 @ProviderFor(apiClientWrapper)
 final apiClientWrapperProvider = ApiClientWrapperProvider._();
+
+/// Provider for the [ApiClientWrapper].
 
 final class ApiClientWrapperProvider
     extends
@@ -71,6 +80,7 @@ final class ApiClientWrapperProvider
           ApiClientWrapper
         >
     with $Provider<ApiClientWrapper> {
+  /// Provider for the [ApiClientWrapper].
   ApiClientWrapperProvider._()
     : super(
         from: null,

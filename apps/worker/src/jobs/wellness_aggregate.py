@@ -32,12 +32,15 @@ class WellnessAggregateJob(BaseJob):
             date=date,
         )
 
-        # Placeholder: In production, this calls the API to fetch
-        # wellness logs and compute aggregates (counts by status, etc.)
+        headers: dict[str, str] = {}
+        if settings.INTERNAL_API_KEY:
+            headers["X-Internal-Key"] = settings.INTERNAL_API_KEY
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{settings.API_BASE_URL}/api/v1/wellness",
+                f"{settings.API_BASE_URL}/api/v1/admin/wellness/aggregate",
                 params={"host_id": host_id, "date": date},
+                headers=headers,
                 timeout=15.0,
             )
 
