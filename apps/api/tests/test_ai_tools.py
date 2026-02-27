@@ -17,7 +17,8 @@ from src.lib.ai.tools.ping_tool import PingTool
 from src.lib.ai.tools.register_medication import RegisterMedicationTool
 from src.lib.ai.tools.scan_medication_schedule import ScanMedicationScheduleTool
 
-_NOTIFY = "src.lib.ai.tools.log_wellness.send_push_notification"
+_DISPATCH = "src.lib.ai.tools.log_wellness.dispatch_task"
+_GET_TOKENS = "src.lib.ai.tools.log_wellness.get_user_token_strings"
 _FIND_BY_HOST = "src.lib.ai.tools.log_wellness.relations_repo.find_by_host"
 _CREATE_WELLNESS = "src.lib.ai.tools.log_wellness.create_wellness_log"
 _CREATE_MED = "src.lib.ai.tools.register_medication.create_medication"
@@ -140,14 +141,16 @@ class TestAIPersona:
 
 class TestLogWellnessTool:
     @pytest.mark.asyncio
+    @patch(_DISPATCH, new_callable=AsyncMock)
+    @patch(_GET_TOKENS, new_callable=AsyncMock, return_value=[])
     @patch(_FIND_BY_HOST, new_callable=AsyncMock, return_value=[])
-    @patch(_NOTIFY, new_callable=AsyncMock)
     @patch(_CREATE_WELLNESS, new_callable=AsyncMock)
     async def test_log_wellness_success(
         self,
         mock_create: AsyncMock,
-        mock_notify: AsyncMock,
         mock_find: AsyncMock,
+        mock_get_tokens: AsyncMock,
+        mock_dispatch: AsyncMock,
     ) -> None:
         mock_create.return_value = _mock_wellness_log()
         tool = LogWellnessTool()
@@ -166,7 +169,7 @@ class TestLogWellnessTool:
         assert "log_id" in result
         mock_create.assert_called_once()
         mock_find.assert_called_once()
-        mock_notify.assert_not_called()
+        mock_dispatch.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_log_wellness_missing_context(self) -> None:
@@ -190,20 +193,23 @@ class TestLogWellnessTool:
         assert "error" in result
 
     @pytest.mark.asyncio
-    @patch(_NOTIFY, new_callable=AsyncMock)
+    @patch(_DISPATCH, new_callable=AsyncMock)
+    @patch(_GET_TOKENS, new_callable=AsyncMock)
     @patch(_FIND_BY_HOST, new_callable=AsyncMock)
     @patch(_CREATE_WELLNESS, new_callable=AsyncMock)
     async def test_log_wellness_triggers_alert_on_emergency(
         self,
         mock_create: AsyncMock,
         mock_find: AsyncMock,
-        mock_notify: AsyncMock,
+        mock_get_tokens: AsyncMock,
+        mock_dispatch: AsyncMock,
     ) -> None:
         caregiver_id = uuid.UUID("00000000-0000-4000-8000-000000000010")
         mock_create.return_value = _mock_wellness_log()
         mock_find.return_value = [
             MagicMock(caregiver_id=caregiver_id),
         ]
+        mock_get_tokens.return_value = ["fcm-tok-cg1"]
 
         tool = LogWellnessTool()
         ctx = _make_db_context()
@@ -214,22 +220,26 @@ class TestLogWellnessTool:
             summary="Fall detected",
         )
 
-        mock_notify.assert_called_once()
-        kw = mock_notify.call_args.kwargs
-        assert kw["recipient_id"] == caregiver_id
-        assert kw["title"] == "Wellness Alert: EMERGENCY"
-        assert kw["body"] == "Fall detected"
-        assert kw["data"]["host_id"] == str(ctx["host_id"])
+        mock_dispatch.assert_called_once()
+        args = mock_dispatch.call_args
+        assert args[0][0] == "notification.send"
+        data = args[0][1]
+        assert data["tokens"] == ["fcm-tok-cg1"]
+        assert data["title"] == "Wellness Alert: EMERGENCY"
+        assert data["body"] == "Fall detected"
+        assert data["data"]["host_id"] == str(ctx["host_id"])
 
     @pytest.mark.asyncio
-    @patch(_NOTIFY, new_callable=AsyncMock)
+    @patch(_DISPATCH, new_callable=AsyncMock)
+    @patch(_GET_TOKENS, new_callable=AsyncMock)
     @patch(_FIND_BY_HOST, new_callable=AsyncMock)
     @patch(_CREATE_WELLNESS, new_callable=AsyncMock)
     async def test_log_wellness_triggers_alert_on_warning(
         self,
         mock_create: AsyncMock,
         mock_find: AsyncMock,
-        mock_notify: AsyncMock,
+        mock_get_tokens: AsyncMock,
+        mock_dispatch: AsyncMock,
     ) -> None:
         cg1 = uuid.UUID("00000000-0000-4000-8000-000000000011")
         cg2 = uuid.UUID("00000000-0000-4000-8000-000000000012")
@@ -238,6 +248,7 @@ class TestLogWellnessTool:
             MagicMock(caregiver_id=cg1),
             MagicMock(caregiver_id=cg2),
         ]
+        mock_get_tokens.side_effect = [["tok-cg1"], ["tok-cg2"]]
 
         tool = LogWellnessTool()
         ctx = _make_db_context()
@@ -248,19 +259,19 @@ class TestLogWellnessTool:
             summary="Skipped meal",
         )
 
-        assert mock_notify.call_count == 2
-        recipients = {c.kwargs["recipient_id"] for c in mock_notify.call_args_list}
-        assert recipients == {cg1, cg2}
+        mock_dispatch.assert_called_once()
+        data = mock_dispatch.call_args[0][1]
+        assert set(data["tokens"]) == {"tok-cg1", "tok-cg2"}
 
     @pytest.mark.asyncio
-    @patch(_NOTIFY, new_callable=AsyncMock)
+    @patch(_DISPATCH, new_callable=AsyncMock)
     @patch(_FIND_BY_HOST, new_callable=AsyncMock)
     @patch(_CREATE_WELLNESS, new_callable=AsyncMock)
     async def test_log_wellness_no_alert_on_normal(
         self,
         mock_create: AsyncMock,
         mock_find: AsyncMock,
-        mock_notify: AsyncMock,
+        mock_dispatch: AsyncMock,
     ) -> None:
         mock_create.return_value = _mock_wellness_log()
         tool = LogWellnessTool()
@@ -274,7 +285,7 @@ class TestLogWellnessTool:
 
         mock_create.assert_called_once()
         mock_find.assert_not_called()
-        mock_notify.assert_not_called()
+        mock_dispatch.assert_not_called()
 
     def test_log_wellness_declaration(self) -> None:
         tool = LogWellnessTool()

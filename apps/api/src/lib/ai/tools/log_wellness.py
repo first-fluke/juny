@@ -6,7 +6,8 @@ import structlog
 
 from src.common.enums import WellnessStatus
 from src.lib.ai.tools.base import BaseTool, ToolContext, register_tool
-from src.lib.notifications import send_push_notification
+from src.lib.task_client import dispatch_task
+from src.notifications.service import get_user_token_strings
 from src.relations import repository as relations_repo
 from src.wellness.schemas import WellnessLogCreate
 from src.wellness.service import create_wellness_log
@@ -95,18 +96,26 @@ class LogWellnessTool(BaseTool):
             log_id=str(log_entry.id),
         )
 
-        # Alert caregivers on warning/emergency
+        # Alert caregivers on warning/emergency via worker
         if status_val in {"warning", "emergency"}:
             relations = await relations_repo.find_by_host(db, host_id)
+            all_tokens: list[str] = []
             for rel in relations:
-                await send_push_notification(
-                    recipient_id=rel.caregiver_id,
-                    title=f"Wellness Alert: {status_val.upper()}",
-                    body=summary,
-                    data={
-                        "log_id": str(log_entry.id),
-                        "status": status_val,
-                        "host_id": str(host_id),
+                tokens = await get_user_token_strings(db, rel.caregiver_id)
+                all_tokens.extend(tokens)
+
+            if all_tokens:
+                await dispatch_task(
+                    "notification.send",
+                    {
+                        "tokens": all_tokens,
+                        "title": f"Wellness Alert: {status_val.upper()}",
+                        "body": summary,
+                        "data": {
+                            "log_id": str(log_entry.id),
+                            "status": status_val,
+                            "host_id": str(host_id),
+                        },
                     },
                 )
 
