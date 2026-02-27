@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import (
 from src.lib.auth import create_access_token
 from src.lib.config import settings
 from src.lib.database import Base, get_db
+from src.lib.rate_limit import reset_rate_limiters
 from src.main import app
 from src.users.model import User
 
@@ -84,6 +85,23 @@ def _setup_test_db() -> None:
         )
         conn.execute(text(f"DROP DATABASE IF EXISTS {TEST_DB_NAME}"))
     admin_engine.dispose()
+
+
+# ── Rate limiter reset per test ────────────────────────────────────
+@pytest.fixture(autouse=True)
+async def _reset_rate_limiters() -> AsyncGenerator[None, None]:
+    """Reset rate limiter state and flush Redis keys between tests."""
+    reset_rate_limiters()
+    if settings.REDIS_URL:
+        import redis.asyncio as aioredis
+
+        client = aioredis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
+        keys = await client.keys("rate_limit:*")
+        if keys:
+            await client.delete(*keys)
+        await client.aclose()
+    yield
+    reset_rate_limiters()
 
 
 # ── Function-scoped: engine + session + client ─────────────────────

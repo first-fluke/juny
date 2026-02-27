@@ -2,13 +2,14 @@
 
 import uuid
 
-from fastapi import APIRouter, UploadFile, status
+from fastapi import APIRouter, Request, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from src.common.errors import AUTHZ_002, SVC_005, raise_api_error
 from src.lib.auth import CurrentUserInfo
 from src.lib.dependencies import CurrentUser, StorageDep
+from src.lib.rate_limit import rate_limit
 
 router = APIRouter()
 
@@ -37,7 +38,9 @@ def _check_file_ownership(key: str, user: CurrentUserInfo) -> None:
     response_model=FileUploadResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@rate_limit(requests=20, window=60)
 async def upload_file(
+    request: Request,
     file: UploadFile,
     user: CurrentUser,
     storage: StorageDep,

@@ -1,13 +1,16 @@
 """Rate limiting middleware with Redis or in-memory backend."""
 
+from __future__ import annotations
+
+import functools
 import time
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from fastapi import HTTPException, Request, status
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 
 from src.lib.config import settings
 from src.lib.logging import get_logger
@@ -81,15 +84,12 @@ class RedisRateLimiter:
         self.window = window
         self._redis: redis_module.Redis | None = None
 
-    async def _get_redis(self) -> "redis_module.Redis":
+    async def _get_redis(self) -> redis_module.Redis:
         """Lazy Redis connection."""
         if self._redis is None:
             import redis.asyncio as redis
 
-            self._redis = cast(
-                redis_module.Redis,
-                redis.from_url(settings.REDIS_URL),  # type: ignore[no-untyped-call]
-            )
+            self._redis = redis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
         return self._redis
 
     async def is_allowed(self, key: str) -> tuple[bool, int, int]:
@@ -129,30 +129,43 @@ class RedisRateLimiter:
             self._redis = None
 
 
-# Global rate limiter instance
-_rate_limiter: InMemoryRateLimiter | RedisRateLimiter | None = None
+# Config-keyed rate limiter instances
+_rate_limiters: dict[tuple[int, int], InMemoryRateLimiter | RedisRateLimiter] = {}
+
+
+def reset_rate_limiters() -> None:
+    """Reset all rate limiter instances (useful for testing)."""
+    _rate_limiters.clear()
 
 
 def get_rate_limiter(config: RateLimitConfig) -> InMemoryRateLimiter | RedisRateLimiter:
-    """Get or create rate limiter instance."""
-    global _rate_limiter
+    """Get or create rate limiter instance per (requests, window) config."""
+    key = (config.requests, config.window)
 
-    if _rate_limiter is None:
+    if key not in _rate_limiters:
         if settings.REDIS_URL:
-            logger.info("Using Redis rate limiter")
-            _rate_limiter = RedisRateLimiter(config.requests, config.window)
+            logger.info(
+                "Creating Redis rate limiter",
+                requests=config.requests,
+                window=config.window,
+            )
+            _rate_limiters[key] = RedisRateLimiter(config.requests, config.window)
         else:
-            logger.info("Using in-memory rate limiter")
-            _rate_limiter = InMemoryRateLimiter(config.requests, config.window)
+            logger.info(
+                "Creating in-memory rate limiter",
+                requests=config.requests,
+                window=config.window,
+            )
+            _rate_limiters[key] = InMemoryRateLimiter(config.requests, config.window)
 
-    return _rate_limiter
+    return _rate_limiters[key]
 
 
 def rate_limit(
     requests: int = 100,
     window: int = 60,
     key_func: Callable[[Request], str] | None = None,
-) -> Callable[[Callable[..., Awaitable[Response]]], Callable[..., Awaitable[Response]]]:
+) -> Callable[..., Any]:
     """
     Rate limit decorator for FastAPI endpoints.
 
@@ -173,6 +186,7 @@ def rate_limit(
     def decorator(
         func: Callable[..., Awaitable[Response]],
     ) -> Callable[..., Awaitable[Response]]:
+        @functools.wraps(func)
         async def wrapper(*args: object, **kwargs: object) -> Response:
             # Find request in args/kwargs
             request: Request | None = None
@@ -207,11 +221,8 @@ def rate_limit(
                     },
                 )
 
-            response = await func(*args, **kwargs)
-            return response
+            return await func(*args, **kwargs)
 
-        wrapper.__name__ = func.__name__
-        wrapper.__doc__ = func.__doc__
         return wrapper
 
     return decorator
@@ -233,8 +244,9 @@ async def rate_limit_middleware(
     if config is None:
         config = RateLimitConfig()
 
-    # Skip rate limiting for health endpoints
-    if request.url.path.startswith("/health"):
+    # Skip rate limiting for health and admin endpoints
+    path = request.url.path
+    if path.startswith("/health") or path.startswith("/api/v1/admin"):
         return await call_next(request)
 
     key_func = config.key_func or default_key_func
@@ -248,8 +260,6 @@ async def rate_limit_middleware(
 
     if not allowed:
         logger.warning("Rate limit exceeded", key=key, path=request.url.path)
-        from fastapi.responses import JSONResponse
-
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             content={"detail": "Rate limit exceeded"},
