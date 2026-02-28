@@ -118,7 +118,7 @@ final class RelationsListProvider
   }
 }
 
-String _$relationsListHash() => r'e628bf7d209cf5b0b50b703428107f2c7ed3ce62';
+String _$relationsListHash() => r'c1ab4579b011b8cec05c482ab654a851dc9b3bd3';
 
 final class RelationsListFamily extends $Family
     with

@@ -30,6 +30,7 @@ export 'models/medication_create.dart';
 export 'models/medication_response.dart';
 export 'models/medication_update.dart';
 export 'models/o_auth_login_request.dart';
+export 'models/paginated_response_care_relation_response.dart';
 export 'models/paginated_response_medication_response.dart';
 export 'models/paginated_response_user_response.dart';
 export 'models/paginated_response_wellness_log_response.dart';
