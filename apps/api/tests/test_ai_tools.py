@@ -12,6 +12,7 @@ from src.lib.ai.tools.base import (
     get_tool_handler,
     register_tool,
 )
+from src.lib.ai.tools.confirm_medication import ConfirmMedicationTool
 from src.lib.ai.tools.log_wellness import LogWellnessTool
 from src.lib.ai.tools.ping_tool import PingTool
 from src.lib.ai.tools.register_medication import RegisterMedicationTool
@@ -23,6 +24,8 @@ _FIND_BY_HOST = "src.lib.ai.tools.log_wellness.relations_repo.find_by_host"
 _CREATE_WELLNESS = "src.lib.ai.tools.log_wellness.create_wellness_log"
 _CREATE_MED = "src.lib.ai.tools.register_medication.create_medication"
 _CREATE_MED_SCAN = "src.lib.ai.tools.scan_medication_schedule.create_medication"
+_FIND_MED_BY_NAME = "src.lib.ai.tools.confirm_medication.find_medication_by_pill_name"
+_UPDATE_MED = "src.lib.ai.tools.confirm_medication.update_medication"
 
 
 @pytest.fixture(autouse=True)
@@ -451,3 +454,61 @@ class TestScanMedicationScheduleTool:
         assert "parameters" in decl
         assert "medications" in decl["parameters"]["properties"]
         assert decl["parameters"]["required"] == ["medications"]
+
+
+class TestConfirmMedicationTool:
+    @pytest.mark.asyncio
+    @patch(_UPDATE_MED, new_callable=AsyncMock)
+    @patch(_FIND_MED_BY_NAME, new_callable=AsyncMock)
+    async def test_confirm_success(
+        self, mock_find: AsyncMock, mock_update: AsyncMock
+    ) -> None:
+        med = _mock_medication()
+        med.pill_name = "Aspirin"
+        med.taken_at = "2026-03-01T09:30:00+00:00"
+        mock_find.return_value = med
+        mock_update.return_value = med
+
+        tool = ConfirmMedicationTool()
+        ctx = _make_db_context()
+
+        result = await tool.execute(context=ctx, pill_name="Aspirin")
+
+        assert result["success"] is True
+        assert result["pill_name"] == "Aspirin"
+        assert "medication_id" in result
+        mock_find.assert_called_once()
+        mock_update.assert_called_once()
+
+    @pytest.mark.asyncio
+    @patch(_FIND_MED_BY_NAME, new_callable=AsyncMock)
+    async def test_confirm_not_found(self, mock_find: AsyncMock) -> None:
+        mock_find.return_value = None
+        tool = ConfirmMedicationTool()
+        ctx = _make_db_context()
+
+        result = await tool.execute(context=ctx, pill_name="Unknown")
+
+        assert "error" in result
+        assert "No untaken medication" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_confirm_missing_context(self) -> None:
+        tool = ConfirmMedicationTool()
+        result = await tool.execute(pill_name="Aspirin")
+        assert "error" in result
+
+    @pytest.mark.asyncio
+    async def test_confirm_empty_pill_name(self) -> None:
+        tool = ConfirmMedicationTool()
+        ctx = _make_db_context()
+        result = await tool.execute(context=ctx, pill_name="  ")
+        assert "error" in result
+
+    def test_confirm_declaration(self) -> None:
+        tool = ConfirmMedicationTool()
+        decl = tool.to_declaration()
+        assert decl["name"] == "confirm_medication"
+        assert "parameters" in decl
+        assert "pill_name" in decl["parameters"]["properties"]
+        assert decl["parameters"]["required"] == ["pill_name"]

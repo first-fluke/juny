@@ -1,9 +1,11 @@
 """Data access layer for wellness logs."""
 
 import uuid
+from datetime import date
 
-from sqlalchemy import func, select
+from sqlalchemy import Row, cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.types import Date
 
 from src.wellness.model import WellnessLog
 
@@ -50,3 +52,32 @@ async def find_by_host(
     result = await db.execute(stmt)
 
     return list(result.scalars().all()), total
+
+
+async def aggregate_trend(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+    date_from: date,
+    date_to: date,
+) -> list[Row[tuple[date, str, int]]]:
+    """Group wellness logs by date and status for a host within a date range.
+
+    Returns rows of (date, status, count).
+    """
+    log_date = cast(WellnessLog.created_at, Date).label("log_date")
+    stmt = (
+        select(
+            log_date,
+            WellnessLog.status,
+            func.count().label("count"),
+        )
+        .where(
+            WellnessLog.host_id == host_id,
+            cast(WellnessLog.created_at, Date) >= date_from,
+            cast(WellnessLog.created_at, Date) <= date_to,
+        )
+        .group_by(log_date, WellnessLog.status)
+        .order_by(log_date)
+    )
+    result = await db.execute(stmt)
+    return list(result.all())

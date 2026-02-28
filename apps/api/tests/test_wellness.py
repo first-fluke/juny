@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncGenerator, Generator
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -13,10 +13,15 @@ from src.common.enums import WellnessStatus
 from src.lib.database import get_db
 from src.main import app
 from src.wellness.model import WellnessLog
-from src.wellness.schemas import WellnessLogCreate
+from src.wellness.schemas import (
+    DailyWellnessStat,
+    WellnessLogCreate,
+    WellnessTrendResponse,
+)
 from src.wellness.service import (
     create_wellness_log,
     get_wellness_log,
+    get_wellness_trend,
     list_wellness_logs,
 )
 
@@ -240,3 +245,67 @@ class TestWellnessRouterExtended:
         fake_id = "00000000-0000-4000-8000-000000000060"
         response = authed_client.get(f"/api/v1/wellness/{fake_id}")
         assert response.status_code == 404
+
+    @patch("src.wellness.router.authorize_host_access", new_callable=AsyncMock)
+    @patch(f"{SERVICE}.get_wellness_trend", new_callable=AsyncMock)
+    def test_trends_200(
+        self,
+        mock_trend: AsyncMock,
+        mock_auth: AsyncMock,
+        authed_client: TestClient,
+    ) -> None:
+        host_id = uuid.UUID(TEST_USER_ID)
+        mock_trend.return_value = WellnessTrendResponse(
+            host_id=host_id,
+            date_from="2026-01-15",
+            date_to="2026-01-16",
+            daily_stats=[
+                DailyWellnessStat(date="2026-01-15", normal=5, warning=1),
+            ],
+        )
+        response = authed_client.get(
+            "/api/v1/wellness/trends",
+            params={
+                "host_id": str(host_id),
+                "date_from": "2026-01-15",
+                "date_to": "2026-01-16",
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["daily_stats"]) == 1
+        assert data["daily_stats"][0]["normal"] == 5
+
+
+# ---------------------------------------------------------------------------
+# Trend Service Tests
+# ---------------------------------------------------------------------------
+
+
+class TestWellnessTrendService:
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.aggregate_trend", new_callable=AsyncMock)
+    async def test_trend_pivot(self, mock_agg: AsyncMock) -> None:
+        row1 = (date(2026, 1, 15), "normal", 5)
+        row2 = (date(2026, 1, 15), "warning", 2)
+        row3 = (date(2026, 1, 16), "normal", 3)
+        mock_agg.return_value = [row1, row2, row3]
+        db = AsyncMock()
+
+        result = await get_wellness_trend(
+            db, MOCK_HOST_ID, date(2026, 1, 15), date(2026, 1, 16)
+        )
+        assert len(result.daily_stats) == 2
+        day1 = result.daily_stats[0]
+        assert day1.normal == 5
+        assert day1.warning == 2
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.aggregate_trend", new_callable=AsyncMock)
+    async def test_trend_empty(self, mock_agg: AsyncMock) -> None:
+        mock_agg.return_value = []
+        db = AsyncMock()
+        result = await get_wellness_trend(
+            db, MOCK_HOST_ID, date(2026, 1, 1), date(2026, 1, 7)
+        )
+        assert result.daily_stats == []

@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 from fastapi import APIRouter, Query, status
 
@@ -7,7 +8,11 @@ from src.common.models import PaginatedResponse, PaginationParams
 from src.lib.authorization import authorize_host_access
 from src.lib.dependencies import CurrentUser, DBSession
 from src.wellness import service
-from src.wellness.schemas import WellnessLogCreate, WellnessLogResponse
+from src.wellness.schemas import (
+    WellnessLogCreate,
+    WellnessLogResponse,
+    WellnessTrendResponse,
+)
 
 router = APIRouter()
 
@@ -52,6 +57,22 @@ async def list_wellness_logs(
         page=params.page,
         limit=params.limit,
     )
+
+
+@router.get(
+    "/trends",
+    response_model=WellnessTrendResponse,
+)
+async def get_wellness_trend(
+    db: DBSession,
+    user: CurrentUser,
+    host_id: uuid.UUID = Query(...),
+    date_from: date = Query(...),
+    date_to: date = Query(...),
+) -> WellnessTrendResponse:
+    """Get wellness trend analysis for a host within a date range."""
+    await authorize_host_access(db, user=user, host_id=host_id)
+    return await service.get_wellness_trend(db, host_id, date_from, date_to)
 
 
 @router.get(
