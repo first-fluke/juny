@@ -53,3 +53,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["google.cloud.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tenacity.*"]
+ignore_missing_imports = true
