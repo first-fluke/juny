@@ -1,5 +1,6 @@
 """Admin-specific database queries."""
 
+import datetime as dt
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -85,7 +86,7 @@ async def aggregate_wellness(
         select(WellnessLog.status, func.count().label("count"))
         .where(
             WellnessLog.host_id == host_id,
-            func.date(WellnessLog.created_at) == date,
+            func.date(WellnessLog.created_at) == dt.date.fromisoformat(date),
         )
         .group_by(WellnessLog.status)
     )
