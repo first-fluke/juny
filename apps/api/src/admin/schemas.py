@@ -30,3 +30,23 @@ class WellnessAggregateResponse(BaseModel):
     date: str
     total_logs: int
     by_status: dict[str, int]
+
+
+class TokenDeactivateRequest(BaseModel):
+    tokens: list[str]
+
+
+class TokenDeactivateResponse(BaseModel):
+    deactivated_count: int
+
+
+class AuditLogResponse(BaseModel):
+    id: uuid.UUID
+    actor_id: uuid.UUID | None
+    action: str
+    resource_type: str
+    detail: dict[str, object]
+    description: str | None
+    timestamp: datetime
+
+    model_config = {"from_attributes": True}
