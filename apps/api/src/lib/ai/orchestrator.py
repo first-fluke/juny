@@ -7,6 +7,7 @@ from google import genai
 from google.genai import types
 
 from src.lib.config import settings
+from src.lib.resilience import with_timeout
 
 logger = structlog.get_logger(__name__)
 
@@ -109,9 +110,13 @@ class GeminiLiveOrchestrator:
             model=self.model,
             backend=settings.GEMINI_BACKEND,
         )
-        async with client.aio.live.connect(model=self.model, config=config) as session:
+        cm = client.aio.live.connect(model=self.model, config=config)
+        session = await with_timeout(cm.__aenter__(), settings.GEMINI_CONNECT_TIMEOUT)
+        try:
             logger.info("gemini_live_connected", model=self.model)
             yield session
+        finally:
+            await cm.__aexit__(None, None, None)
 
     async def handle_tool_call(
         self,

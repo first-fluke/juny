@@ -69,6 +69,15 @@ class Settings(BaseSettings):
     CLOUD_TASKS_QUEUE: str | None = None
     CLOUD_TASKS_LOCATION: str = "asia-northeast3"
 
+    # Resilience: external API timeouts
+    GEMINI_CONNECT_TIMEOUT: float = 30.0
+    LIVEKIT_CONNECT_TIMEOUT: float = 10.0
+
+    # WebSocket stability
+    WS_INACTIVITY_TIMEOUT: float = 1800.0  # 30 minutes
+    WS_PING_INTERVAL: float = 30.0
+    WS_MAX_MESSAGE_SIZE: int = 1_048_576  # 1 MB
+
     # Storage (optional)
     STORAGE_BACKEND: Literal["gcs", "minio"] = "minio"
     GCS_BUCKET_NAME: str | None = None

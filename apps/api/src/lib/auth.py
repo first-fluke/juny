@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from src.common.errors import AUTH_001, AUTH_002, AUTH_003, raise_api_error
 from src.lib.config import settings
+from src.lib.resilience import with_retry
 
 
 class TokenPayload(BaseModel):
@@ -103,6 +104,7 @@ def decode_token(token: str) -> TokenPayload:
         )
 
 
+@with_retry()
 async def verify_google_token(access_token: str) -> OAuthUserInfo:
     """Verify Google OAuth token."""
     async with httpx.AsyncClient() as client:
@@ -126,6 +128,7 @@ async def verify_google_token(access_token: str) -> OAuthUserInfo:
         )
 
 
+@with_retry()
 async def verify_github_token(access_token: str) -> OAuthUserInfo:
     """Verify GitHub OAuth token."""
     async with httpx.AsyncClient() as client:
@@ -148,6 +151,7 @@ async def verify_github_token(access_token: str) -> OAuthUserInfo:
         )
 
 
+@with_retry()
 async def verify_facebook_token(access_token: str) -> OAuthUserInfo:
     """Verify Facebook OAuth token."""
     async with httpx.AsyncClient() as client:
