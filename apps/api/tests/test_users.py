@@ -16,6 +16,7 @@ from src.main import app
 from src.users.model import User
 from src.users.schemas import UserRoleUpdate, UserUpdate
 from src.users.service import (
+    delete_own_account,
     delete_user,
     get_user,
     list_users,
@@ -115,6 +116,62 @@ class TestUserService:
         user = _mock_user()
         await delete_user(db, user)
         mock_delete.assert_called_once_with(db, user)
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.delete", new_callable=AsyncMock)
+    @patch(f"{REPO}.find_by_id", new_callable=AsyncMock)
+    async def test_delete_own_account_with_image(
+        self,
+        mock_find: AsyncMock,
+        mock_delete: AsyncMock,
+    ) -> None:
+        storage = AsyncMock()
+        user = _mock_user(image="uploads/avatar.jpg")
+        mock_find.return_value = user
+        db = AsyncMock()
+        await delete_own_account(db, MOCK_USER_ID, storage)
+        storage.delete.assert_called_once_with("juny-uploads", "uploads/avatar.jpg")
+        mock_delete.assert_called_once_with(db, user)
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.delete", new_callable=AsyncMock)
+    @patch(f"{REPO}.find_by_id", new_callable=AsyncMock)
+    async def test_delete_own_account_no_image(
+        self,
+        mock_find: AsyncMock,
+        mock_delete: AsyncMock,
+    ) -> None:
+        storage = AsyncMock()
+        user = _mock_user(image=None)
+        mock_find.return_value = user
+        db = AsyncMock()
+        await delete_own_account(db, MOCK_USER_ID, storage)
+        storage.delete.assert_not_called()
+        mock_delete.assert_called_once()
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.delete", new_callable=AsyncMock)
+    @patch(f"{REPO}.find_by_id", new_callable=AsyncMock)
+    async def test_delete_own_account_storage_error_continues(
+        self,
+        mock_find: AsyncMock,
+        mock_delete: AsyncMock,
+    ) -> None:
+        storage = AsyncMock()
+        storage.delete.side_effect = Exception("storage down")
+        user = _mock_user(image="avatar.jpg")
+        mock_find.return_value = user
+        db = AsyncMock()
+        await delete_own_account(db, MOCK_USER_ID, storage)
+        mock_delete.assert_called_once_with(db, user)
+
+    @pytest.mark.asyncio
+    async def test_delete_own_account_not_found(self) -> None:
+        with patch(f"{REPO}.find_by_id", new_callable=AsyncMock, return_value=None):
+            storage = AsyncMock()
+            db = AsyncMock()
+            with pytest.raises(ValueError, match="User not found"):
+                await delete_own_account(db, MOCK_USER_ID, storage)
 
 
 # ---------------------------------------------------------------------------
@@ -251,3 +308,32 @@ class TestUserRouterExtended:
     def test_delete_user_non_org_403(self, authed_client: TestClient) -> None:
         response = authed_client.delete(f"/api/v1/users/{MOCK_USER_ID}")
         assert response.status_code == 403
+
+    @patch(f"{SERVICE}.delete_own_account", new_callable=AsyncMock)
+    def test_delete_me_204(
+        self,
+        mock_delete: AsyncMock,
+        authed_client: TestClient,
+    ) -> None:
+        response = authed_client.delete("/api/v1/users/me")
+        assert response.status_code == 204
+        mock_delete.assert_called_once()
+
+    def test_delete_me_unauthenticated(self, client: TestClient) -> None:
+        response = client.delete("/api/v1/users/me")
+        assert response.status_code == 401
+
+    @patch("src.admin.service.export_user_data", new_callable=AsyncMock)
+    def test_export_me_200(
+        self,
+        mock_export: AsyncMock,
+        authed_client: TestClient,
+    ) -> None:
+        mock_export.return_value = {"user": {"email": "me@example.com"}}
+        response = authed_client.get("/api/v1/users/me/export")
+        assert response.status_code == 200
+        assert response.json()["user"]["email"] == "me@example.com"
+
+    def test_export_me_unauthenticated(self, client: TestClient) -> None:
+        response = client.get("/api/v1/users/me/export")
+        assert response.status_code == 401

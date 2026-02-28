@@ -1,14 +1,16 @@
 """HTTP endpoints for users."""
 
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, status
 
+from src.admin import service as admin_service
 from src.common.enums import UserRole
 from src.common.errors import RES_004, raise_api_error
 from src.common.models import PaginatedResponse, PaginationParams
 from src.lib.authorization import authorize_host_access, require_role
-from src.lib.dependencies import CurrentUser, DBSession
+from src.lib.dependencies import CurrentUser, DBSession, StorageDep
 from src.users import service
 from src.users.schemas import UserResponse, UserRoleUpdate, UserUpdate
 
@@ -41,6 +43,25 @@ async def update_my_profile(
         raise_api_error(RES_004, status.HTTP_404_NOT_FOUND)
     updated = await service.update_user(db, db_user, payload)
     return UserResponse.model_validate(updated)
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_me(
+    db: DBSession,
+    user: CurrentUser,
+    storage: StorageDep,
+) -> None:
+    """Delete the current user's own account."""
+    await service.delete_own_account(db, uuid.UUID(user.id), storage)
+
+
+@router.get("/me/export")
+async def export_my_data(
+    db: DBSession,
+    user: CurrentUser,
+) -> dict[str, Any]:
+    """Export all personal data (GDPR self-service)."""
+    return await admin_service.export_user_data(db, uuid.UUID(user.id))
 
 
 @router.get("", response_model=PaginatedResponse[UserResponse])
