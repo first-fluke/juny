@@ -36,6 +36,9 @@ class TestWebSocketBridge:
                 pass
         assert exc_info.value.code == 1008
 
+    @pytest.mark.filterwarnings(
+        "ignore:coroutine 'Connection._cancel' was never awaited:RuntimeWarning"
+    )
     def test_websocket_rejects_without_gemini_config(self, client: TestClient) -> None:
         """When Gemini is not configured, the WS sends an error and closes."""
         with (
@@ -86,6 +89,9 @@ class TestWebSocketBridge:
                 pass
         assert exc_info.value.code == 1008
 
+    @pytest.mark.filterwarnings(
+        "ignore:coroutine 'Connection._cancel' was never awaited:RuntimeWarning"
+    )
     def test_websocket_rejects_expired_token(self, client: TestClient) -> None:
         """Expired token should be rejected with 1008."""
         payload = _mock_token_payload()
@@ -291,6 +297,9 @@ class TestForwardResponseNativeAudio:
         )
 
     @pytest.mark.asyncio
+    @pytest.mark.filterwarnings(
+        "ignore:coroutine 'Connection._cancel' was never awaited:RuntimeWarning"
+    )
     async def test_ducking_suppresses_inline_audio(self) -> None:
         """Ducking active should suppress inline_data audio."""
         from src.routers.live import _forward_response

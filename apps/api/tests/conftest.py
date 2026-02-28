@@ -1,4 +1,5 @@
-from unittest.mock import AsyncMock
+from collections.abc import Generator
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -16,8 +17,12 @@ TEST_ORGANIZATION_ID = "00000000-0000-4000-8000-000000000095"
 
 
 @pytest.fixture(autouse=True)
-def _reset_rate_limiters() -> None:
-    """Reset rate limiter state between tests to avoid stale event loops."""
+def _reset_rate_limiters() -> Generator[None, None, None]:
+    """Reset rate limiter state and force in-memory backend for tests."""
+    reset_rate_limiters()
+    with patch("src.lib.rate_limit.settings") as mock_settings:
+        mock_settings.REDIS_URL = None
+        yield
     reset_rate_limiters()
 
 
@@ -89,5 +94,13 @@ def organization_client(organization_auth_headers: dict[str, str]) -> TestClient
 
 @pytest.fixture
 def mock_db() -> AsyncMock:
-    """Mock database session."""
-    return AsyncMock()
+    """Mock database session.
+
+    ``add()`` is sync on ``AsyncSession`` — use ``MagicMock`` to avoid
+    'coroutine was never awaited' warnings.
+    """
+    from unittest.mock import MagicMock
+
+    db = AsyncMock()
+    db.add = MagicMock()
+    return db

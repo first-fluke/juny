@@ -10,6 +10,8 @@ from src.admin.schemas import CleanupResponse
 from src.lib.rate_limit import (
     InMemoryRateLimiter,
     RateLimitConfig,
+    RedisRateLimiter,
+    close_rate_limiters,
     default_key_func,
     get_rate_limiter,
     reset_rate_limiters,
@@ -146,3 +148,30 @@ class TestDefaultKeyFunc:
         mock_request.url.path = "/api"
         key = default_key_func(mock_request)
         assert key == "127.0.0.1:/api"
+
+
+# ── close_rate_limiters ────────────────────────────────────────
+
+
+class TestCloseRateLimiters:
+    @pytest.mark.asyncio
+    async def test_close_clears_registry(self) -> None:
+        reset_rate_limiters()
+        config = RateLimitConfig(requests=5, window=30)
+        get_rate_limiter(config)
+        await close_rate_limiters()
+        # Registry is empty — next get creates a new instance
+        limiter = get_rate_limiter(config)
+        assert isinstance(limiter, (InMemoryRateLimiter, RedisRateLimiter))
+
+    @pytest.mark.asyncio
+    async def test_close_calls_redis_close(self) -> None:
+        """When RedisRateLimiter exists, close() is invoked."""
+        reset_rate_limiters()
+        redis_limiter = RedisRateLimiter(requests=10, window=60)
+        redis_limiter.close = AsyncMock()  # type: ignore[method-assign]
+        from src.lib import rate_limit
+
+        rate_limit._rate_limiters[(10, 60)] = redis_limiter
+        await close_rate_limiters()
+        redis_limiter.close.assert_called_once()

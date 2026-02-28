@@ -76,10 +76,7 @@ test = "pytest tests/"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-v"
-filterwarnings = [
-    "ignore::ResourceWarning",
-    "ignore:coroutine .* was never awaited:RuntimeWarning",
-]
+filterwarnings = []
 
 [tool.mypy]
 python_version = "3.12"

@@ -138,6 +138,14 @@ def reset_rate_limiters() -> None:
     _rate_limiters.clear()
 
 
+async def close_rate_limiters() -> None:
+    """Close all rate limiter connections and reset registry."""
+    for limiter in _rate_limiters.values():
+        if isinstance(limiter, RedisRateLimiter):
+            await limiter.close()
+    _rate_limiters.clear()
+
+
 def get_rate_limiter(config: RateLimitConfig) -> InMemoryRateLimiter | RedisRateLimiter:
     """Get or create rate limiter instance per (requests, window) config."""
     key = (config.requests, config.window)
