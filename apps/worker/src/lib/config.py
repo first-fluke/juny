@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     # Worker self-URL (for dispatching sub-tasks)
     WORKER_BASE_URL: str = "http://localhost:8280"
 
+    # OpenTelemetry (optional)
+    OTEL_EXPORTER_OTLP_ENDPOINT: str | None = None
+
     # Notifications
     NOTIFICATION_PROVIDER: Literal["mock", "fcm"] = "mock"
 

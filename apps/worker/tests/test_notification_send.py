@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -106,3 +106,79 @@ class TestNotificationSendJob:
         assert result["sent_count"] == 1
         assert result["failed_count"] == 1
         assert result["failed_tokens"] == ["tok-bad"]
+
+    @pytest.mark.asyncio
+    @patch(
+        "src.jobs.notification_send._deactivate_failed_tokens",
+        new_callable=AsyncMock,
+    )
+    @patch("src.jobs.notification_send.settings")
+    async def test_execute_fcm_calls_deactivation(
+        self, mock_settings: object, mock_deactivate: AsyncMock
+    ) -> None:
+        """FCM branch with failures should call _deactivate_failed_tokens."""
+        mock_settings.NOTIFICATION_PROVIDER = "fcm"  # type: ignore[attr-defined]
+
+        fake_messaging = MagicMock()
+        sr_ok = MagicMock(success=True, exception=None)
+        sr_fail = MagicMock(success=False, exception=Exception("InvalidRegistration"))
+        batch_resp = MagicMock()
+        batch_resp.success_count = 1
+        batch_resp.failure_count = 1
+        batch_resp.responses = [sr_ok, sr_fail]
+        fake_messaging.send_each_for_multicast.return_value = batch_resp
+
+        fake_firebase = MagicMock()
+        fake_firebase.messaging = fake_messaging
+        with patch.dict(
+            sys.modules,
+            {
+                "firebase_admin": fake_firebase,
+                "firebase_admin.messaging": fake_messaging,
+            },
+        ):
+            job = NotificationSendJob()
+            await job.execute(
+                {
+                    "tokens": ["tok-good", "tok-bad"],
+                    "title": "Hi",
+                    "body": "Test",
+                }
+            )
+        mock_deactivate.assert_called_once_with(["tok-bad"])
+
+    @pytest.mark.asyncio
+    @patch(
+        "src.jobs.notification_send._deactivate_failed_tokens",
+        new_callable=AsyncMock,
+    )
+    @patch("src.jobs.notification_send.settings")
+    async def test_execute_fcm_deactivation_error_continues(
+        self, mock_settings: object, mock_deactivate: AsyncMock
+    ) -> None:
+        """Deactivation failure should not break the job."""
+        mock_settings.NOTIFICATION_PROVIDER = "fcm"  # type: ignore[attr-defined]
+        mock_deactivate.side_effect = Exception("API down")
+
+        fake_messaging = MagicMock()
+        sr_fail = MagicMock(success=False, exception=Exception("bad"))
+        batch_resp = MagicMock()
+        batch_resp.success_count = 0
+        batch_resp.failure_count = 1
+        batch_resp.responses = [sr_fail]
+        fake_messaging.send_each_for_multicast.return_value = batch_resp
+
+        fake_firebase = MagicMock()
+        fake_firebase.messaging = fake_messaging
+        with patch.dict(
+            sys.modules,
+            {
+                "firebase_admin": fake_firebase,
+                "firebase_admin.messaging": fake_messaging,
+            },
+        ):
+            job = NotificationSendJob()
+            result = await job.execute(
+                {"tokens": ["tok-bad"], "title": "Hi", "body": "Test"}
+            )
+        assert result["failed_count"] == 1
