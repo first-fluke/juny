@@ -14,6 +14,7 @@ from src.main import app
 from src.notifications.model import DeviceToken
 from src.notifications.schemas import DeviceTokenCreate
 from src.notifications.service import (
+    get_user_token_strings,
     get_user_tokens,
     register_token,
     unregister_token,
@@ -114,6 +115,31 @@ class TestNotificationService:
         db = AsyncMock()
         result = await get_user_tokens(db, MOCK_USER_ID)
         assert len(result) == 1
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.find_by_user", new_callable=AsyncMock)
+    async def test_get_user_tokens_active_only_false(
+        self, mock_find: AsyncMock
+    ) -> None:
+        mock_find.return_value = [
+            _mock_device_token(),
+            _mock_device_token(is_active=False),
+        ]
+        db = AsyncMock()
+        result = await get_user_tokens(db, MOCK_USER_ID, active_only=False)
+        assert len(result) == 2
+        mock_find.assert_called_once_with(db, MOCK_USER_ID, active_only=False)
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.find_by_user", new_callable=AsyncMock)
+    async def test_get_user_token_strings_active_only_false(
+        self, mock_find: AsyncMock
+    ) -> None:
+        mock_find.return_value = [_mock_device_token()]
+        db = AsyncMock()
+        result = await get_user_token_strings(db, MOCK_USER_ID, active_only=False)
+        assert result == ["fcm-token-abc123"]
+        mock_find.assert_called_once_with(db, MOCK_USER_ID, active_only=False)
 
 
 # ---------------------------------------------------------------------------

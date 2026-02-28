@@ -48,15 +48,19 @@ async def unregister_token(
 async def get_user_tokens(
     db: AsyncSession,
     user_id: uuid.UUID,
+    *,
+    active_only: bool = True,
 ) -> list[DeviceToken]:
-    """Return all active device tokens for a user."""
-    return await repository.find_by_user(db, user_id)
+    """Return device tokens for a user."""
+    return await repository.find_by_user(db, user_id, active_only=active_only)
 
 
 async def get_user_token_strings(
     db: AsyncSession,
     user_id: uuid.UUID,
+    *,
+    active_only: bool = True,
 ) -> list[str]:
     """Return raw FCM token strings for a user."""
-    tokens = await repository.find_by_user(db, user_id)
+    tokens = await repository.find_by_user(db, user_id, active_only=active_only)
     return [t.token for t in tokens]

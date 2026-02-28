@@ -156,6 +156,18 @@ class TestRelationService:
         )
 
     @pytest.mark.asyncio
+    @patch(f"{REPO}.find_by_host", new_callable=AsyncMock)
+    async def test_find_by_host_active_only_false(self, mock_find: AsyncMock) -> None:
+        relations = [_mock_relation(), _mock_relation(is_active=False)]
+        mock_find.return_value = (relations, 2)
+        db = AsyncMock()
+        result = await list_relations_for_host(db, MOCK_HOST_ID, active_only=False)
+        assert result == (relations, 2)
+        mock_find.assert_called_once_with(
+            db, MOCK_HOST_ID, active_only=False, limit=20, offset=0
+        )
+
+    @pytest.mark.asyncio
     @patch(f"{REPO}.find_by_caregiver", new_callable=AsyncMock)
     async def test_list_relations_for_caregiver(self, mock_find: AsyncMock) -> None:
         relations = [_mock_relation()]
