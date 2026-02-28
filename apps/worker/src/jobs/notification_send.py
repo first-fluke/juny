@@ -39,6 +39,17 @@ class NotificationSendJob(BaseJob):
             response: messaging.BatchResponse = messaging.send_each_for_multicast(
                 message
             )
+
+            failed_tokens: list[str] = []
+            for idx, send_response in enumerate(response.responses):
+                if not send_response.success:
+                    failed_tokens.append(tokens[idx])
+                    logger.warning(
+                        "notification_send_token_failed",
+                        token=tokens[idx][:20] + "...",
+                        error=str(send_response.exception),
+                    )
+
             logger.info(
                 "notification_send_complete",
                 success=response.success_count,
@@ -47,6 +58,7 @@ class NotificationSendJob(BaseJob):
             return {
                 "sent_count": response.success_count,
                 "failed_count": response.failure_count,
+                "failed_tokens": failed_tokens,
             }
 
         # Mock fallback
