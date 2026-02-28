@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 from fastapi import APIRouter, Query, status
 
@@ -8,6 +9,7 @@ from src.lib.authorization import authorize_host_access
 from src.lib.dependencies import CurrentUser, DBSession
 from src.medications import service
 from src.medications.schemas import (
+    MedicationAdherenceResponse,
     MedicationCreate,
     MedicationResponse,
     MedicationUpdate,
@@ -56,6 +58,19 @@ async def list_medications(
         page=params.page,
         limit=params.limit,
     )
+
+
+@router.get("/adherence", response_model=MedicationAdherenceResponse)
+async def get_medication_adherence(
+    db: DBSession,
+    user: CurrentUser,
+    host_id: uuid.UUID = Query(...),
+    date_from: date = Query(...),
+    date_to: date = Query(...),
+) -> MedicationAdherenceResponse:
+    """Get medication adherence statistics for a host within a date range."""
+    await authorize_host_access(db, user=user, host_id=host_id)
+    return await service.get_adherence_stats(db, host_id, date_from, date_to)
 
 
 @router.get("/{medication_id}", response_model=MedicationResponse)

@@ -1,13 +1,17 @@
 """Business logic for medications."""
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.medications import repository
 from src.medications.model import Medication
-from src.medications.schemas import MedicationCreate, MedicationUpdate
+from src.medications.schemas import (
+    MedicationAdherenceResponse,
+    MedicationCreate,
+    MedicationUpdate,
+)
 
 
 async def create_medication(
@@ -67,3 +71,33 @@ async def delete_medication(
 ) -> None:
     """Delete a medication entry."""
     await repository.delete(db, medication)
+
+
+async def find_medication_by_pill_name(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+    pill_name: str,
+) -> Medication | None:
+    """Find the closest untaken medication matching a pill name."""
+    return await repository.find_by_host_and_pill_name(db, host_id, pill_name)
+
+
+async def get_adherence_stats(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+    date_from: date,
+    date_to: date,
+) -> MedicationAdherenceResponse:
+    """Compute medication adherence statistics for a host."""
+    total, taken = await repository.count_adherence(db, host_id, date_from, date_to)
+    missed = total - taken
+    adherence_rate = (taken / total * 100) if total > 0 else 0.0
+    return MedicationAdherenceResponse(
+        host_id=host_id,
+        date_from=str(date_from),
+        date_to=str(date_to),
+        total=total,
+        taken=taken,
+        missed=missed,
+        adherence_rate=round(adherence_rate, 1),
+    )

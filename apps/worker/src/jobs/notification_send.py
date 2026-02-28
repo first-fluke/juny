@@ -2,12 +2,28 @@
 
 from typing import Any
 
+import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
 from src.lib.config import settings
+from src.lib.retry import with_retry
 
 logger = structlog.get_logger(__name__)
+
+
+@with_retry(max_attempts=3, min_wait=1, max_wait=5)
+async def _deactivate_failed_tokens(tokens: list[str]) -> None:
+    """Call the API to deactivate failed FCM tokens."""
+    url = f"{settings.API_BASE_URL}/api/v1/admin/tokens/deactivate"
+    headers: dict[str, str] = {}
+    if settings.INTERNAL_API_KEY:
+        headers["X-Internal-Key"] = settings.INTERNAL_API_KEY
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            url, json={"tokens": tokens}, headers=headers, timeout=10.0
+        )
+        resp.raise_for_status()
 
 
 class NotificationSendJob(BaseJob):
@@ -55,6 +71,13 @@ class NotificationSendJob(BaseJob):
                 success=response.success_count,
                 failure=response.failure_count,
             )
+
+            if failed_tokens:
+                try:
+                    await _deactivate_failed_tokens(failed_tokens)
+                except Exception:
+                    logger.exception("failed_token_deactivation_error")
+
             return {
                 "sent_count": response.success_count,
                 "failed_count": response.failure_count,

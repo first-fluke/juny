@@ -2,12 +2,16 @@
 
 import uuid
 
+import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.enums import UserRole
+from src.lib.storage.base import StorageProvider
 from src.users import repository
 from src.users.model import User
 from src.users.schemas import UserRoleUpdate, UserUpdate
+
+logger = structlog.get_logger(__name__)
 
 _VALID_ROLES = {r.value for r in UserRole}
 
@@ -54,4 +58,19 @@ async def list_users(
 
 async def delete_user(db: AsyncSession, user: User) -> None:
     """Delete a user."""
+    await repository.delete(db, user)
+
+
+async def delete_own_account(
+    db: AsyncSession, user_id: uuid.UUID, storage: StorageProvider
+) -> None:
+    """Self-delete a user account and clean up associated storage."""
+    user = await repository.find_by_id(db, user_id)
+    if user is None:
+        raise ValueError("User not found")
+    if user.image:
+        try:
+            await storage.delete("juny-uploads", user.image)
+        except Exception:
+            logger.warning("storage_cleanup_failed", user_id=str(user_id))
     await repository.delete(db, user)

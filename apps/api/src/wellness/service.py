@@ -1,12 +1,17 @@
 """Business logic for wellness logs."""
 
 import uuid
+from datetime import date
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.wellness import repository
 from src.wellness.model import WellnessLog
-from src.wellness.schemas import WellnessLogCreate
+from src.wellness.schemas import (
+    DailyWellnessStat,
+    WellnessLogCreate,
+    WellnessTrendResponse,
+)
 
 
 async def create_wellness_log(
@@ -40,3 +45,35 @@ async def get_wellness_log(
 ) -> WellnessLog | None:
     """Get a single wellness log by ID."""
     return await repository.find_by_id(db, log_id)
+
+
+async def get_wellness_trend(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+    date_from: date,
+    date_to: date,
+) -> WellnessTrendResponse:
+    """Aggregate wellness logs into daily trend statistics."""
+    rows = await repository.aggregate_trend(db, host_id, date_from, date_to)
+
+    daily: dict[str, DailyWellnessStat] = {}
+    for row in rows:
+        d = str(row[0])
+        if d not in daily:
+            daily[d] = DailyWellnessStat(date=d)
+        stat = daily[d]
+        status_name = row[1]
+        count = row[2]
+        if status_name == "normal":
+            stat.normal = count
+        elif status_name == "warning":
+            stat.warning = count
+        elif status_name == "emergency":
+            stat.emergency = count
+
+    return WellnessTrendResponse(
+        host_id=host_id,
+        date_from=str(date_from),
+        date_to=str(date_to),
+        daily_stats=list(daily.values()),
+    )

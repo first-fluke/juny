@@ -1,9 +1,11 @@
 """Data access layer for medications."""
 
 import uuid
+from datetime import date
 
-from sqlalchemy import func, select
+from sqlalchemy import cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.types import Date
 
 from src.medications.model import Medication
 
@@ -67,3 +69,52 @@ async def delete(
     """Hard-delete a medication entry."""
     await db.delete(medication)
     await db.flush()
+
+
+async def find_by_host_and_pill_name(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+    pill_name: str,
+) -> Medication | None:
+    """Find the closest untaken medication matching pill_name for a host."""
+    stmt = (
+        select(Medication)
+        .where(
+            Medication.host_id == host_id,
+            Medication.pill_name.ilike(f"%{pill_name}%"),
+            Medication.is_taken.is_(False),
+        )
+        .order_by(Medication.schedule_time.asc())
+        .limit(1)
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
+
+
+async def count_adherence(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+    date_from: date,
+    date_to: date,
+) -> tuple[int, int]:
+    """Count total and taken medications for a host within a date range.
+
+    Returns (total, taken).
+    """
+    base = select(Medication).where(
+        Medication.host_id == host_id,
+        cast(Medication.schedule_time, Date) >= date_from,
+        cast(Medication.schedule_time, Date) <= date_to,
+    )
+
+    total_result = await db.execute(select(func.count()).select_from(base.subquery()))
+    total = total_result.scalar_one()
+
+    taken_result = await db.execute(
+        select(func.count()).select_from(
+            base.where(Medication.is_taken.is_(True)).subquery()
+        )
+    )
+    taken = taken_result.scalar_one()
+
+    return total, taken

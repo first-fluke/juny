@@ -51,6 +51,9 @@ class TestWebSocketBridge:
                 assert msg["type"] == "error"
                 assert "not configured" in msg["message"]
 
+    @pytest.mark.filterwarnings(
+        "ignore:coroutine 'WebSocket.receive_text' was never awaited:RuntimeWarning"
+    )
     def test_websocket_sends_connected_on_success(self, client: TestClient) -> None:
         """When Gemini connects successfully, the WS sends a connected message."""
         mock_session = AsyncMock()
@@ -119,6 +122,69 @@ class TestWebSocketBridge:
             ):
                 pass
         assert exc_info.value.code == 1008
+
+
+class TestWebSocketStability:
+    """Tests for WebSocket stability: duplicate connections, registry, message size."""
+
+    def test_duplicate_connection_rejected(self, client: TestClient) -> None:
+        """Second WS for the same user should receive an error and be closed."""
+        from src.routers.live import _active_bridges
+
+        user_key = _mock_token_payload().user_id
+        # Simulate an existing active connection
+        _active_bridges[user_key] = MagicMock()
+
+        try:
+            with (
+                patch(_DECODE, return_value=_mock_token_payload()),
+                client.websocket_connect("/api/v1/live/ws?token=fake") as ws,
+            ):
+                msg = ws.receive_json()
+                assert msg["type"] == "error"
+                assert "Duplicate" in msg["message"]
+        finally:
+            _active_bridges.pop(user_key, None)
+
+    @pytest.mark.filterwarnings(
+        "ignore:coroutine 'Connection._cancel' was never awaited:RuntimeWarning"
+    )
+    def test_registry_cleaned_on_disconnect(self, client: TestClient) -> None:
+        """After WS disconnect, the user should be removed from _active_bridges."""
+        from src.routers.live import _active_bridges
+
+        mock_session = AsyncMock()
+        mock_session.receive = MagicMock(return_value=AsyncIteratorMock([]))
+
+        mock_orchestrator = MagicMock()
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_cm.__aexit__ = AsyncMock(return_value=False)
+        mock_orchestrator.connect.return_value = mock_cm
+
+        user_key = _mock_token_payload().user_id
+
+        with (
+            patch(_DECODE, return_value=_mock_token_payload()),
+            patch("src.routers.live.settings") as mock_settings,
+            patch(
+                "src.routers.live.GeminiLiveOrchestrator",
+                return_value=mock_orchestrator,
+            ),
+        ):
+            mock_settings.gemini_configured = True
+            mock_settings.LIVEKIT_API_KEY = None
+            mock_settings.LIVEKIT_API_SECRET = None
+            mock_settings.WS_INACTIVITY_TIMEOUT = 1800.0
+            mock_settings.WS_MAX_MESSAGE_SIZE = 1_048_576
+            mock_settings.WS_PING_INTERVAL = 30.0
+
+            with client.websocket_connect("/api/v1/live/ws?token=fake") as ws:
+                msg = ws.receive_json()
+                assert msg["type"] == "connected"
+                assert user_key in _active_bridges
+
+        assert user_key not in _active_bridges
 
 
 class TestGetLiveToken:

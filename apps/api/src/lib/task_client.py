@@ -10,6 +10,7 @@ import httpx
 import structlog
 
 from src.lib.config import settings
+from src.lib.resilience import with_retry
 
 logger = structlog.get_logger(__name__)
 
@@ -26,6 +27,7 @@ async def dispatch_task(task_type: str, data: dict[str, Any]) -> None:
         await _dispatch_cloud_tasks(task_type, data)
 
 
+@with_retry()
 async def _dispatch_local(task_type: str, data: dict[str, Any]) -> None:
     """POST directly to the worker process."""
     url = f"{settings.WORKER_URL}/tasks/process"

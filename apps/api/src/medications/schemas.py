@@ -32,3 +32,15 @@ class MedicationUpdate(BaseModel):
     pill_name: str | None = Field(default=None, min_length=1, max_length=255)
     schedule_time: datetime | None = None
     is_taken: bool | None = None
+
+
+class MedicationAdherenceResponse(BaseModel):
+    """Medication adherence statistics."""
+
+    host_id: uuid.UUID
+    date_from: str
+    date_to: str
+    total: int
+    taken: int
+    missed: int
+    adherence_rate: float

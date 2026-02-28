@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import AsyncGenerator, Generator
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -12,10 +12,15 @@ from fastapi import HTTPException
 from src.lib.database import get_db
 from src.main import app
 from src.medications.model import Medication
-from src.medications.schemas import MedicationCreate, MedicationUpdate
+from src.medications.schemas import (
+    MedicationAdherenceResponse,
+    MedicationCreate,
+    MedicationUpdate,
+)
 from src.medications.service import (
     create_medication,
     delete_medication,
+    get_adherence_stats,
     get_medication,
     list_medications,
     update_medication,
@@ -143,6 +148,31 @@ class TestMedicationService:
         result = await get_medication(db, MOCK_MED_ID)
         assert result is None
 
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.count_adherence", new_callable=AsyncMock)
+    async def test_get_adherence_stats(self, mock_count: AsyncMock) -> None:
+        mock_count.return_value = (10, 7)
+        db = AsyncMock()
+        result = await get_adherence_stats(
+            db, MOCK_HOST_ID, date(2026, 1, 1), date(2026, 1, 31)
+        )
+        assert isinstance(result, MedicationAdherenceResponse)
+        assert result.total == 10
+        assert result.taken == 7
+        assert result.missed == 3
+        assert result.adherence_rate == 70.0
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.count_adherence", new_callable=AsyncMock)
+    async def test_get_adherence_stats_empty(self, mock_count: AsyncMock) -> None:
+        mock_count.return_value = (0, 0)
+        db = AsyncMock()
+        result = await get_adherence_stats(
+            db, MOCK_HOST_ID, date(2026, 1, 1), date(2026, 1, 7)
+        )
+        assert result.total == 0
+        assert result.adherence_rate == 0.0
+
 
 # ---------------------------------------------------------------------------
 # Router Tests
@@ -268,6 +298,36 @@ class TestMedicationRouterExtended:
         fake_id = "00000000-0000-4000-8000-000000000060"
         response = authed_client.get(f"/api/v1/medications/{fake_id}")
         assert response.status_code == 404
+
+    @patch("src.medications.router.authorize_host_access", new_callable=AsyncMock)
+    @patch(f"{SERVICE}.get_adherence_stats", new_callable=AsyncMock)
+    def test_adherence_200(
+        self,
+        mock_stats: AsyncMock,
+        mock_auth: AsyncMock,
+        authed_client: TestClient,
+    ) -> None:
+        mock_stats.return_value = MedicationAdherenceResponse(
+            host_id=uuid.UUID(TEST_USER_ID),
+            date_from="2026-01-01",
+            date_to="2026-01-31",
+            total=10,
+            taken=7,
+            missed=3,
+            adherence_rate=70.0,
+        )
+        response = authed_client.get(
+            "/api/v1/medications/adherence",
+            params={
+                "host_id": TEST_USER_ID,
+                "date_from": "2026-01-01",
+                "date_to": "2026-01-31",
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 10
+        assert data["adherence_rate"] == 70.0
 
     @patch(f"{SERVICE}.delete_medication", new_callable=AsyncMock)
     @patch("src.medications.router.authorize_host_access", new_callable=AsyncMock)

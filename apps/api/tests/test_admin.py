@@ -113,18 +113,21 @@ class TestAdminService:
     """Tests for admin service functions."""
 
     @pytest.mark.asyncio
+    @patch(f"{ADMIN_REPO}.create_audit_log", new_callable=AsyncMock)
     @patch(f"{ADMIN_REPO}.delete_old_wellness_logs", new_callable=AsyncMock)
     @patch(f"{ADMIN_REPO}.deactivate_old_tokens", new_callable=AsyncMock)
     async def test_cleanup_all(
         self,
         mock_deactivate: AsyncMock,
         mock_delete_logs: AsyncMock,
+        mock_audit: AsyncMock,
     ) -> None:
         from src.admin.service import cleanup_data
 
         mock_delete_logs.return_value = 5
         mock_deactivate.return_value = 2
         db = AsyncMock()
+        db.add = MagicMock()
 
         result = await cleanup_data(db, retention_days=90, resource_type="all")
 
@@ -132,20 +135,24 @@ class TestAdminService:
         assert result.deactivated_tokens == 2
         mock_delete_logs.assert_called_once()
         mock_deactivate.assert_called_once()
+        mock_audit.assert_called_once()
         db.commit.assert_called_once()
 
     @pytest.mark.asyncio
+    @patch(f"{ADMIN_REPO}.create_audit_log", new_callable=AsyncMock)
     @patch(f"{ADMIN_REPO}.delete_old_wellness_logs", new_callable=AsyncMock)
     @patch(f"{ADMIN_REPO}.deactivate_old_tokens", new_callable=AsyncMock)
     async def test_cleanup_wellness_logs_only(
         self,
         mock_deactivate: AsyncMock,
         mock_delete_logs: AsyncMock,
+        mock_audit: AsyncMock,
     ) -> None:
         from src.admin.service import cleanup_data
 
         mock_delete_logs.return_value = 3
         db = AsyncMock()
+        db.add = MagicMock()
 
         result = await cleanup_data(
             db, retention_days=90, resource_type="wellness_logs"
@@ -157,17 +164,20 @@ class TestAdminService:
         mock_deactivate.assert_not_called()
 
     @pytest.mark.asyncio
+    @patch(f"{ADMIN_REPO}.create_audit_log", new_callable=AsyncMock)
     @patch(f"{ADMIN_REPO}.delete_old_wellness_logs", new_callable=AsyncMock)
     @patch(f"{ADMIN_REPO}.deactivate_old_tokens", new_callable=AsyncMock)
     async def test_cleanup_device_tokens_only(
         self,
         mock_deactivate: AsyncMock,
         mock_delete_logs: AsyncMock,
+        mock_audit: AsyncMock,
     ) -> None:
         from src.admin.service import cleanup_data
 
         mock_deactivate.return_value = 4
         db = AsyncMock()
+        db.add = MagicMock()
 
         result = await cleanup_data(
             db, retention_days=30, resource_type="device_tokens"
@@ -237,6 +247,37 @@ class TestAdminService:
         assert result.date == "2026-01-15"
 
     @pytest.mark.asyncio
+    @patch(f"{ADMIN_REPO}.create_audit_log", new_callable=AsyncMock)
+    @patch("src.notifications.repository.deactivate_tokens", new_callable=AsyncMock)
+    async def test_deactivate_failed_tokens(
+        self,
+        mock_deactivate: AsyncMock,
+        mock_audit: AsyncMock,
+    ) -> None:
+        from src.admin.service import deactivate_failed_tokens
+
+        mock_deactivate.return_value = 2
+        db = AsyncMock()
+        db.add = MagicMock()
+
+        result = await deactivate_failed_tokens(db, ["tok-a", "tok-b"])
+
+        assert result == 2
+        mock_deactivate.assert_called_once_with(db, ["tok-a", "tok-b"])
+        mock_audit.assert_called_once()
+        db.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_deactivate_failed_tokens_empty_list(self) -> None:
+        from src.admin.service import deactivate_failed_tokens
+
+        db = AsyncMock()
+        result = await deactivate_failed_tokens(db, [])
+
+        assert result == 0
+        db.commit.assert_not_called()
+
+    @pytest.mark.asyncio
     @patch(f"{ADMIN_REPO}.aggregate_wellness", new_callable=AsyncMock)
     async def test_get_wellness_aggregate_no_data(
         self,
@@ -252,6 +293,95 @@ class TestAdminService:
 
         assert result.total_logs == 0
         assert result.by_status == {}
+
+    @pytest.mark.asyncio
+    @patch(f"{ADMIN_REPO}.find_audit_logs", new_callable=AsyncMock)
+    async def test_list_audit_logs(
+        self,
+        mock_find: AsyncMock,
+    ) -> None:
+        from src.admin.service import list_audit_logs
+
+        mock_log = MagicMock()
+        mock_log.id = uuid.UUID("00000000-0000-4000-8000-000000000601")
+        mock_log.action = "cleanup"
+        mock_find.return_value = ([mock_log], 1)
+
+        db = AsyncMock()
+        logs, total = await list_audit_logs(db, limit=50, offset=0)
+
+        assert total == 1
+        assert len(logs) == 1
+        mock_find.assert_called_once_with(db, limit=50, offset=0)
+
+    @pytest.mark.asyncio
+    @patch(f"{ADMIN_REPO}.find_audit_logs", new_callable=AsyncMock)
+    async def test_list_audit_logs_empty(
+        self,
+        mock_find: AsyncMock,
+    ) -> None:
+        from src.admin.service import list_audit_logs
+
+        mock_find.return_value = ([], 0)
+        db = AsyncMock()
+
+        logs, total = await list_audit_logs(db, limit=50, offset=0)
+
+        assert total == 0
+        assert logs == []
+
+    @pytest.mark.asyncio
+    @patch("src.notifications.repository.find_by_user", new_callable=AsyncMock)
+    @patch("src.medications.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.wellness.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.relations.repository.find_by_caregiver", new_callable=AsyncMock)
+    @patch("src.relations.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.users.repository.find_by_id", new_callable=AsyncMock)
+    async def test_export_user_data(
+        self,
+        mock_user: AsyncMock,
+        mock_rel_host: AsyncMock,
+        mock_rel_cg: AsyncMock,
+        mock_wellness: AsyncMock,
+        mock_meds: AsyncMock,
+        mock_tokens: AsyncMock,
+    ) -> None:
+        from src.admin.service import export_user_data
+
+        user_id = uuid.UUID("00000000-0000-4000-8000-000000000801")
+        mock_user_obj = MagicMock()
+        mock_user_obj.email = "test@example.com"
+        mock_user.return_value = mock_user_obj
+        mock_rel_host.return_value = ([], 0)
+        mock_rel_cg.return_value = ([], 0)
+        mock_wellness.return_value = ([], 0)
+        mock_meds.return_value = ([], 0)
+        mock_tokens.return_value = []
+
+        db = AsyncMock()
+        result = await export_user_data(db, user_id)
+
+        assert "user" in result
+        assert "relations_as_host" in result
+        assert "wellness_logs" in result
+        assert "medications" in result
+        assert "device_tokens" in result
+
+    @pytest.mark.asyncio
+    @patch("src.users.repository.find_by_id", new_callable=AsyncMock)
+    async def test_export_user_data_not_found(
+        self,
+        mock_user: AsyncMock,
+    ) -> None:
+        from src.admin.service import export_user_data
+
+        mock_user.return_value = None
+        db = AsyncMock()
+
+        result = await export_user_data(
+            db, uuid.UUID("00000000-0000-4000-8000-000000000899")
+        )
+        assert result == {}
 
 
 # ---------------------------------------------------------------------------
@@ -342,3 +472,85 @@ class TestAdminRouter:
     ) -> None:
         response = client.get("/api/v1/admin/wellness/aggregate")
         assert response.status_code == 422
+
+    @patch(f"{ADMIN_SVC}.deactivate_failed_tokens", new_callable=AsyncMock)
+    def test_deactivate_tokens_endpoint(
+        self,
+        mock_deactivate: AsyncMock,
+        client: TestClient,
+    ) -> None:
+        mock_deactivate.return_value = 3
+        response = client.post(
+            "/api/v1/admin/tokens/deactivate",
+            json={"tokens": ["tok-1", "tok-2", "tok-3"]},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["deactivated_count"] == 3
+
+    @patch(f"{ADMIN_SVC}.deactivate_failed_tokens", new_callable=AsyncMock)
+    def test_deactivate_tokens_empty(
+        self,
+        mock_deactivate: AsyncMock,
+        client: TestClient,
+    ) -> None:
+        mock_deactivate.return_value = 0
+        response = client.post(
+            "/api/v1/admin/tokens/deactivate",
+            json={"tokens": []},
+        )
+        assert response.status_code == 200
+        assert response.json()["deactivated_count"] == 0
+
+    @patch(f"{ADMIN_SVC}.list_audit_logs", new_callable=AsyncMock)
+    def test_audit_logs_endpoint(
+        self,
+        mock_list: AsyncMock,
+        client: TestClient,
+    ) -> None:
+        log_id = uuid.UUID("00000000-0000-4000-8000-000000000701")
+        mock_log = MagicMock()
+        mock_log.id = log_id
+        mock_log.actor_id = None
+        mock_log.action = "cleanup"
+        mock_log.resource_type = "all"
+        mock_log.detail = {"retention_days": 90}
+        mock_log.description = None
+        mock_log.timestamp = "2026-02-28T12:00:00+00:00"
+        mock_list.return_value = ([mock_log], 1)
+
+        response = client.get(
+            "/api/v1/admin/audit-logs",
+            params={"page": 1, "limit": 50},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["meta"]["total"] == 1
+        assert len(data["data"]) == 1
+        assert data["data"][0]["action"] == "cleanup"
+
+    @patch(f"{ADMIN_SVC}.list_audit_logs", new_callable=AsyncMock)
+    def test_audit_logs_endpoint_empty(
+        self,
+        mock_list: AsyncMock,
+        client: TestClient,
+    ) -> None:
+        mock_list.return_value = ([], 0)
+        response = client.get("/api/v1/admin/audit-logs")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["meta"]["total"] == 0
+        assert data["data"] == []
+
+    @patch(f"{ADMIN_SVC}.export_user_data", new_callable=AsyncMock)
+    def test_export_endpoint(
+        self,
+        mock_export: AsyncMock,
+        client: TestClient,
+    ) -> None:
+        user_id = uuid.UUID("00000000-0000-4000-8000-000000000801")
+        mock_export.return_value = {"user": {"email": "test@example.com"}}
+        response = client.get(f"/api/v1/admin/export/{user_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["user"]["email"] == "test@example.com"

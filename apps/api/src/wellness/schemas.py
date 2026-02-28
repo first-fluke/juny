@@ -27,3 +27,21 @@ class WellnessLogResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class DailyWellnessStat(BaseModel):
+    """Daily aggregated wellness statistics."""
+
+    date: str
+    normal: int = 0
+    warning: int = 0
+    emergency: int = 0
+
+
+class WellnessTrendResponse(BaseModel):
+    """Response model for wellness trend analysis."""
+
+    host_id: uuid.UUID
+    date_from: str
+    date_to: str
+    daily_stats: list[DailyWellnessStat]

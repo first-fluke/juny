@@ -8,6 +8,7 @@ from uuid import UUID
 from sqlalchemy import Row, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.admin.model import AuditLog
 from src.notifications.model import DeviceToken
 from src.relations.model import CareRelation
 from src.wellness.model import WellnessLog
@@ -92,3 +93,28 @@ async def aggregate_wellness(
     )
     result = await db.execute(stmt)
     return dict(result.all())  # type: ignore[arg-type]
+
+
+async def create_audit_log(db: AsyncSession, audit_log: AuditLog) -> AuditLog:
+    """Persist an audit log entry."""
+    db.add(audit_log)
+    await db.flush()
+    await db.refresh(audit_log)
+    return audit_log
+
+
+async def find_audit_logs(
+    db: AsyncSession,
+    *,
+    limit: int = 50,
+    offset: int = 0,
+) -> tuple[list[AuditLog], int]:
+    """List audit logs (newest first) with total count."""
+    base = select(AuditLog)
+    count_result = await db.execute(select(func.count()).select_from(base.subquery()))
+    total = count_result.scalar_one()
+
+    rows = await db.execute(
+        base.order_by(AuditLog.timestamp.desc()).limit(limit).offset(offset)
+    )
+    return list(rows.scalars().all()), total

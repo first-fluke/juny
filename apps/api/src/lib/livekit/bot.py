@@ -9,6 +9,7 @@ from livekit import rtc
 
 from src.lib.config import settings
 from src.lib.livekit.auth import create_live_token
+from src.lib.resilience import with_timeout
 
 logger = structlog.get_logger(__name__)
 
@@ -42,7 +43,9 @@ class DuckingBotParticipant:
 
         self._room = rtc.Room()
         self._room.on("data_received", self._on_data_received)
-        await self._room.connect(url, token)
+        await with_timeout(
+            self._room.connect(url, token), settings.LIVEKIT_CONNECT_TIMEOUT
+        )
 
         logger.info(
             "ducking_bot_connected",

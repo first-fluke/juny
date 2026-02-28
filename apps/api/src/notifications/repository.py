@@ -56,12 +56,18 @@ async def deactivate(db: AsyncSession, device_token: DeviceToken) -> DeviceToken
     return device_token
 
 
-async def deactivate_tokens(db: AsyncSession, tokens: list[str]) -> None:
-    """Deactivate multiple tokens by their raw string values."""
+async def deactivate_tokens(db: AsyncSession, tokens: list[str]) -> int:
+    """Deactivate multiple tokens by their raw string values.
+
+    Returns the number of tokens actually deactivated.
+    """
     if not tokens:
-        return
+        return 0
+    count = 0
     for token_str in tokens:
         dt = await find_by_token(db, token_str)
         if dt and dt.is_active:
             dt.is_active = False
+            count += 1
     await db.flush()
+    return count

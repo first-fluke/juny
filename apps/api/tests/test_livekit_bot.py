@@ -45,6 +45,7 @@ class TestDuckingBotConnect:
         bot: DuckingBotParticipant,
     ) -> None:
         mock_settings.LIVEKIT_API_URL = "wss://livekit.example.com"
+        mock_settings.LIVEKIT_CONNECT_TIMEOUT = 10.0
         mock_room = AsyncMock()
         mock_room.on = MagicMock()  # on() is sync
         mock_rtc.Room.return_value = mock_room
@@ -81,6 +82,10 @@ class TestDuckingBotDataReceived:
         bot._on_data_received(pkt)
         assert bot.ducking_active.is_set() is True
 
+    @pytest.mark.filterwarnings(
+        "ignore:coroutine 'AsyncMockMixin._execute_mock_call'"
+        " was never awaited:RuntimeWarning"
+    )
     def test_ducking_inactive_clears_event(self, bot: DuckingBotParticipant) -> None:
         bot.ducking_active.set()
         pkt = _data_packet("ducking", {"active": False})
