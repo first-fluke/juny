@@ -6,6 +6,7 @@ import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
+from src.lib.retry import with_retry
 
 logger = structlog.get_logger(__name__)
 
@@ -16,6 +17,17 @@ class WellnessEscalationJob(BaseJob):
     @property
     def job_type(self) -> str:
         return "wellness.escalation"
+
+    @with_retry()
+    async def _dispatch_notification(self, payload: dict[str, Any]) -> int:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "http://localhost:8280/tasks/process",
+                json=payload,
+                timeout=10.0,
+            )
+            response.raise_for_status()
+            return response.status_code
 
     async def execute(self, data: dict[str, Any]) -> dict[str, Any]:
         log_id: str = data.get("log_id", "")
@@ -32,32 +44,28 @@ class WellnessEscalationJob(BaseJob):
             )
             return {"escalated": False, "reason": "no_contacts"}
 
-        # Dispatch FCM via the notification.send job (self-referencing)
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "http://localhost:8280/tasks/process",
-                json={
-                    "task_type": "notification.send",
+        dispatch_status = await self._dispatch_notification(
+            {
+                "task_type": "notification.send",
+                "data": {
+                    "tokens": contact_tokens,
+                    "title": f"URGENT: Wellness {status.upper()}",
+                    "body": summary or "Immediate attention required",
                     "data": {
-                        "tokens": contact_tokens,
-                        "title": f"URGENT: Wellness {status.upper()}",
-                        "body": summary or "Immediate attention required",
-                        "data": {
-                            "log_id": log_id,
-                            "host_id": host_id,
-                            "type": "wellness_escalation",
-                        },
+                        "log_id": log_id,
+                        "host_id": host_id,
+                        "type": "wellness_escalation",
                     },
                 },
-                timeout=10.0,
-            )
+            },
+        )
 
         logger.info(
             "wellness_escalation_dispatched",
             log_id=log_id,
             host_id=host_id,
             contact_count=len(contact_tokens),
-            dispatch_status=response.status_code,
+            dispatch_status=dispatch_status,
         )
         return {
             "escalated": True,
