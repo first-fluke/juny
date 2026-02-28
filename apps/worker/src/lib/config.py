@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # Internal service auth (Worker → API)
     INTERNAL_API_KEY: str | None = None
 
+    # Worker self-URL (for dispatching sub-tasks)
+    WORKER_BASE_URL: str = "http://localhost:8280"
+
     # Notifications
     NOTIFICATION_PROVIDER: Literal["mock", "fcm"] = "mock"
 

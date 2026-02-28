@@ -6,6 +6,7 @@ import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
+from src.lib.config import settings
 from src.lib.retry import with_retry
 
 logger = structlog.get_logger(__name__)
@@ -22,7 +23,7 @@ class MedicationReminderJob(BaseJob):
     async def _dispatch_notification(self, payload: dict[str, Any]) -> int:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://localhost:8280/tasks/process",
+                f"{settings.WORKER_BASE_URL}/tasks/process",
                 json=payload,
                 timeout=10.0,
             )
