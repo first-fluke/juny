@@ -143,7 +143,7 @@ class TestLogWellnessTool:
     @pytest.mark.asyncio
     @patch(_DISPATCH, new_callable=AsyncMock)
     @patch(_GET_TOKENS, new_callable=AsyncMock, return_value=[])
-    @patch(_FIND_BY_HOST, new_callable=AsyncMock, return_value=[])
+    @patch(_FIND_BY_HOST, new_callable=AsyncMock, return_value=([], 0))
     @patch(_CREATE_WELLNESS, new_callable=AsyncMock)
     async def test_log_wellness_success(
         self,
@@ -206,9 +206,10 @@ class TestLogWellnessTool:
     ) -> None:
         caregiver_id = uuid.UUID("00000000-0000-4000-8000-000000000010")
         mock_create.return_value = _mock_wellness_log()
-        mock_find.return_value = [
-            MagicMock(caregiver_id=caregiver_id),
-        ]
+        mock_find.return_value = (
+            [MagicMock(caregiver_id=caregiver_id)],
+            1,
+        )
         mock_get_tokens.return_value = ["fcm-tok-cg1"]
 
         tool = LogWellnessTool()
@@ -244,10 +245,10 @@ class TestLogWellnessTool:
         cg1 = uuid.UUID("00000000-0000-4000-8000-000000000011")
         cg2 = uuid.UUID("00000000-0000-4000-8000-000000000012")
         mock_create.return_value = _mock_wellness_log()
-        mock_find.return_value = [
-            MagicMock(caregiver_id=cg1),
-            MagicMock(caregiver_id=cg2),
-        ]
+        mock_find.return_value = (
+            [MagicMock(caregiver_id=cg1), MagicMock(caregiver_id=cg2)],
+            2,
+        )
         mock_get_tokens.side_effect = [["tok-cg1"], ["tok-cg2"]]
 
         tool = LogWellnessTool()

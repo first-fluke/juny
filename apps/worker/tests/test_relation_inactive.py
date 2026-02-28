@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -22,6 +22,7 @@ class TestRelationInactiveCheckJob:
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
         mock_response = AsyncMock()
         mock_response.status_code = 200
+        mock_response.raise_for_status = MagicMock()
         mock_client.get.return_value = mock_response
 
         job = RelationInactiveCheckJob()
@@ -39,6 +40,7 @@ class TestRelationInactiveCheckJob:
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
         mock_response = AsyncMock()
         mock_response.status_code = 200
+        mock_response.raise_for_status = MagicMock()
         mock_client.get.return_value = mock_response
 
         job = RelationInactiveCheckJob()
@@ -59,6 +61,7 @@ class TestRelationInactiveCheckJob:
         mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
         mock_response = AsyncMock()
         mock_response.status_code = 200
+        mock_response.raise_for_status = MagicMock()
         mock_client.get.return_value = mock_response
 
         job = RelationInactiveCheckJob()

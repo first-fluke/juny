@@ -9,14 +9,18 @@ class RelationsRepository {
 
   final RelationsService _service;
 
-  Future<List<CareRelationResponse>> list({
+  Future<PaginatedResponseCareRelationResponse> list({
     bool activeOnly = true,
     String? hostId,
     String? caregiverId,
+    int page = 1,
+    int limit = 20,
   }) => _service.listCareRelationsApiV1RelationsGet(
     activeOnly: activeOnly,
     hostId: hostId,
     caregiverId: caregiverId,
+    page: page,
+    limit: limit,
   );
 
   Future<CareRelationResponse> get(String id) =>

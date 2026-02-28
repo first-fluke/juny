@@ -98,7 +98,7 @@ class LogWellnessTool(BaseTool):
 
         # Alert caregivers on warning/emergency via worker
         if status_val in {"warning", "emergency"}:
-            relations = await relations_repo.find_by_host(db, host_id)
+            relations, _ = await relations_repo.find_by_host(db, host_id, limit=1000)
             all_tokens: list[str] = []
             for rel in relations:
                 tokens = await get_user_token_strings(db, rel.caregiver_id)

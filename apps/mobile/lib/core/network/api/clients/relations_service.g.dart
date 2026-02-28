@@ -49,21 +49,26 @@ class _RelationsService implements RelationsService {
   }
 
   @override
-  Future<List<CareRelationResponse>> listCareRelationsApiV1RelationsGet({
+  Future<PaginatedResponseCareRelationResponse>
+  listCareRelationsApiV1RelationsGet({
     bool? activeOnly = true,
+    int? page = 1,
+    int? limit = 20,
     String? hostId,
     String? caregiverId,
   }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'active_only': activeOnly,
+      r'page': page,
+      r'limit': limit,
       r'host_id': hostId,
       r'caregiver_id': caregiverId,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<List<CareRelationResponse>>(
+    final _options = _setStreamType<PaginatedResponseCareRelationResponse>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -73,15 +78,10 @@ class _RelationsService implements RelationsService {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch<List<dynamic>>(_options);
-    late List<CareRelationResponse> _value;
+    final _result = await _dio.fetch<Map<String, Object?>>(_options);
+    late PaginatedResponseCareRelationResponse _value;
     try {
-      _value = _result.data!
-          .map(
-            (dynamic i) =>
-                CareRelationResponse.fromJson(i as Map<String, dynamic>),
-          )
-          .toList();
+      _value = PaginatedResponseCareRelationResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options, response: _result);
       rethrow;

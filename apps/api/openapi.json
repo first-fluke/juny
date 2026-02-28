@@ -320,6 +320,29 @@
               "default": true,
               "title": "Active Only"
             }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
           }
         ],
         "responses": {
@@ -328,11 +351,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CareRelationResponse"
-                  },
-                  "title": "Response List Care Relations Api V1 Relations Get"
+                  "$ref": "#/components/schemas/PaginatedResponse_CareRelationResponse_"
                 }
               }
             }
@@ -2024,6 +2043,26 @@
         ],
         "title": "OAuthLoginRequest",
         "description": "OAuth login request."
+      },
+      "PaginatedResponse_CareRelationResponse_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CareRelationResponse"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "PaginatedResponse[CareRelationResponse]"
       },
       "PaginatedResponse_MedicationResponse_": {
         "properties": {

@@ -8,6 +8,7 @@ import 'package:retrofit/retrofit.dart';
 import '../models/care_relation_create.dart';
 import '../models/care_relation_response.dart';
 import '../models/care_relation_update.dart';
+import '../models/paginated_response_care_relation_response.dart';
 
 part 'relations_service.g.dart';
 
@@ -31,8 +32,10 @@ abstract class RelationsService {
   ///
   /// Users can only list relations they participate in.
   @GET('/api/v1/relations')
-  Future<List<CareRelationResponse>> listCareRelationsApiV1RelationsGet({
+  Future<PaginatedResponseCareRelationResponse> listCareRelationsApiV1RelationsGet({
     @Query('active_only') bool? activeOnly = true,
+    @Query('page') int? page = 1,
+    @Query('limit') int? limit = 20,
     @Query('host_id') String? hostId,
     @Query('caregiver_id') String? caregiverId,
   });
