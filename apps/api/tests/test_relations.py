@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from fastapi import HTTPException
 
 from src.lib.database import get_db
 from src.main import app
@@ -20,6 +21,7 @@ from src.relations.service import (
     create_relation,
     delete_relation,
     get_relation,
+    list_relations_for_caregiver,
     list_relations_for_host,
     update_relation,
 )
@@ -145,11 +147,25 @@ class TestRelationService:
     @patch(f"{REPO}.find_by_host", new_callable=AsyncMock)
     async def test_list_relations_for_host(self, mock_find: AsyncMock) -> None:
         relations = [_mock_relation(), _mock_relation()]
-        mock_find.return_value = relations
+        mock_find.return_value = (relations, 2)
         db = AsyncMock()
         result = await list_relations_for_host(db, MOCK_HOST_ID)
-        assert result == relations
-        mock_find.assert_called_once_with(db, MOCK_HOST_ID, active_only=True)
+        assert result == (relations, 2)
+        mock_find.assert_called_once_with(
+            db, MOCK_HOST_ID, active_only=True, limit=20, offset=0
+        )
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.find_by_caregiver", new_callable=AsyncMock)
+    async def test_list_relations_for_caregiver(self, mock_find: AsyncMock) -> None:
+        relations = [_mock_relation()]
+        mock_find.return_value = (relations, 1)
+        db = AsyncMock()
+        result = await list_relations_for_caregiver(db, MOCK_CAREGIVER_ID)
+        assert result == (relations, 1)
+        mock_find.assert_called_once_with(
+            db, MOCK_CAREGIVER_ID, active_only=True, limit=20, offset=0
+        )
 
     @pytest.mark.asyncio
     @patch(f"{REPO}.find_by_id", new_callable=AsyncMock)
@@ -243,16 +259,19 @@ class TestRelationRouterExtended:
         mock_list: AsyncMock,
         authed_client: TestClient,
     ) -> None:
-        mock_list.return_value = [
-            _mock_relation(host_id=uuid.UUID(TEST_USER_ID)),
-        ]
+        mock_list.return_value = (
+            [_mock_relation(host_id=uuid.UUID(TEST_USER_ID))],
+            1,
+        )
         response = authed_client.get(
             "/api/v1/relations",
             params={"host_id": TEST_USER_ID},
         )
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 1
+        assert len(data["data"]) == 1
+        assert data["meta"]["total"] == 1
+        assert data["meta"]["page"] == 1
 
     @patch(f"{SERVICE}.list_relations_for_caregiver", new_callable=AsyncMock)
     def test_list_by_caregiver(
@@ -260,25 +279,30 @@ class TestRelationRouterExtended:
         mock_list: AsyncMock,
         caregiver_client: TestClient,
     ) -> None:
-        mock_list.return_value = [
-            _mock_relation(caregiver_id=uuid.UUID(TEST_CAREGIVER_ID)),
-        ]
+        mock_list.return_value = (
+            [_mock_relation(caregiver_id=uuid.UUID(TEST_CAREGIVER_ID))],
+            1,
+        )
         response = caregiver_client.get(
             "/api/v1/relations",
             params={"caregiver_id": TEST_CAREGIVER_ID},
         )
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 1
+        assert len(data["data"]) == 1
+        assert data["meta"]["total"] == 1
 
-    @patch(f"{SERVICE}.list_relations_for_host", new_callable=AsyncMock)
+    @patch(
+        "src.relations.router.authorize_host_access",
+        new_callable=AsyncMock,
+        side_effect=HTTPException(status_code=403, detail="Forbidden"),
+    )
     def test_list_unauthorized_403(
         self,
-        mock_list: AsyncMock,
+        mock_auth: AsyncMock,
         authed_client: TestClient,
     ) -> None:
         other_host = "00000000-0000-4000-8000-000000000055"
-        mock_list.return_value = []
         response = authed_client.get(
             "/api/v1/relations",
             params={"host_id": other_host},

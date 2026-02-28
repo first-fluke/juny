@@ -54,9 +54,12 @@ class TestRelationCRUD:
             params={"host_id": str(HOST_USER_ID)},
         )
         assert resp.status_code == 200
-        data = resp.json()
-        assert len(data) >= 1
-        assert data[0]["host_id"] == str(HOST_USER_ID)
+        body = resp.json()
+        assert "data" in body
+        assert "meta" in body
+        assert len(body["data"]) >= 1
+        assert body["data"][0]["host_id"] == str(HOST_USER_ID)
+        assert body["meta"]["total"] >= 1
 
     async def test_list_relations_by_caregiver(
         self,
@@ -82,9 +85,12 @@ class TestRelationCRUD:
             params={"caregiver_id": str(CAREGIVER_USER_ID)},
         )
         assert resp.status_code == 200
-        data = resp.json()
-        assert len(data) >= 1
-        assert data[0]["caregiver_id"] == str(CAREGIVER_USER_ID)
+        body = resp.json()
+        assert "data" in body
+        assert "meta" in body
+        assert len(body["data"]) >= 1
+        assert body["data"][0]["caregiver_id"] == str(CAREGIVER_USER_ID)
+        assert body["meta"]["total"] >= 1
 
     async def test_update_relation_deactivate(
         self,
