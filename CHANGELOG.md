@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.1.0](https://github.com/first-fluke/juny/compare/v1.0.0...v1.1.0) (2026-02-28)
+
+
+### Features
+
+* **api:** activate rate limiting middleware with per-endpoint controls ([3f5fde8](https://github.com/first-fluke/juny/commit/3f5fde81ba8117e99b2cfaec7e09eb5394e98832))
+* **api:** add account self-deletion and gdpr data export ([0beae66](https://github.com/first-fluke/juny/commit/0beae664336cfdca601ed78b26def848337e457a))
+* **api:** add active_only parameter to notification service ([b3fd47d](https://github.com/first-fluke/juny/commit/b3fd47d63b1a2996affb4158ca5fc5d2cce6bec3))
+* **api:** add admin module with internal auth for service-to-service calls ([7a89624](https://github.com/first-fluke/juny/commit/7a89624534d86fed95cb6ede77e25025c38700a7))
+* **api:** add admin token deactivation, audit logging, and data export ([a7af3e1](https://github.com/first-fluke/juny/commit/a7af3e12642d5aedcff8e17ac7e0f4298fab267c))
+* **api:** add notification logs module with preferences and migrations ([ea4afee](https://github.com/first-fluke/juny/commit/ea4afeef9423a36d1b27791028932da429e7cef8))
+* **api:** add notifications domain module with device token management ([8b3e9d5](https://github.com/first-fluke/juny/commit/8b3e9d51124ad0b8e833ae31bb2b60d124064887))
+* **api:** add pagination to relations list endpoint ([39114ac](https://github.com/first-fluke/juny/commit/39114acfc9e5986111c7e043be1853f549e9a8e9))
+* **api:** add resilience utilities and cache module ([ea9fb8e](https://github.com/first-fluke/juny/commit/ea9fb8e6ceb13e14e664b35d419c81ad3f65b502))
+* **api:** add task dispatch client and integrate with log_wellness ([f5031e0](https://github.com/first-fluke/juny/commit/f5031e00c271ccbd1bf903c9c6d6150c15710d84))
+* **api:** add users module, storage providers, and files router ([f262f7a](https://github.com/first-fluke/juny/commit/f262f7aa308db25520bc831688d730e6dd377b51))
+* **api:** add websocket stability and livekit room management ([da33fd5](https://github.com/first-fluke/juny/commit/da33fd5420ab348f9a64f346bbd4e77e771e4ec1))
+* **api:** add wellness trends, medication adherence, and confirm tool ([2663acf](https://github.com/first-fluke/juny/commit/2663acf37b1aa0f0404bff6175cfb6023d9a3222))
+* **api:** refactor notification providers with fcm implementation ([ecd70dc](https://github.com/first-fluke/juny/commit/ecd70dc250608286395fedb494145aa8887783d3))
+* **mobile:** scaffold Flutter 3.41.2 project with Android and iOS configurations ([963962e](https://github.com/first-fluke/juny/commit/963962e69f4b09419bf8a59c3e3997b23f4ce176))
+* **root:** merge backend backlog phase 1-3 ([08ad180](https://github.com/first-fluke/juny/commit/08ad1808cdb74fddd3bf1e5855870b5e55c3c5d0))
+* **root:** merge phase-b — admin endpoints, rate limiting, redis integration ([4e488a6](https://github.com/first-fluke/juny/commit/4e488a6faf1bef0a3dd7f25638842e178c6a6cd0))
+* **root:** merge relations pagination and worker retry ([d8333cc](https://github.com/first-fluke/juny/commit/d8333ccebba11d1ed0d1662c52f63ac571b6733a))
+* update database connection details, enhance mise.toml tasks for better orchestration ([508d163](https://github.com/first-fluke/juny/commit/508d163b573275919ce930404670e4602645cb83))
+* **worker:** add internal api key auth and fix admin endpoint paths ([0d386ce](https://github.com/first-fluke/juny/commit/0d386ceb5512fcbc82e67af8e062b35fd304fe2a))
+* **worker:** add job framework with 6 concrete jobs ([dce139c](https://github.com/first-fluke/juny/commit/dce139cc83c9c4e867399fe22e2f2523bfeec0d0))
+* **worker:** add per-token failure tracking to notification send job ([f02c979](https://github.com/first-fluke/juny/commit/f02c979c49e7463f1411a397d7c2b7ed048a844c))
+* **worker:** add pub/sub, telemetry, idempotency, and token deactivation ([ca28e55](https://github.com/first-fluke/juny/commit/ca28e55e86fd9422aebb82f0e293dc0303baf6e2))
+* **worker:** apply with_retry to job http calls ([b489df1](https://github.com/first-fluke/juny/commit/b489df1b3539f1cd51e6a176cc16abf2b363689b))
+
+
+### Bug Fixes
+
+* **api:** add close_rate_limiters and remove suppressed warnings ([68d9182](https://github.com/first-fluke/juny/commit/68d91821ddb0433d65aef40ae26c3b6711a0bbc7))
+* **api:** fix e2e notification test using shared client instance ([0410095](https://github.com/first-fluke/juny/commit/04100954f5a135fe95886152ebc6ecbaa2ba5f30))
+
 ## 1.0.0 (2026-02-24)
 
 
