@@ -2,7 +2,7 @@
 
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.relations.model import CareRelation
@@ -35,15 +35,20 @@ async def find_by_host(
     host_id: uuid.UUID,
     *,
     active_only: bool = True,
-) -> list[CareRelation]:
-    """Find all care relations for a given host."""
-    stmt = select(CareRelation).where(
-        CareRelation.host_id == host_id,
-    )
+    limit: int = 20,
+    offset: int = 0,
+) -> tuple[list[CareRelation], int]:
+    """Find care relations for a given host with pagination."""
+    base = select(CareRelation).where(CareRelation.host_id == host_id)
     if active_only:
-        stmt = stmt.where(CareRelation.is_active.is_(True))
+        base = base.where(CareRelation.is_active.is_(True))
+
+    count_stmt = select(func.count()).select_from(base.subquery())
+    total = (await db.execute(count_stmt)).scalar_one()
+
+    stmt = base.order_by(CareRelation.created_at.desc()).limit(limit).offset(offset)
     result = await db.execute(stmt)
-    return list(result.scalars().all())
+    return list(result.scalars().all()), total
 
 
 async def find_by_caregiver(
@@ -51,15 +56,20 @@ async def find_by_caregiver(
     caregiver_id: uuid.UUID,
     *,
     active_only: bool = True,
-) -> list[CareRelation]:
-    """Find all care relations for a given caregiver."""
-    stmt = select(CareRelation).where(
-        CareRelation.caregiver_id == caregiver_id,
-    )
+    limit: int = 20,
+    offset: int = 0,
+) -> tuple[list[CareRelation], int]:
+    """Find care relations for a given caregiver with pagination."""
+    base = select(CareRelation).where(CareRelation.caregiver_id == caregiver_id)
     if active_only:
-        stmt = stmt.where(CareRelation.is_active.is_(True))
+        base = base.where(CareRelation.is_active.is_(True))
+
+    count_stmt = select(func.count()).select_from(base.subquery())
+    total = (await db.execute(count_stmt)).scalar_one()
+
+    stmt = base.order_by(CareRelation.created_at.desc()).limit(limit).offset(offset)
     result = await db.execute(stmt)
-    return list(result.scalars().all())
+    return list(result.scalars().all()), total
 
 
 async def save(

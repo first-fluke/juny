@@ -40,9 +40,13 @@ async def list_relations_for_host(
     host_id: uuid.UUID,
     *,
     active_only: bool = True,
-) -> list[CareRelation]:
-    """List all care relations where user is host."""
-    return await repository.find_by_host(db, host_id, active_only=active_only)
+    limit: int = 20,
+    offset: int = 0,
+) -> tuple[list[CareRelation], int]:
+    """List care relations where user is host with pagination."""
+    return await repository.find_by_host(
+        db, host_id, active_only=active_only, limit=limit, offset=offset
+    )
 
 
 async def list_relations_for_caregiver(
@@ -50,9 +54,13 @@ async def list_relations_for_caregiver(
     caregiver_id: uuid.UUID,
     *,
     active_only: bool = True,
-) -> list[CareRelation]:
-    """List all care relations where user is caregiver."""
-    return await repository.find_by_caregiver(db, caregiver_id, active_only=active_only)
+    limit: int = 20,
+    offset: int = 0,
+) -> tuple[list[CareRelation], int]:
+    """List care relations where user is caregiver with pagination."""
+    return await repository.find_by_caregiver(
+        db, caregiver_id, active_only=active_only, limit=limit, offset=offset
+    )
 
 
 async def get_relation(
