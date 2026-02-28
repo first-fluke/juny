@@ -6,11 +6,16 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from src.lib.config import settings
-from src.lib.database import Base
 
 # Import all models for autogenerate detection
+from src.admin.model import AuditLog  # noqa: F401
+from src.lib.config import settings
+from src.lib.database import Base
 from src.medications.model import Medication  # noqa: F401
+from src.notification_logs.model import (  # noqa: F401
+    NotificationLog,
+    NotificationPreference,
+)
 from src.relations.model import CareRelation  # noqa: F401
 from src.users.model import User  # noqa: F401
 from src.wellness.model import WellnessLog  # noqa: F401

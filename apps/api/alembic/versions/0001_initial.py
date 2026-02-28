@@ -232,6 +232,167 @@ def upgrade() -> None:
         unique=False,
     )
 
+    # --- audit_logs ---
+    op.create_table(
+        "audit_logs",
+        sa.Column(
+            "id",
+            sa.UUID(),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "actor_id",
+            sa.UUID(),
+            nullable=True,
+            comment="User or service that performed the action",
+        ),
+        sa.Column(
+            "action",
+            sa.String(length=100),
+            nullable=False,
+            comment="e.g. cleanup, deactivate_tokens",
+        ),
+        sa.Column(
+            "resource_type",
+            sa.String(length=100),
+            nullable=False,
+            comment="e.g. wellness_logs, device_tokens",
+        ),
+        sa.Column(
+            "detail",
+            postgresql.JSONB(astext_type=sa.Text()),
+            server_default=sa.text("'{}'::jsonb"),
+            nullable=False,
+        ),
+        sa.Column("description", sa.Text(), nullable=True),
+        sa.Column(
+            "timestamp",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_audit_logs")),
+    )
+    op.create_index(
+        "ix_audit_logs_actor_id",
+        "audit_logs",
+        ["actor_id"],
+        unique=False,
+    )
+    op.create_index(
+        "ix_audit_logs_timestamp",
+        "audit_logs",
+        ["timestamp"],
+        unique=False,
+    )
+
+    # --- notification_logs ---
+    op.create_table(
+        "notification_logs",
+        sa.Column(
+            "id",
+            sa.UUID(),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column("recipient_id", sa.UUID(), nullable=False),
+        sa.Column("title", sa.String(length=255), nullable=False),
+        sa.Column("body", sa.Text(), nullable=False),
+        sa.Column(
+            "status",
+            sa.String(length=20),
+            server_default="pending",
+            nullable=False,
+            comment="pending | sent | failed",
+        ),
+        sa.Column(
+            "channel",
+            sa.String(length=20),
+            server_default="push",
+            nullable=False,
+            comment="push",
+        ),
+        sa.Column(
+            "metadata",
+            postgresql.JSONB(astext_type=sa.Text()),
+            server_default=sa.text("'{}'::jsonb"),
+            nullable=False,
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["recipient_id"],
+            ["users.id"],
+            name=op.f("fk_notification_logs_recipient_id_users"),
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_notification_logs")),
+    )
+    op.create_index(
+        "ix_notification_logs_recipient_id",
+        "notification_logs",
+        ["recipient_id"],
+        unique=False,
+    )
+    op.create_index(
+        "ix_notification_logs_created_at",
+        "notification_logs",
+        ["created_at"],
+        unique=False,
+    )
+
+    # --- notification_preferences ---
+    op.create_table(
+        "notification_preferences",
+        sa.Column(
+            "id",
+            sa.UUID(),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column("user_id", sa.UUID(), nullable=False),
+        sa.Column(
+            "wellness_alerts",
+            sa.Boolean(),
+            server_default=sa.text("true"),
+            nullable=False,
+        ),
+        sa.Column(
+            "medication_reminders",
+            sa.Boolean(),
+            server_default=sa.text("true"),
+            nullable=False,
+        ),
+        sa.Column(
+            "system_updates",
+            sa.Boolean(),
+            server_default=sa.text("true"),
+            nullable=False,
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["users.id"],
+            name=op.f("fk_notification_preferences_user_id_users"),
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_notification_preferences")),
+        sa.UniqueConstraint(
+            "user_id", name=op.f("uq_notification_preferences_user_id")
+        ),
+    )
+
     # --- device_tokens ---
     op.create_table(
         "device_tokens",
@@ -293,6 +454,13 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_device_tokens_token"), table_name="device_tokens")
     op.drop_index("ix_device_tokens_user_id", table_name="device_tokens")
     op.drop_table("device_tokens")
+    op.drop_table("notification_preferences")
+    op.drop_index("ix_notification_logs_created_at", table_name="notification_logs")
+    op.drop_index("ix_notification_logs_recipient_id", table_name="notification_logs")
+    op.drop_table("notification_logs")
+    op.drop_index("ix_audit_logs_timestamp", table_name="audit_logs")
+    op.drop_index("ix_audit_logs_actor_id", table_name="audit_logs")
+    op.drop_table("audit_logs")
     op.drop_index("ix_medications_schedule_time", table_name="medications")
     op.drop_index("ix_medications_host_id", table_name="medications")
     op.drop_table("medications")
