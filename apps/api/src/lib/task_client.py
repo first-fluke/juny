@@ -4,6 +4,8 @@
 - staging/prod: Google Cloud Tasks enqueue.
 """
 
+import asyncio
+import json
 from typing import Any
 
 import httpx
@@ -46,31 +48,34 @@ async def _dispatch_local(task_type: str, data: dict[str, Any]) -> None:
 
 async def _dispatch_cloud_tasks(task_type: str, data: dict[str, Any]) -> None:
     """Enqueue a task via Google Cloud Tasks."""
-    import json
-
     from google.cloud import tasks_v2  # type: ignore[import-untyped]
 
-    client = tasks_v2.CloudTasksClient()
-    parent = client.queue_path(
-        settings.GOOGLE_CLOUD_PROJECT or "",
-        settings.CLOUD_TASKS_LOCATION,
-        settings.CLOUD_TASKS_QUEUE or "default",
-    )
-
-    task = tasks_v2.Task(
-        http_request=tasks_v2.HttpRequest(
-            http_method=tasks_v2.HttpMethod.POST,
-            url=f"{settings.WORKER_URL}/tasks/process",
-            headers={"Content-Type": "application/json"},
-            body=json.dumps({"task_type": task_type, "data": data}).encode(),
+    def _create_task() -> str:
+        client = tasks_v2.CloudTasksClient()
+        parent = client.queue_path(
+            settings.GOOGLE_CLOUD_PROJECT or "",
+            settings.CLOUD_TASKS_LOCATION,
+            settings.CLOUD_TASKS_QUEUE or "default",
         )
-    )
 
-    created = client.create_task(
-        request=tasks_v2.CreateTaskRequest(parent=parent, task=task)
-    )
+        task = tasks_v2.Task(
+            http_request=tasks_v2.HttpRequest(
+                http_method=tasks_v2.HttpMethod.POST,
+                url=f"{settings.WORKER_URL}/tasks/process",
+                headers={"Content-Type": "application/json"},
+                body=json.dumps({"task_type": task_type, "data": data}).encode(),
+            )
+        )
+
+        created = client.create_task(
+            request=tasks_v2.CreateTaskRequest(parent=parent, task=task)
+        )
+        name: str = created.name
+        return name
+
+    task_name = await asyncio.to_thread(_create_task)
     logger.info(
         "task_dispatched_cloud",
         task_type=task_type,
-        task_name=created.name,
+        task_name=task_name,
     )

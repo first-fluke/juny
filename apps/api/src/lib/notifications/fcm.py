@@ -7,6 +7,7 @@ package is not installed.
 
 from __future__ import annotations
 
+import asyncio
 import uuid
 from typing import Any
 
@@ -75,7 +76,9 @@ class FCMNotificationProvider(NotificationProvider):
             data={k: str(v) for k, v in (data or {}).items()},
         )
 
-        response: messaging.BatchResponse = messaging.send_each_for_multicast(message)
+        response: messaging.BatchResponse = await asyncio.to_thread(
+            messaging.send_each_for_multicast, message
+        )
 
         failed_tokens: list[str] = []
         for idx, send_response in enumerate(response.responses):
