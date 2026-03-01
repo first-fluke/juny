@@ -1,5 +1,6 @@
 """Google Cloud Storage provider."""
 
+import asyncio
 from datetime import timedelta
 
 from google.cloud.storage import Client
@@ -21,28 +22,40 @@ class GCSStorageProvider(StorageProvider):
         data: bytes,
         content_type: str | None = None,
     ) -> str:
-        blob = self._client.bucket(bucket).blob(key)
-        blob.upload_from_string(
-            data, content_type=content_type or "application/octet-stream"
-        )
+        def _upload() -> None:
+            blob = self._client.bucket(bucket).blob(key)
+            blob.upload_from_string(
+                data, content_type=content_type or "application/octet-stream"
+            )
+
+        await asyncio.to_thread(_upload)
         return key
 
     async def download(self, bucket: str, key: str) -> bytes:
-        blob = self._client.bucket(bucket).blob(key)
-        result: bytes = blob.download_as_bytes()
-        return result
+        def _download() -> bytes:
+            blob = self._client.bucket(bucket).blob(key)
+            result: bytes = blob.download_as_bytes()
+            return result
+
+        return await asyncio.to_thread(_download)
 
     async def delete(self, bucket: str, key: str) -> None:
-        blob = self._client.bucket(bucket).blob(key)
-        blob.delete()
+        def _delete() -> None:
+            blob = self._client.bucket(bucket).blob(key)
+            blob.delete()
+
+        await asyncio.to_thread(_delete)
 
     async def get_signed_url(
         self, bucket: str, key: str, expires_in: int = 3600
     ) -> str:
-        blob = self._client.bucket(bucket).blob(key)
-        url: str = blob.generate_signed_url(
-            version="v4",
-            expiration=timedelta(seconds=expires_in),
-            method="GET",
-        )
-        return url
+        def _sign() -> str:
+            blob = self._client.bucket(bucket).blob(key)
+            url: str = blob.generate_signed_url(
+                version="v4",
+                expiration=timedelta(seconds=expires_in),
+                method="GET",
+            )
+            return url
+
+        return await asyncio.to_thread(_sign)
