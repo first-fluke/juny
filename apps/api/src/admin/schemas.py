@@ -14,6 +14,7 @@ class CleanupRequest(BaseModel):
 class CleanupResponse(BaseModel):
     deleted_wellness_logs: int
     deactivated_tokens: int
+    deleted_waypoints: int = 0
 
 
 class InactiveRelationResponse(BaseModel):

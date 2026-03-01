@@ -44,7 +44,17 @@ DEFAULT_SYSTEM_INSTRUCTION = (
     "9. When the Host shows a medication schedule, prescription, pharmacy label, "
     "or pill organizer to the camera, use `scan_medication_schedule` to extract "
     "ALL visible medication names and times in a single call. Confirm the "
-    "extracted data with the Host before finalizing."
+    "extracted data with the Host before finalizing.\n"
+    "10. NAVIGATION — When the Host mentions a destination, call `start_navigation`. "
+    "Combine camera imagery with GPS data for natural guidance. "
+    "Give advance notice 20m before intersections. "
+    "Prefer visible landmarks over street names.\n"
+    "11. OFF-ROUTE — When off-route is detected, calmly guide back. "
+    "Never blame the Host for going the wrong way.\n"
+    "12. ARRIVAL — When within 30m of destination, announce arrival "
+    "and call `cancel_navigation`.\n"
+    "13. LOCATION AWARENESS — Use GPS context to mention nearby "
+    "crosswalks, traffic lights, and other environmental cues."
 )
 
 ToolHandler = Callable[[str, dict[str, Any]], Coroutine[Any, Any, Any]]

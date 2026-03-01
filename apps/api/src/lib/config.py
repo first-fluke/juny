@@ -78,6 +78,10 @@ class Settings(BaseSettings):
     WS_PING_INTERVAL: float = 30.0
     WS_MAX_MESSAGE_SIZE: int = 1_048_576  # 1 MB
 
+    # Maps (optional)
+    MAP_PROVIDER: Literal["google"] = "google"
+    GOOGLE_MAPS_API_KEY: str | None = None
+
     # Storage (optional)
     STORAGE_BACKEND: Literal["gcs", "minio"] = "minio"
     GCS_BUCKET_NAME: str | None = None
@@ -91,6 +95,13 @@ class Settings(BaseSettings):
         if self.GEMINI_BACKEND == "vertex_ai":
             return bool(self.GOOGLE_CLOUD_PROJECT)
         return bool(self.GEMINI_API_KEY)
+
+    @property
+    def maps_configured(self) -> bool:
+        """Check whether a map provider is ready."""
+        if self.MAP_PROVIDER == "google":
+            return bool(self.GOOGLE_MAPS_API_KEY)
+        return False
 
     @property
     def cors_origins(self) -> list[str]:

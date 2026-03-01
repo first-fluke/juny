@@ -1,7 +1,8 @@
-"""LiveKit headless bot participant for audio ducking control."""
+"""LiveKit headless bot participant for audio ducking and location relay."""
 
 import asyncio
 import json
+from datetime import UTC, datetime
 from typing import Any
 
 import structlog
@@ -74,6 +75,24 @@ class DuckingBotParticipant:
                 logger.info("ducking_deactivated", room=self.room_name)
         except (json.JSONDecodeError, AttributeError):
             logger.warning("ducking_invalid_data_packet", room=self.room_name)
+
+    async def publish_location(
+        self, lat: float, lng: float, raw: dict[str, Any]
+    ) -> None:
+        """Publish GPS location to LiveKit data channel for Concierge."""
+        if not self._room or not self._room.local_participant:
+            return
+        payload = json.dumps(
+            {
+                "lat": lat,
+                "lng": lng,
+                "accuracy": raw.get("accuracy"),
+                "speed": raw.get("speed"),
+                "heading": raw.get("heading"),
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+        ).encode()
+        await self._room.local_participant.publish_data(payload, topic="location")
 
     async def disconnect(self) -> None:
         """Disconnect from the LiveKit room."""

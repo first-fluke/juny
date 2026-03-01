@@ -12,6 +12,7 @@ from src.admin.model import AuditLog  # noqa: F401
 from src.lib.config import settings
 from src.lib.database import Base
 from src.medications.model import Medication  # noqa: F401
+from src.navigation.model import LocationWaypoint, NavigationSession  # noqa: F401
 from src.notification_logs.model import (  # noqa: F401
     NotificationLog,
     NotificationPreference,

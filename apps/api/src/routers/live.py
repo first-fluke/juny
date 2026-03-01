@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import json
+import time
 import uuid
 from datetime import UTC, datetime
 from typing import Any, Literal
@@ -28,6 +29,10 @@ from src.lib.database import async_session_factory
 from src.lib.dependencies import CurrentUser
 from src.lib.livekit.auth import LiveTokenResponse, create_live_token
 from src.lib.livekit.bot import DuckingBotParticipant
+from src.lib.maps import create_map_provider
+from src.navigation import repository as nav_repo
+from src.navigation.schemas import LocationWaypointCreate
+from src.navigation.service import check_off_route, record_waypoint, reroute_navigation
 
 logger = structlog.get_logger(__name__)
 
@@ -188,7 +193,14 @@ async def websocket_gemini_bridge(
             await bot.connect()
 
         async with async_session_factory() as db:
-            tool_context = {"db": db, "host_id": user_id, "user_role": user_role}
+            # Build map provider if configured
+            map_provider = create_map_provider() if settings.maps_configured else None
+            tool_context: dict[str, Any] = {
+                "db": db,
+                "host_id": user_id,
+                "user_role": user_role,
+                "map_provider": map_provider,
+            }
             orchestrator = GeminiLiveOrchestrator(
                 tool_definitions=get_tool_definitions(),
                 tool_handler=get_tool_handler(context=tool_context),
@@ -196,6 +208,85 @@ async def websocket_gemini_bridge(
 
             async with orchestrator.connect() as session:
                 await ws.send_json({"type": "connected"})
+
+                # State for location throttling
+                last_location_feed: float = 0.0
+                _LOCATION_FEED_INTERVAL = 10.0  # seconds
+
+                async def _handle_location(
+                    msg: dict[str, Any],
+                ) -> None:
+                    """Process a location message: persist, relay, detect off-route."""
+                    nonlocal last_location_feed
+                    lat = msg.get("lat", 0.0)
+                    lng = msg.get("lng", 0.0)
+
+                    # 1. Record waypoint in DB
+                    active_nav = await nav_repo.find_active_session(db, user_id)
+                    wp_payload = LocationWaypointCreate(
+                        host_id=user_id,
+                        session_id=active_nav.id if active_nav else None,
+                        lat=lat,
+                        lng=lng,
+                        altitude=msg.get("altitude"),
+                        accuracy=msg.get("accuracy"),
+                        speed=msg.get("speed"),
+                        heading=msg.get("heading"),
+                    )
+                    await record_waypoint(db, wp_payload)
+
+                    # 2. Relay location to Concierge via LiveKit data channel
+                    if bot:
+                        await bot.publish_location(lat, lng, msg)
+
+                    # 3. Off-route detection + reroute
+                    if (
+                        active_nav
+                        and map_provider
+                        and check_off_route(
+                            lat,
+                            lng,
+                            active_nav.route_data,
+                            active_nav.current_step_index,
+                        )
+                    ):
+                        logger.info(
+                            "navigation_off_route",
+                            session_id=str(active_nav.id),
+                        )
+                        updated = await reroute_navigation(
+                            db, map_provider, active_nav.id, lat, lng
+                        )
+                        steps = updated.route_data.get("steps", [])
+                        reroute_text = "경로를 재탐색했습니다."
+                        if steps:
+                            reroute_text += f" {steps[0].get('instruction', '')}"
+                        content = genai_types.Content(
+                            parts=[genai_types.Part(text=reroute_text)]
+                        )
+                        await session.send_client_content(
+                            turns=content, turn_complete=True
+                        )
+
+                    # 4. Periodic location context feed to Gemini
+                    now = time.monotonic()
+                    if now - last_location_feed >= _LOCATION_FEED_INTERVAL:
+                        last_location_feed = now
+                        next_step = ""
+                        if active_nav:
+                            steps = active_nav.route_data.get("steps", [])
+                            idx = active_nav.current_step_index
+                            if idx < len(steps):
+                                next_step = steps[idx].get("instruction", "")
+                        ctx_text = f"현재 위치: ({lat:.6f}, {lng:.6f})"
+                        if next_step:
+                            ctx_text += f", 다음 안내: {next_step}"
+                        content = genai_types.Content(
+                            parts=[genai_types.Part(text=ctx_text)]
+                        )
+                        await session.send_client_content(
+                            turns=content, turn_complete=True
+                        )
 
                 async def client_to_gemini() -> None:
                     """Forward client messages to Gemini Live session."""
@@ -231,6 +322,8 @@ async def websocket_gemini_bridge(
                                 await session.send_realtime_input(
                                     video=msg.get("data", ""),
                                 )
+                            elif msg_type == "location":
+                                await _handle_location(msg)
                     except TimeoutError:
                         logger.info("ws_inactivity_timeout", user_id=user_key)
                         await ws.close(code=status.WS_1000_NORMAL_CLOSURE)

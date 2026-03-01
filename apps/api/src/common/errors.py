@@ -22,6 +22,8 @@ RES_002: ErrorTuple = ("RES_002", "Wellness log not found")
 RES_003: ErrorTuple = ("RES_003", "Medication not found")
 RES_004: ErrorTuple = ("RES_004", "User not found")
 RES_005: ErrorTuple = ("RES_005", "Device token not found")
+RES_006: ErrorTuple = ("RES_006", "Navigation session not found")
+RES_007: ErrorTuple = ("RES_007", "No active navigation session")
 
 # ── Validation ─────────────────────────────────────────────────────
 VAL_001: ErrorTuple = ("VAL_001", "Invalid caregiver role")
@@ -33,6 +35,8 @@ SVC_002: ErrorTuple = ("SVC_002", "Gemini API is not configured")
 SVC_003: ErrorTuple = ("SVC_003", "OAuth provider did not return an email address")
 SVC_004: ErrorTuple = ("SVC_004", "Storage provider is not configured")
 SVC_005: ErrorTuple = ("SVC_005", "File upload failed")
+SVC_006: ErrorTuple = ("SVC_006", "Maps provider is not configured")
+SVC_007: ErrorTuple = ("SVC_007", "Geocoding returned no results")
 
 
 def raise_api_error(

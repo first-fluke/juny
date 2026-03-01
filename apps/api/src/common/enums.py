@@ -16,3 +16,11 @@ class WellnessStatus(str, enum.Enum):
     NORMAL = "normal"
     WARNING = "warning"
     EMERGENCY = "emergency"
+
+
+class NavigationStatus(str, enum.Enum):
+    """Navigation session lifecycle states."""
+
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"

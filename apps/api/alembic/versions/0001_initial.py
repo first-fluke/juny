@@ -449,8 +449,128 @@ def upgrade() -> None:
         unique=True,
     )
 
+    # --- navigation_sessions ---
+    op.create_table(
+        "navigation_sessions",
+        sa.Column(
+            "id",
+            sa.UUID(),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column("host_id", sa.UUID(), nullable=False),
+        sa.Column(
+            "status",
+            sa.String(length=20),
+            server_default="active",
+            nullable=False,
+            comment="active | completed | cancelled",
+        ),
+        sa.Column("destination_name", sa.String(length=500), nullable=False),
+        sa.Column("destination_lat", sa.Float(), nullable=False),
+        sa.Column("destination_lng", sa.Float(), nullable=False),
+        sa.Column("origin_lat", sa.Float(), nullable=False),
+        sa.Column("origin_lng", sa.Float(), nullable=False),
+        sa.Column(
+            "route_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            server_default=sa.text("'{}'::jsonb"),
+            nullable=False,
+        ),
+        sa.Column(
+            "current_step_index",
+            sa.Integer(),
+            server_default=sa.text("0"),
+            nullable=False,
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["host_id"],
+            ["users.id"],
+            name=op.f("fk_navigation_sessions_host_id_users"),
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_navigation_sessions")),
+    )
+    op.create_index(
+        "ix_navigation_sessions_host_id",
+        "navigation_sessions",
+        ["host_id"],
+        unique=False,
+    )
+    op.create_index(
+        "ix_navigation_sessions_status",
+        "navigation_sessions",
+        ["status"],
+        unique=False,
+    )
+
+    # --- location_waypoints ---
+    op.create_table(
+        "location_waypoints",
+        sa.Column(
+            "id",
+            sa.UUID(),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column("host_id", sa.UUID(), nullable=False),
+        sa.Column("session_id", sa.UUID(), nullable=True),
+        sa.Column("lat", sa.Float(), nullable=False),
+        sa.Column("lng", sa.Float(), nullable=False),
+        sa.Column("altitude", sa.Float(), nullable=True),
+        sa.Column("accuracy", sa.Float(), nullable=True),
+        sa.Column("speed", sa.Float(), nullable=True),
+        sa.Column("heading", sa.Float(), nullable=True),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["host_id"],
+            ["users.id"],
+            name=op.f("fk_location_waypoints_host_id_users"),
+            ondelete="CASCADE",
+        ),
+        sa.ForeignKeyConstraint(
+            ["session_id"],
+            ["navigation_sessions.id"],
+            name=op.f("fk_location_waypoints_session_id_navigation_sessions"),
+            ondelete="SET NULL",
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_location_waypoints")),
+    )
+    op.create_index(
+        "ix_location_waypoints_host_id_created_at",
+        "location_waypoints",
+        ["host_id", "created_at"],
+        unique=False,
+    )
+    op.create_index(
+        "ix_location_waypoints_session_id",
+        "location_waypoints",
+        ["session_id"],
+        unique=False,
+    )
+
 
 def downgrade() -> None:
+    op.drop_index("ix_location_waypoints_session_id", table_name="location_waypoints")
+    op.drop_index(
+        "ix_location_waypoints_host_id_created_at", table_name="location_waypoints"
+    )
+    op.drop_table("location_waypoints")
+    op.drop_index("ix_navigation_sessions_status", table_name="navigation_sessions")
+    op.drop_index("ix_navigation_sessions_host_id", table_name="navigation_sessions")
+    op.drop_table("navigation_sessions")
     op.drop_index(op.f("ix_device_tokens_token"), table_name="device_tokens")
     op.drop_index("ix_device_tokens_user_id", table_name="device_tokens")
     op.drop_table("device_tokens")

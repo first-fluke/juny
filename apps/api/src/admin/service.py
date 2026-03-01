@@ -14,6 +14,7 @@ from src.admin.schemas import (
     WellnessAggregateResponse,
 )
 from src.medications import repository as medication_repo
+from src.navigation import repository as navigation_repo
 from src.notifications import repository as notification_repo
 from src.relations import repository as relation_repo
 from src.users import repository as user_repo
@@ -46,12 +47,19 @@ async def cleanup_data(
 
     deleted_logs = 0
     deactivated = 0
+    deleted_waypoints = 0
 
     if resource_type in ("all", "wellness_logs"):
         deleted_logs = await repository.delete_old_wellness_logs(db, before)
 
     if resource_type in ("all", "device_tokens"):
         deactivated = await repository.deactivate_old_tokens(db, before)
+
+    if resource_type in ("all", "waypoints"):
+        waypoint_cutoff = datetime.now(UTC) - timedelta(days=7)
+        deleted_waypoints = await navigation_repo.delete_waypoints_before(
+            db, waypoint_cutoff
+        )
 
     await _log_audit(
         db,
@@ -61,12 +69,14 @@ async def cleanup_data(
             "retention_days": retention_days,
             "deleted_wellness_logs": deleted_logs,
             "deactivated_tokens": deactivated,
+            "deleted_waypoints": deleted_waypoints,
         },
     )
     await db.commit()
     return CleanupResponse(
         deleted_wellness_logs=deleted_logs,
         deactivated_tokens=deactivated,
+        deleted_waypoints=deleted_waypoints,
     )
 
 

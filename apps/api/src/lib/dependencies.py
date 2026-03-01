@@ -12,6 +12,7 @@ from src.lib.auth import (
     get_optional_user,
 )
 from src.lib.database import get_db
+from src.lib.maps import MapProvider, create_map_provider
 from src.lib.storage import StorageProvider, create_storage_provider
 
 # Type alias for database session dependency
@@ -31,14 +32,30 @@ def get_storage() -> StorageProvider:
 
 StorageDep = Annotated[StorageProvider, Depends(get_storage)]
 
+
+# Maps dependency
+@lru_cache
+def _get_map_provider() -> MapProvider:
+    return create_map_provider()
+
+
+def get_maps() -> MapProvider:
+    """FastAPI dependency for map provider."""
+    return _get_map_provider()
+
+
+MapsDep = Annotated[MapProvider, Depends(get_maps)]
+
 # Re-export auth dependencies for convenience
 __all__ = [
     "CurrentUser",
     "CurrentUserInfo",
     "DBSession",
+    "MapsDep",
     "OptionalUser",
     "StorageDep",
     "get_current_user",
+    "get_maps",
     "get_optional_user",
     "get_storage",
 ]

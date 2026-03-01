@@ -21,6 +21,7 @@ from src.lib.logging import configure_logging, get_logger
 from src.lib.rate_limit import rate_limit_middleware
 from src.lib.telemetry import configure_telemetry, instrument_app
 from src.medications.router import router as medications_router
+from src.navigation.router import router as navigation_router
 from src.notification_logs.router import router as notification_logs_router
 from src.notifications.router import router as notifications_router
 from src.relations.router import router as relations_router
@@ -249,6 +250,7 @@ api_v1.include_router(live_router, prefix="/live", tags=["live"])
 api_v1.include_router(relations_router, prefix="/relations", tags=["relations"])
 api_v1.include_router(wellness_router, prefix="/wellness", tags=["wellness"])
 api_v1.include_router(medications_router, prefix="/medications", tags=["medications"])
+api_v1.include_router(navigation_router, prefix="/navigation", tags=["navigation"])
 api_v1.include_router(users_router, prefix="/users", tags=["users"])
 api_v1.include_router(
     notifications_router, prefix="/notifications", tags=["notifications"]
