@@ -22,4 +22,18 @@ abstract class LiveService {
     @Query('room_name') required String roomName,
     @Query('role') required Role role,
   });
+
+  /// List Rooms.
+  ///
+  /// List active LiveKit rooms (ORGANIZATION only).
+  @GET('/api/v1/live/rooms')
+  Future<dynamic> listRoomsApiV1LiveRoomsGet();
+
+  /// List Participants.
+  ///
+  /// List participants in a LiveKit room (ORGANIZATION only).
+  @GET('/api/v1/live/rooms/{room_name}/participants')
+  Future<dynamic> listParticipantsApiV1LiveRoomsRoomNameParticipantsGet({
+    @Path('room_name') required String roomName,
+  });
 }

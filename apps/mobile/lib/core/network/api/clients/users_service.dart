@@ -22,6 +22,12 @@ abstract class UsersService {
   @GET('/api/v1/users/me')
   Future<UserResponse> getMyProfileApiV1UsersMeGet();
 
+  /// Delete Me.
+  ///
+  /// Delete the current user's own account.
+  @DELETE('/api/v1/users/me')
+  Future<void> deleteMeApiV1UsersMeDelete();
+
   /// Update My Profile.
   ///
   /// Update the current user's profile (name, image).
@@ -29,6 +35,12 @@ abstract class UsersService {
   Future<UserResponse> updateMyProfileApiV1UsersMePatch({
     @Body() required UserUpdate body,
   });
+
+  /// Export My Data.
+  ///
+  /// Export all personal data (GDPR self-service).
+  @GET('/api/v1/users/me/export')
+  Future<dynamic> exportMyDataApiV1UsersMeExportGet();
 
   /// List Users.
   ///

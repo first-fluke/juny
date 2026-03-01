@@ -228,6 +228,81 @@
         }
       }
     },
+    "/api/v1/live/rooms": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "List Rooms",
+        "description": "List active LiveKit rooms (ORGANIZATION only).",
+        "operationId": "list_rooms_api_v1_live_rooms_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response List Rooms Api V1 Live Rooms Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/live/rooms/{room_name}/participants": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "List Participants",
+        "description": "List participants in a LiveKit room (ORGANIZATION only).",
+        "operationId": "list_participants_api_v1_live_rooms__room_name__participants_get",
+        "parameters": [
+          {
+            "name": "room_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response List Participants Api V1 Live Rooms  Room Name  Participants Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/relations": {
       "post": {
         "tags": [
@@ -607,6 +682,70 @@
         }
       }
     },
+    "/api/v1/wellness/trends": {
+      "get": {
+        "tags": [
+          "wellness"
+        ],
+        "summary": "Get Wellness Trend",
+        "description": "Get wellness trend analysis for a host within a date range.",
+        "operationId": "get_wellness_trend_api_v1_wellness_trends_get",
+        "parameters": [
+          {
+            "name": "host_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Host Id"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WellnessTrendResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/wellness/{log_id}": {
       "get": {
         "tags": [
@@ -741,6 +880,70 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PaginatedResponse_MedicationResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/medications/adherence": {
+      "get": {
+        "tags": [
+          "medications"
+        ],
+        "summary": "Get Medication Adherence",
+        "description": "Get medication adherence statistics for a host within a date range.",
+        "operationId": "get_medication_adherence_api_v1_medications_adherence_get",
+        "parameters": [
+          {
+            "name": "host_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Host Id"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicationAdherenceResponse"
                 }
               }
             }
@@ -910,6 +1113,19 @@
           }
         }
       },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete Me",
+        "description": "Delete the current user's own account.",
+        "operationId": "delete_me_api_v1_users_me_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      },
       "patch": {
         "tags": [
           "users"
@@ -944,6 +1160,30 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me/export": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Export My Data",
+        "description": "Export all personal data (GDPR self-service).",
+        "operationId": "export_my_data_api_v1_users_me_export_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Export My Data Api V1 Users Me Export Get"
                 }
               }
             }
@@ -1244,6 +1484,179 @@
         }
       }
     },
+    "/api/v1/notification-logs": {
+      "get": {
+        "tags": [
+          "notification-logs"
+        ],
+        "summary": "List Notification Logs",
+        "description": "List notification logs for the current user (own notifications only).",
+        "operationId": "list_notification_logs_api_v1_notification_logs_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_NotificationLogResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notification-logs/preferences": {
+      "get": {
+        "tags": [
+          "notification-logs"
+        ],
+        "summary": "Get Preferences",
+        "description": "Get notification preferences for the current user.",
+        "operationId": "get_preferences_api_v1_notification_logs_preferences_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferenceResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "notification-logs"
+        ],
+        "summary": "Update Preferences",
+        "description": "Update notification preferences for the current user.",
+        "operationId": "update_preferences_api_v1_notification_logs_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationPreferenceUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferenceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notification-logs/{log_id}/status": {
+      "patch": {
+        "tags": [
+          "notification-logs"
+        ],
+        "summary": "Update Log Status",
+        "description": "Update notification log delivery status (internal/worker callback).",
+        "operationId": "update_log_status_api_v1_notification_logs__log_id__status_patch",
+        "parameters": [
+          {
+            "name": "log_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Log Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationLogStatusUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationLogResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/files/upload": {
       "post": {
         "tags": [
@@ -1503,10 +1916,216 @@
           }
         }
       }
+    },
+    "/api/v1/admin/tokens/deactivate": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Deactivate Tokens",
+        "description": "Deactivate failed FCM tokens reported by the worker.",
+        "operationId": "deactivate_tokens_api_v1_admin_tokens_deactivate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenDeactivateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDeactivateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Audit Logs",
+        "description": "List audit log entries (paginated, newest first).",
+        "operationId": "list_audit_logs_api_v1_admin_audit_logs_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_AuditLogResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/export/{user_id}": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Export User Data",
+        "description": "Export all data for a user (GDPR compliance).",
+        "operationId": "export_user_data_api_v1_admin_export__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Export User Data Api V1 Admin Export  User Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AuditLogResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "resource_type": {
+            "type": "string",
+            "title": "Resource Type"
+          },
+          "detail": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Detail"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "actor_id",
+          "action",
+          "resource_type",
+          "detail",
+          "description",
+          "timestamp"
+        ],
+        "title": "AuditLogResponse"
+      },
       "Body_upload_file_api_v1_files_upload_post": {
         "properties": {
           "file": {
@@ -1670,6 +2289,35 @@
           "deactivated_tokens"
         ],
         "title": "CleanupResponse"
+      },
+      "DailyWellnessStat": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "normal": {
+            "type": "integer",
+            "title": "Normal",
+            "default": 0
+          },
+          "warning": {
+            "type": "integer",
+            "title": "Warning",
+            "default": 0
+          },
+          "emergency": {
+            "type": "integer",
+            "title": "Emergency",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "date"
+        ],
+        "title": "DailyWellnessStat",
+        "description": "Daily aggregated wellness statistics."
       },
       "DeviceTokenCreate": {
         "properties": {
@@ -1894,6 +2542,51 @@
         ],
         "title": "LiveTokenResponse"
       },
+      "MedicationAdherenceResponse": {
+        "properties": {
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "date_from": {
+            "type": "string",
+            "title": "Date From"
+          },
+          "date_to": {
+            "type": "string",
+            "title": "Date To"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "taken": {
+            "type": "integer",
+            "title": "Taken"
+          },
+          "missed": {
+            "type": "integer",
+            "title": "Missed"
+          },
+          "adherence_rate": {
+            "type": "number",
+            "title": "Adherence Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host_id",
+          "date_from",
+          "date_to",
+          "total",
+          "taken",
+          "missed",
+          "adherence_rate"
+        ],
+        "title": "MedicationAdherenceResponse",
+        "description": "Medication adherence statistics."
+      },
       "MedicationCreate": {
         "properties": {
           "host_id": {
@@ -2020,6 +2713,143 @@
         "title": "MedicationUpdate",
         "description": "Request body for updating a medication."
       },
+      "NotificationLogResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "recipient_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Recipient Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata",
+            "default": {}
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "recipient_id",
+          "title",
+          "body",
+          "status",
+          "channel",
+          "created_at"
+        ],
+        "title": "NotificationLogResponse",
+        "description": "Read-only representation of a notification log entry."
+      },
+      "NotificationLogStatusUpdate": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "NotificationLogStatusUpdate",
+        "description": "Payload for updating a notification log's delivery status."
+      },
+      "NotificationPreferenceResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "wellness_alerts": {
+            "type": "boolean",
+            "title": "Wellness Alerts"
+          },
+          "medication_reminders": {
+            "type": "boolean",
+            "title": "Medication Reminders"
+          },
+          "system_updates": {
+            "type": "boolean",
+            "title": "System Updates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "wellness_alerts",
+          "medication_reminders",
+          "system_updates"
+        ],
+        "title": "NotificationPreferenceResponse",
+        "description": "Read-only representation of notification preferences."
+      },
+      "NotificationPreferenceUpdate": {
+        "properties": {
+          "wellness_alerts": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wellness Alerts"
+          },
+          "medication_reminders": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Medication Reminders"
+          },
+          "system_updates": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Updates"
+          }
+        },
+        "type": "object",
+        "title": "NotificationPreferenceUpdate",
+        "description": "Payload for updating notification preferences."
+      },
       "OAuthLoginRequest": {
         "properties": {
           "provider": {
@@ -2043,6 +2873,26 @@
         ],
         "title": "OAuthLoginRequest",
         "description": "OAuth login request."
+      },
+      "PaginatedResponse_AuditLogResponse_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AuditLogResponse"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "PaginatedResponse[AuditLogResponse]"
       },
       "PaginatedResponse_CareRelationResponse_": {
         "properties": {
@@ -2083,6 +2933,26 @@
           "meta"
         ],
         "title": "PaginatedResponse[MedicationResponse]"
+      },
+      "PaginatedResponse_NotificationLogResponse_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationLogResponse"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "PaginatedResponse[NotificationLogResponse]"
       },
       "PaginatedResponse_UserResponse_": {
         "properties": {
@@ -2222,6 +3092,35 @@
         ],
         "title": "ServiceStatus",
         "description": "Individual service health status."
+      },
+      "TokenDeactivateRequest": {
+        "properties": {
+          "tokens": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tokens"
+        ],
+        "title": "TokenDeactivateRequest"
+      },
+      "TokenDeactivateResponse": {
+        "properties": {
+          "deactivated_count": {
+            "type": "integer",
+            "title": "Deactivated Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deactivated_count"
+        ],
+        "title": "TokenDeactivateResponse"
       },
       "TokenResponse": {
         "properties": {
@@ -2524,6 +3423,39 @@
         ],
         "title": "WellnessStatus",
         "description": "Wellness log severity levels."
+      },
+      "WellnessTrendResponse": {
+        "properties": {
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "date_from": {
+            "type": "string",
+            "title": "Date From"
+          },
+          "date_to": {
+            "type": "string",
+            "title": "Date To"
+          },
+          "daily_stats": {
+            "items": {
+              "$ref": "#/components/schemas/DailyWellnessStat"
+            },
+            "type": "array",
+            "title": "Daily Stats"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host_id",
+          "date_from",
+          "date_to",
+          "daily_stats"
+        ],
+        "title": "WellnessTrendResponse",
+        "description": "Response model for wellness trend analysis."
       }
     }
   }

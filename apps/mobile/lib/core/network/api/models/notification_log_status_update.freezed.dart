@@ -1,0 +1,277 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'notification_log_status_update.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$NotificationLogStatusUpdate {
+
+ String get status;
+/// Create a copy of NotificationLogStatusUpdate
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$NotificationLogStatusUpdateCopyWith<NotificationLogStatusUpdate> get copyWith => _$NotificationLogStatusUpdateCopyWithImpl<NotificationLogStatusUpdate>(this as NotificationLogStatusUpdate, _$identity);
+
+  /// Serializes this NotificationLogStatusUpdate to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationLogStatusUpdate&&(identical(other.status, status) || other.status == status));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,status);
+
+@override
+String toString() {
+  return 'NotificationLogStatusUpdate(status: $status)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $NotificationLogStatusUpdateCopyWith<$Res>  {
+  factory $NotificationLogStatusUpdateCopyWith(NotificationLogStatusUpdate value, $Res Function(NotificationLogStatusUpdate) _then) = _$NotificationLogStatusUpdateCopyWithImpl;
+@useResult
+$Res call({
+ String status
+});
+
+
+
+
+}
+/// @nodoc
+class _$NotificationLogStatusUpdateCopyWithImpl<$Res>
+    implements $NotificationLogStatusUpdateCopyWith<$Res> {
+  _$NotificationLogStatusUpdateCopyWithImpl(this._self, this._then);
+
+  final NotificationLogStatusUpdate _self;
+  final $Res Function(NotificationLogStatusUpdate) _then;
+
+/// Create a copy of NotificationLogStatusUpdate
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,}) {
+  return _then(_self.copyWith(
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [NotificationLogStatusUpdate].
+extension NotificationLogStatusUpdatePatterns on NotificationLogStatusUpdate {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _NotificationLogStatusUpdate value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _NotificationLogStatusUpdate() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _NotificationLogStatusUpdate value)  $default,){
+final _that = this;
+switch (_that) {
+case _NotificationLogStatusUpdate():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _NotificationLogStatusUpdate value)?  $default,){
+final _that = this;
+switch (_that) {
+case _NotificationLogStatusUpdate() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String status)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _NotificationLogStatusUpdate() when $default != null:
+return $default(_that.status);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String status)  $default,) {final _that = this;
+switch (_that) {
+case _NotificationLogStatusUpdate():
+return $default(_that.status);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String status)?  $default,) {final _that = this;
+switch (_that) {
+case _NotificationLogStatusUpdate() when $default != null:
+return $default(_that.status);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _NotificationLogStatusUpdate implements NotificationLogStatusUpdate {
+  const _NotificationLogStatusUpdate({required this.status});
+  factory _NotificationLogStatusUpdate.fromJson(Map<String, dynamic> json) => _$NotificationLogStatusUpdateFromJson(json);
+
+@override final  String status;
+
+/// Create a copy of NotificationLogStatusUpdate
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$NotificationLogStatusUpdateCopyWith<_NotificationLogStatusUpdate> get copyWith => __$NotificationLogStatusUpdateCopyWithImpl<_NotificationLogStatusUpdate>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$NotificationLogStatusUpdateToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationLogStatusUpdate&&(identical(other.status, status) || other.status == status));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,status);
+
+@override
+String toString() {
+  return 'NotificationLogStatusUpdate(status: $status)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$NotificationLogStatusUpdateCopyWith<$Res> implements $NotificationLogStatusUpdateCopyWith<$Res> {
+  factory _$NotificationLogStatusUpdateCopyWith(_NotificationLogStatusUpdate value, $Res Function(_NotificationLogStatusUpdate) _then) = __$NotificationLogStatusUpdateCopyWithImpl;
+@override @useResult
+$Res call({
+ String status
+});
+
+
+
+
+}
+/// @nodoc
+class __$NotificationLogStatusUpdateCopyWithImpl<$Res>
+    implements _$NotificationLogStatusUpdateCopyWith<$Res> {
+  __$NotificationLogStatusUpdateCopyWithImpl(this._self, this._then);
+
+  final _NotificationLogStatusUpdate _self;
+  final $Res Function(_NotificationLogStatusUpdate) _then;
+
+/// Create a copy of NotificationLogStatusUpdate
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,}) {
+  return _then(_NotificationLogStatusUpdate(
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on

@@ -8,6 +8,7 @@ import 'package:retrofit/retrofit.dart';
 import '../models/paginated_response_wellness_log_response.dart';
 import '../models/wellness_log_create.dart';
 import '../models/wellness_log_response.dart';
+import '../models/wellness_trend_response.dart';
 
 part 'wellness_service.g.dart';
 
@@ -31,6 +32,16 @@ abstract class WellnessService {
     @Query('host_id') required String hostId,
     @Query('page') int? page = 1,
     @Query('limit') int? limit = 20,
+  });
+
+  /// Get Wellness Trend.
+  ///
+  /// Get wellness trend analysis for a host within a date range.
+  @GET('/api/v1/wellness/trends')
+  Future<WellnessTrendResponse> getWellnessTrendApiV1WellnessTrendsGet({
+    @Query('host_id') required String hostId,
+    @Query('date_from') required DateTime dateFrom,
+    @Query('date_to') required DateTime dateTo,
   });
 
   /// Get Wellness Log.

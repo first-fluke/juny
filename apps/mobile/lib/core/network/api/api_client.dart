@@ -12,6 +12,7 @@ import 'clients/wellness_service.dart';
 import 'clients/medications_service.dart';
 import 'clients/users_service.dart';
 import 'clients/notifications_service.dart';
+import 'clients/notification_logs_service.dart';
 import 'clients/files_service.dart';
 import 'clients/admin_service.dart';
 
@@ -36,6 +37,7 @@ class ApiClient {
   MedicationsService? _medications;
   UsersService? _users;
   NotificationsService? _notifications;
+  NotificationLogsService? _notificationLogs;
   FilesService? _files;
   AdminService? _admin;
 
@@ -54,6 +56,8 @@ class ApiClient {
   UsersService get users => _users ??= UsersService(_dio, baseUrl: _baseUrl);
 
   NotificationsService get notifications => _notifications ??= NotificationsService(_dio, baseUrl: _baseUrl);
+
+  NotificationLogsService get notificationLogs => _notificationLogs ??= NotificationLogsService(_dio, baseUrl: _baseUrl);
 
   FilesService get files => _files ??= FilesService(_dio, baseUrl: _baseUrl);
 

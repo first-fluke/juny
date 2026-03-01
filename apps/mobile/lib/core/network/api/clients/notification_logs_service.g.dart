@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'wellness_service.dart';
+part of 'notification_logs_service.dart';
 
 // dart format off
 
@@ -10,8 +10,8 @@ part of 'wellness_service.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations,unused_element_parameter,avoid_unused_constructor_parameters,unreachable_from_main
 
-class _WellnessService implements WellnessService {
-  _WellnessService(this._dio, {this.baseUrl, this.errorLogger});
+class _NotificationLogsService implements NotificationLogsService {
+  _NotificationLogsService(this._dio, {this.baseUrl, this.errorLogger});
 
   final Dio _dio;
 
@@ -20,27 +20,88 @@ class _WellnessService implements WellnessService {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<WellnessLogResponse> createWellnessLogApiV1WellnessPost({
-    required WellnessLogCreate body,
+  Future<PaginatedResponseNotificationLogResponse>
+  listNotificationLogsApiV1NotificationLogsGet({
+    int? page = 1,
+    int? limit = 20,
+  }) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'page': page, r'limit': limit};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<PaginatedResponseNotificationLogResponse>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/v1/notification-logs',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, Object?>>(_options);
+    late PaginatedResponseNotificationLogResponse _value;
+    try {
+      _value = PaginatedResponseNotificationLogResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<NotificationPreferenceResponse>
+  getPreferencesApiV1NotificationLogsPreferencesGet() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<NotificationPreferenceResponse>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/v1/notification-logs/preferences',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, Object?>>(_options);
+    late NotificationPreferenceResponse _value;
+    try {
+      _value = NotificationPreferenceResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<NotificationPreferenceResponse>
+  updatePreferencesApiV1NotificationLogsPreferencesPut({
+    required NotificationPreferenceUpdate body,
   }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = body;
-    final _options = _setStreamType<WellnessLogResponse>(
-      Options(method: 'POST', headers: _headers, extra: _extra)
+    final _options = _setStreamType<NotificationPreferenceResponse>(
+      Options(method: 'PUT', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/v1/wellness',
+            '/api/v1/notification-logs/preferences',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, Object?>>(_options);
-    late WellnessLogResponse _value;
+    late NotificationPreferenceResponse _value;
     try {
-      _value = WellnessLogResponse.fromJson(_result.data!);
+      _value = NotificationPreferenceResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options, response: _result);
       rethrow;
@@ -49,99 +110,29 @@ class _WellnessService implements WellnessService {
   }
 
   @override
-  Future<PaginatedResponseWellnessLogResponse>
-  listWellnessLogsApiV1WellnessGet({
-    required String hostId,
-    int? page = 1,
-    int? limit = 20,
-  }) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{
-      r'host_id': hostId,
-      r'page': page,
-      r'limit': limit,
-    };
-    queryParameters.removeWhere((k, v) => v == null);
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<PaginatedResponseWellnessLogResponse>(
-      Options(method: 'GET', headers: _headers, extra: _extra)
-          .compose(
-            _dio.options,
-            '/api/v1/wellness',
-            queryParameters: queryParameters,
-            data: _data,
-          )
-          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-    );
-    final _result = await _dio.fetch<Map<String, Object?>>(_options);
-    late PaginatedResponseWellnessLogResponse _value;
-    try {
-      _value = PaginatedResponseWellnessLogResponse.fromJson(_result.data!);
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options, response: _result);
-      rethrow;
-    }
-    return _value;
-  }
-
-  @override
-  Future<WellnessTrendResponse> getWellnessTrendApiV1WellnessTrendsGet({
-    required String hostId,
-    required DateTime dateFrom,
-    required DateTime dateTo,
-  }) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{
-      r'host_id': hostId,
-      r'date_from': dateFrom.toIso8601String(),
-      r'date_to': dateTo.toIso8601String(),
-    };
-    final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<WellnessTrendResponse>(
-      Options(method: 'GET', headers: _headers, extra: _extra)
-          .compose(
-            _dio.options,
-            '/api/v1/wellness/trends',
-            queryParameters: queryParameters,
-            data: _data,
-          )
-          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-    );
-    final _result = await _dio.fetch<Map<String, Object?>>(_options);
-    late WellnessTrendResponse _value;
-    try {
-      _value = WellnessTrendResponse.fromJson(_result.data!);
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options, response: _result);
-      rethrow;
-    }
-    return _value;
-  }
-
-  @override
-  Future<WellnessLogResponse> getWellnessLogApiV1WellnessLogIdGet({
+  Future<NotificationLogResponse>
+  updateLogStatusApiV1NotificationLogsLogIdStatusPatch({
     required String logId,
+    required NotificationLogStatusUpdate body,
   }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<WellnessLogResponse>(
-      Options(method: 'GET', headers: _headers, extra: _extra)
+    final _data = body;
+    final _options = _setStreamType<NotificationLogResponse>(
+      Options(method: 'PATCH', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/v1/wellness/${logId}',
+            '/api/v1/notification-logs/${logId}/status',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, Object?>>(_options);
-    late WellnessLogResponse _value;
+    late NotificationLogResponse _value;
     try {
-      _value = WellnessLogResponse.fromJson(_result.data!);
+      _value = NotificationLogResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options, response: _result);
       rethrow;

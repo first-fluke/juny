@@ -8,6 +8,9 @@ import 'package:retrofit/retrofit.dart';
 import '../models/cleanup_request.dart';
 import '../models/cleanup_response.dart';
 import '../models/inactive_relation_response.dart';
+import '../models/paginated_response_audit_log_response.dart';
+import '../models/token_deactivate_request.dart';
+import '../models/token_deactivate_response.dart';
 import '../models/wellness_aggregate_response.dart';
 
 part 'admin_service.g.dart';
@@ -39,5 +42,30 @@ abstract class AdminService {
   Future<WellnessAggregateResponse> wellnessAggregateApiV1AdminWellnessAggregateGet({
     @Query('host_id') required String hostId,
     @Query('date') required String date,
+  });
+
+  /// Deactivate Tokens.
+  ///
+  /// Deactivate failed FCM tokens reported by the worker.
+  @POST('/api/v1/admin/tokens/deactivate')
+  Future<TokenDeactivateResponse> deactivateTokensApiV1AdminTokensDeactivatePost({
+    @Body() required TokenDeactivateRequest body,
+  });
+
+  /// List Audit Logs.
+  ///
+  /// List audit log entries (paginated, newest first).
+  @GET('/api/v1/admin/audit-logs')
+  Future<PaginatedResponseAuditLogResponse> listAuditLogsApiV1AdminAuditLogsGet({
+    @Query('page') int? page = 1,
+    @Query('limit') int? limit = 50,
+  });
+
+  /// Export User Data.
+  ///
+  /// Export all data for a user (GDPR compliance).
+  @GET('/api/v1/admin/export/{user_id}')
+  Future<dynamic> exportUserDataApiV1AdminExportUserIdGet({
+    @Path('user_id') required String userId,
   });
 }
