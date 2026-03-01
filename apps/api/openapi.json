@@ -1092,6 +1092,415 @@
         }
       }
     },
+    "/api/v1/navigation/sessions": {
+      "post": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Start Navigation",
+        "description": "Start a new navigation session for a host.",
+        "operationId": "start_navigation_api_v1_navigation_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NavigationSessionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NavigationSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/navigation/sessions/active": {
+      "get": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Get Active Session",
+        "description": "Get the currently active navigation session for a host.",
+        "operationId": "get_active_session_api_v1_navigation_sessions_active_get",
+        "parameters": [
+          {
+            "name": "host_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Host Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NavigationSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/navigation/sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Get Session",
+        "description": "Get a navigation session by ID.",
+        "operationId": "get_session_api_v1_navigation_sessions__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NavigationSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/navigation/sessions/{session_id}/cancel": {
+      "post": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Cancel Navigation",
+        "description": "Cancel an active navigation session.",
+        "operationId": "cancel_navigation_api_v1_navigation_sessions__session_id__cancel_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/navigation/sessions/{session_id}/reroute": {
+      "post": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Reroute Navigation",
+        "description": "Reroute a navigation session from the current location.",
+        "operationId": "reroute_navigation_api_v1_navigation_sessions__session_id__reroute_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RerouteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NavigationSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/navigation/waypoints": {
+      "post": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Create Waypoint",
+        "description": "Record a single GPS waypoint.",
+        "operationId": "create_waypoint_api_v1_navigation_waypoints_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationWaypointCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationWaypointResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/navigation/waypoints/batch": {
+      "post": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Create Waypoints Batch",
+        "description": "Record multiple GPS waypoints in a batch.",
+        "operationId": "create_waypoints_batch_api_v1_navigation_waypoints_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/LocationWaypointCreate"
+                },
+                "type": "array",
+                "title": "Payloads"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LocationWaypointResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Create Waypoints Batch Api V1 Navigation Waypoints Batch Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/navigation/location/{host_id}": {
+      "get": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Get Host Location",
+        "description": "Get the most recent location for a host (Concierge polling).",
+        "operationId": "get_host_location_api_v1_navigation_location__host_id__get",
+        "parameters": [
+          {
+            "name": "host_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Host Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/LocationWaypointResponse"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Host Location Api V1 Navigation Location  Host Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/navigation/trace/{session_id}": {
+      "get": {
+        "tags": [
+          "navigation"
+        ],
+        "summary": "Get Route Trace",
+        "description": "Get waypoint trace for a navigation session (visualization).",
+        "operationId": "get_route_trace_api_v1_navigation_trace__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteTraceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/users/me": {
       "get": {
         "tags": [
@@ -2281,6 +2690,11 @@
           "deactivated_tokens": {
             "type": "integer",
             "title": "Deactivated Tokens"
+          },
+          "deleted_waypoints": {
+            "type": "integer",
+            "title": "Deleted Waypoints",
+            "default": 0
           }
         },
         "type": "object",
@@ -2542,6 +2956,185 @@
         ],
         "title": "LiveTokenResponse"
       },
+      "LocationWaypointCreate": {
+        "properties": {
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "title": "Lng"
+          },
+          "altitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Altitude"
+          },
+          "accuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accuracy"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed"
+          },
+          "heading": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heading"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host_id",
+          "lat",
+          "lng"
+        ],
+        "title": "LocationWaypointCreate",
+        "description": "Request body for recording a single GPS waypoint."
+      },
+      "LocationWaypointResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "title": "Lng"
+          },
+          "altitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Altitude"
+          },
+          "accuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accuracy"
+          },
+          "speed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed"
+          },
+          "heading": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heading"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "host_id",
+          "session_id",
+          "lat",
+          "lng",
+          "altitude",
+          "accuracy",
+          "speed",
+          "heading",
+          "created_at"
+        ],
+        "title": "LocationWaypointResponse",
+        "description": "Response model for a location waypoint."
+      },
       "MedicationAdherenceResponse": {
         "properties": {
           "host_id": {
@@ -2712,6 +3305,119 @@
         "type": "object",
         "title": "MedicationUpdate",
         "description": "Request body for updating a medication."
+      },
+      "NavigationSessionCreate": {
+        "properties": {
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "destination_query": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Destination Query"
+          },
+          "origin_lat": {
+            "type": "number",
+            "title": "Origin Lat"
+          },
+          "origin_lng": {
+            "type": "number",
+            "title": "Origin Lng"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host_id",
+          "destination_query",
+          "origin_lat",
+          "origin_lng"
+        ],
+        "title": "NavigationSessionCreate",
+        "description": "Request body for starting a navigation session."
+      },
+      "NavigationSessionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "destination_name": {
+            "type": "string",
+            "title": "Destination Name"
+          },
+          "destination_lat": {
+            "type": "number",
+            "title": "Destination Lat"
+          },
+          "destination_lng": {
+            "type": "number",
+            "title": "Destination Lng"
+          },
+          "origin_lat": {
+            "type": "number",
+            "title": "Origin Lat"
+          },
+          "origin_lng": {
+            "type": "number",
+            "title": "Origin Lng"
+          },
+          "route_data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Route Data"
+          },
+          "current_step_index": {
+            "type": "integer",
+            "title": "Current Step Index"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "host_id",
+          "status",
+          "destination_name",
+          "destination_lat",
+          "destination_lng",
+          "origin_lat",
+          "origin_lng",
+          "route_data",
+          "current_step_index",
+          "created_at",
+          "completed_at"
+        ],
+        "title": "NavigationSessionResponse",
+        "description": "Response model for a navigation session."
       },
       "NotificationLogResponse": {
         "properties": {
@@ -3052,6 +3758,71 @@
         ],
         "title": "RefreshTokenRequest",
         "description": "Refresh token request."
+      },
+      "RerouteRequest": {
+        "properties": {
+          "current_lat": {
+            "type": "number",
+            "title": "Current Lat"
+          },
+          "current_lng": {
+            "type": "number",
+            "title": "Current Lng"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_lat",
+          "current_lng"
+        ],
+        "title": "RerouteRequest",
+        "description": "Request body for rerouting from the current location."
+      },
+      "RouteTraceResponse": {
+        "properties": {
+          "host_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Host Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "waypoints": {
+            "items": {
+              "$ref": "#/components/schemas/LocationWaypointResponse"
+            },
+            "type": "array",
+            "title": "Waypoints"
+          },
+          "total_distance_meters": {
+            "type": "number",
+            "title": "Total Distance Meters"
+          },
+          "duration_seconds": {
+            "type": "number",
+            "title": "Duration Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host_id",
+          "session_id",
+          "waypoints",
+          "total_distance_meters",
+          "duration_seconds"
+        ],
+        "title": "RouteTraceResponse",
+        "description": "Response model for a session's route trace (waypoint history)."
       },
       "ServiceStatus": {
         "properties": {

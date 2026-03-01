@@ -14,6 +14,9 @@ abstract class CleanupResponse with _$CleanupResponse {
     required int deletedWellnessLogs,
     @JsonKey(name: 'deactivated_tokens')
     required int deactivatedTokens,
+    @JsonKey(name: 'deleted_waypoints')
+    @Default(0)
+    int deletedWaypoints,
   }) = _CleanupResponse;
   
   factory CleanupResponse.fromJson(Map<String, Object?> json) => _$CleanupResponseFromJson(json);

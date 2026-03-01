@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CleanupResponse {
 
-@JsonKey(name: 'deleted_wellness_logs') int get deletedWellnessLogs;@JsonKey(name: 'deactivated_tokens') int get deactivatedTokens;
+@JsonKey(name: 'deleted_wellness_logs') int get deletedWellnessLogs;@JsonKey(name: 'deactivated_tokens') int get deactivatedTokens;@JsonKey(name: 'deleted_waypoints') int get deletedWaypoints;
 /// Create a copy of CleanupResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CleanupResponseCopyWith<CleanupResponse> get copyWith => _$CleanupResponseCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CleanupResponse&&(identical(other.deletedWellnessLogs, deletedWellnessLogs) || other.deletedWellnessLogs == deletedWellnessLogs)&&(identical(other.deactivatedTokens, deactivatedTokens) || other.deactivatedTokens == deactivatedTokens));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CleanupResponse&&(identical(other.deletedWellnessLogs, deletedWellnessLogs) || other.deletedWellnessLogs == deletedWellnessLogs)&&(identical(other.deactivatedTokens, deactivatedTokens) || other.deactivatedTokens == deactivatedTokens)&&(identical(other.deletedWaypoints, deletedWaypoints) || other.deletedWaypoints == deletedWaypoints));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,deletedWellnessLogs,deactivatedTokens);
+int get hashCode => Object.hash(runtimeType,deletedWellnessLogs,deactivatedTokens,deletedWaypoints);
 
 @override
 String toString() {
-  return 'CleanupResponse(deletedWellnessLogs: $deletedWellnessLogs, deactivatedTokens: $deactivatedTokens)';
+  return 'CleanupResponse(deletedWellnessLogs: $deletedWellnessLogs, deactivatedTokens: $deactivatedTokens, deletedWaypoints: $deletedWaypoints)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CleanupResponseCopyWith<$Res>  {
   factory $CleanupResponseCopyWith(CleanupResponse value, $Res Function(CleanupResponse) _then) = _$CleanupResponseCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'deleted_wellness_logs') int deletedWellnessLogs,@JsonKey(name: 'deactivated_tokens') int deactivatedTokens
+@JsonKey(name: 'deleted_wellness_logs') int deletedWellnessLogs,@JsonKey(name: 'deactivated_tokens') int deactivatedTokens,@JsonKey(name: 'deleted_waypoints') int deletedWaypoints
 });
 
 
@@ -65,10 +65,11 @@ class _$CleanupResponseCopyWithImpl<$Res>
 
 /// Create a copy of CleanupResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? deletedWellnessLogs = null,Object? deactivatedTokens = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? deletedWellnessLogs = null,Object? deactivatedTokens = null,Object? deletedWaypoints = null,}) {
   return _then(_self.copyWith(
 deletedWellnessLogs: null == deletedWellnessLogs ? _self.deletedWellnessLogs : deletedWellnessLogs // ignore: cast_nullable_to_non_nullable
 as int,deactivatedTokens: null == deactivatedTokens ? _self.deactivatedTokens : deactivatedTokens // ignore: cast_nullable_to_non_nullable
+as int,deletedWaypoints: null == deletedWaypoints ? _self.deletedWaypoints : deletedWaypoints // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -154,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'deleted_wellness_logs')  int deletedWellnessLogs, @JsonKey(name: 'deactivated_tokens')  int deactivatedTokens)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'deleted_wellness_logs')  int deletedWellnessLogs, @JsonKey(name: 'deactivated_tokens')  int deactivatedTokens, @JsonKey(name: 'deleted_waypoints')  int deletedWaypoints)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CleanupResponse() when $default != null:
-return $default(_that.deletedWellnessLogs,_that.deactivatedTokens);case _:
+return $default(_that.deletedWellnessLogs,_that.deactivatedTokens,_that.deletedWaypoints);case _:
   return orElse();
 
 }
@@ -175,10 +176,10 @@ return $default(_that.deletedWellnessLogs,_that.deactivatedTokens);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'deleted_wellness_logs')  int deletedWellnessLogs, @JsonKey(name: 'deactivated_tokens')  int deactivatedTokens)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'deleted_wellness_logs')  int deletedWellnessLogs, @JsonKey(name: 'deactivated_tokens')  int deactivatedTokens, @JsonKey(name: 'deleted_waypoints')  int deletedWaypoints)  $default,) {final _that = this;
 switch (_that) {
 case _CleanupResponse():
-return $default(_that.deletedWellnessLogs,_that.deactivatedTokens);case _:
+return $default(_that.deletedWellnessLogs,_that.deactivatedTokens,_that.deletedWaypoints);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +196,10 @@ return $default(_that.deletedWellnessLogs,_that.deactivatedTokens);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'deleted_wellness_logs')  int deletedWellnessLogs, @JsonKey(name: 'deactivated_tokens')  int deactivatedTokens)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'deleted_wellness_logs')  int deletedWellnessLogs, @JsonKey(name: 'deactivated_tokens')  int deactivatedTokens, @JsonKey(name: 'deleted_waypoints')  int deletedWaypoints)?  $default,) {final _that = this;
 switch (_that) {
 case _CleanupResponse() when $default != null:
-return $default(_that.deletedWellnessLogs,_that.deactivatedTokens);case _:
+return $default(_that.deletedWellnessLogs,_that.deactivatedTokens,_that.deletedWaypoints);case _:
   return null;
 
 }
@@ -210,11 +211,12 @@ return $default(_that.deletedWellnessLogs,_that.deactivatedTokens);case _:
 @JsonSerializable()
 
 class _CleanupResponse implements CleanupResponse {
-  const _CleanupResponse({@JsonKey(name: 'deleted_wellness_logs') required this.deletedWellnessLogs, @JsonKey(name: 'deactivated_tokens') required this.deactivatedTokens});
+  const _CleanupResponse({@JsonKey(name: 'deleted_wellness_logs') required this.deletedWellnessLogs, @JsonKey(name: 'deactivated_tokens') required this.deactivatedTokens, @JsonKey(name: 'deleted_waypoints') this.deletedWaypoints = 0});
   factory _CleanupResponse.fromJson(Map<String, dynamic> json) => _$CleanupResponseFromJson(json);
 
 @override@JsonKey(name: 'deleted_wellness_logs') final  int deletedWellnessLogs;
 @override@JsonKey(name: 'deactivated_tokens') final  int deactivatedTokens;
+@override@JsonKey(name: 'deleted_waypoints') final  int deletedWaypoints;
 
 /// Create a copy of CleanupResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +231,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CleanupResponse&&(identical(other.deletedWellnessLogs, deletedWellnessLogs) || other.deletedWellnessLogs == deletedWellnessLogs)&&(identical(other.deactivatedTokens, deactivatedTokens) || other.deactivatedTokens == deactivatedTokens));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CleanupResponse&&(identical(other.deletedWellnessLogs, deletedWellnessLogs) || other.deletedWellnessLogs == deletedWellnessLogs)&&(identical(other.deactivatedTokens, deactivatedTokens) || other.deactivatedTokens == deactivatedTokens)&&(identical(other.deletedWaypoints, deletedWaypoints) || other.deletedWaypoints == deletedWaypoints));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,deletedWellnessLogs,deactivatedTokens);
+int get hashCode => Object.hash(runtimeType,deletedWellnessLogs,deactivatedTokens,deletedWaypoints);
 
 @override
 String toString() {
-  return 'CleanupResponse(deletedWellnessLogs: $deletedWellnessLogs, deactivatedTokens: $deactivatedTokens)';
+  return 'CleanupResponse(deletedWellnessLogs: $deletedWellnessLogs, deactivatedTokens: $deactivatedTokens, deletedWaypoints: $deletedWaypoints)';
 }
 
 
@@ -249,7 +251,7 @@ abstract mixin class _$CleanupResponseCopyWith<$Res> implements $CleanupResponse
   factory _$CleanupResponseCopyWith(_CleanupResponse value, $Res Function(_CleanupResponse) _then) = __$CleanupResponseCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'deleted_wellness_logs') int deletedWellnessLogs,@JsonKey(name: 'deactivated_tokens') int deactivatedTokens
+@JsonKey(name: 'deleted_wellness_logs') int deletedWellnessLogs,@JsonKey(name: 'deactivated_tokens') int deactivatedTokens,@JsonKey(name: 'deleted_waypoints') int deletedWaypoints
 });
 
 
@@ -266,10 +268,11 @@ class __$CleanupResponseCopyWithImpl<$Res>
 
 /// Create a copy of CleanupResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? deletedWellnessLogs = null,Object? deactivatedTokens = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? deletedWellnessLogs = null,Object? deactivatedTokens = null,Object? deletedWaypoints = null,}) {
   return _then(_CleanupResponse(
 deletedWellnessLogs: null == deletedWellnessLogs ? _self.deletedWellnessLogs : deletedWellnessLogs // ignore: cast_nullable_to_non_nullable
 as int,deactivatedTokens: null == deactivatedTokens ? _self.deactivatedTokens : deactivatedTokens // ignore: cast_nullable_to_non_nullable
+as int,deletedWaypoints: null == deletedWaypoints ? _self.deletedWaypoints : deletedWaypoints // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
