@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -11,8 +11,8 @@ _CACHE = "src.lib.cache"
 
 class TestCacheGet:
     @pytest.mark.asyncio
-    @patch(f"{_CACHE}._get_redis", new_callable=AsyncMock)
-    async def test_cache_hit(self, mock_redis: AsyncMock) -> None:
+    @patch(f"{_CACHE}._get_redis_sync")
+    async def test_cache_hit(self, mock_redis: MagicMock) -> None:
         client = AsyncMock()
         client.get = AsyncMock(return_value=b'{"value": 42}')
         mock_redis.return_value = client
@@ -20,11 +20,10 @@ class TestCacheGet:
         result = await cache_get("my-key")
         assert result == {"value": 42}
         client.get.assert_called_once_with("my-key")
-        client.aclose.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch(f"{_CACHE}._get_redis", new_callable=AsyncMock)
-    async def test_cache_miss(self, mock_redis: AsyncMock) -> None:
+    @patch(f"{_CACHE}._get_redis_sync")
+    async def test_cache_miss(self, mock_redis: MagicMock) -> None:
         client = AsyncMock()
         client.get = AsyncMock(return_value=None)
         mock_redis.return_value = client
@@ -33,15 +32,15 @@ class TestCacheGet:
         assert result is None
 
     @pytest.mark.asyncio
-    @patch(f"{_CACHE}._get_redis", new_callable=AsyncMock)
-    async def test_cache_no_redis(self, mock_redis: AsyncMock) -> None:
+    @patch(f"{_CACHE}._get_redis_sync")
+    async def test_cache_no_redis(self, mock_redis: MagicMock) -> None:
         mock_redis.return_value = None
         result = await cache_get("any-key")
         assert result is None
 
     @pytest.mark.asyncio
-    @patch(f"{_CACHE}._get_redis", new_callable=AsyncMock)
-    async def test_cache_error_returns_none(self, mock_redis: AsyncMock) -> None:
+    @patch(f"{_CACHE}._get_redis_sync")
+    async def test_cache_error_returns_none(self, mock_redis: MagicMock) -> None:
         client = AsyncMock()
         client.get = AsyncMock(side_effect=Exception("Redis down"))
         mock_redis.return_value = client
@@ -52,18 +51,17 @@ class TestCacheGet:
 
 class TestCacheSet:
     @pytest.mark.asyncio
-    @patch(f"{_CACHE}._get_redis", new_callable=AsyncMock)
-    async def test_cache_set(self, mock_redis: AsyncMock) -> None:
+    @patch(f"{_CACHE}._get_redis_sync")
+    async def test_cache_set(self, mock_redis: MagicMock) -> None:
         client = AsyncMock()
         mock_redis.return_value = client
 
         await cache_set("key", {"data": 1}, ttl=60)
         client.setex.assert_called_once()
-        client.aclose.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch(f"{_CACHE}._get_redis", new_callable=AsyncMock)
-    async def test_cache_set_no_redis(self, mock_redis: AsyncMock) -> None:
+    @patch(f"{_CACHE}._get_redis_sync")
+    async def test_cache_set_no_redis(self, mock_redis: MagicMock) -> None:
         mock_redis.return_value = None
         await cache_set("key", {"data": 1})
         # No error raised
@@ -71,14 +69,13 @@ class TestCacheSet:
 
 class TestCacheDelete:
     @pytest.mark.asyncio
-    @patch(f"{_CACHE}._get_redis", new_callable=AsyncMock)
-    async def test_cache_delete(self, mock_redis: AsyncMock) -> None:
+    @patch(f"{_CACHE}._get_redis_sync")
+    async def test_cache_delete(self, mock_redis: MagicMock) -> None:
         client = AsyncMock()
         mock_redis.return_value = client
 
         await cache_delete("key")
         client.delete.assert_called_once_with("key")
-        client.aclose.assert_called_once()
 
 
 class TestCachedDecorator:

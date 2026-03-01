@@ -14,24 +14,37 @@ logger = structlog.get_logger(__name__)
 
 _F = TypeVar("_F", bound=Callable[..., Any])
 
+# Singleton Redis client
+_redis_client: Any = None
 
-async def _get_redis() -> Any:
-    """Get a Redis client, or None if not configured."""
+
+def _get_redis_sync() -> Any:
+    """Get or create a singleton Redis client. Returns None if not configured."""
+    global _redis_client
     if not settings.REDIS_URL:
         return None
-    import redis.asyncio as aioredis
+    if _redis_client is None:
+        import redis.asyncio as aioredis
 
-    return aioredis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
+        _redis_client = aioredis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
+    return _redis_client
+
+
+async def close_cache() -> None:
+    """Close the singleton Redis client (call on shutdown)."""
+    global _redis_client
+    if _redis_client is not None:
+        await _redis_client.aclose()
+        _redis_client = None
 
 
 async def cache_get(key: str) -> Any | None:
     """Get a value from cache. Returns None on miss or if Redis is unavailable."""
-    client = await _get_redis()
+    client = _get_redis_sync()
     if client is None:
         return None
     try:
         raw = await client.get(key)
-        await client.aclose()
         if raw is None:
             return None
         return json.loads(raw)
@@ -42,24 +55,22 @@ async def cache_get(key: str) -> Any | None:
 
 async def cache_set(key: str, value: Any, ttl: int = 300) -> None:
     """Set a value in cache with TTL (seconds). No-op if Redis is unavailable."""
-    client = await _get_redis()
+    client = _get_redis_sync()
     if client is None:
         return
     try:
         await client.setex(key, ttl, json.dumps(value))
-        await client.aclose()
     except Exception:
         logger.warning("cache_set_error", key=key)
 
 
 async def cache_delete(key: str) -> None:
     """Delete a key from cache. No-op if Redis is unavailable."""
-    client = await _get_redis()
+    client = _get_redis_sync()
     if client is None:
         return
     try:
         await client.delete(key)
-        await client.aclose()
     except Exception:
         logger.warning("cache_delete_error", key=key)
 

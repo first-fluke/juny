@@ -59,15 +59,16 @@ class InMemoryRateLimiter:
         window_start = now - self.window
 
         # Clean old entries
-        self._storage[key] = [ts for ts in self._storage[key] if ts > window_start]
+        entries = [ts for ts in self._storage[key] if ts > window_start]
+        if entries:
+            self._storage[key] = entries
+        elif key in self._storage:
+            # Remove empty keys to prevent memory leak
+            del self._storage[key]
 
-        current_count = len(self._storage[key])
+        current_count = len(entries)
         remaining = max(0, self.requests - current_count - 1)
-        reset_after = (
-            int(self.window - (now - self._storage[key][0]))
-            if self._storage[key]
-            else self.window
-        )
+        reset_after = int(self.window - (now - entries[0])) if entries else self.window
 
         if current_count >= self.requests:
             return False, 0, reset_after
@@ -76,13 +77,32 @@ class InMemoryRateLimiter:
         return True, remaining, reset_after
 
 
+_LUA_SLIDING_WINDOW = """
+local key = KEYS[1]
+local now = tonumber(ARGV[1])
+local window = tonumber(ARGV[2])
+local limit = tonumber(ARGV[3])
+local member = ARGV[4]
+
+redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
+local count = redis.call('ZCARD', key)
+if count < limit then
+    redis.call('ZADD', key, now, member)
+    redis.call('EXPIRE', key, window)
+    return 1
+end
+return 0
+"""
+
+
 class RedisRateLimiter:
-    """Redis-based rate limiter using sliding window."""
+    """Redis-based rate limiter using atomic Lua sliding window."""
 
     def __init__(self, requests: int, window: int):
         self.requests = requests
         self.window = window
         self._redis: redis_module.Redis | None = None
+        self._script: Any = None
 
     async def _get_redis(self) -> redis_module.Redis:
         """Lazy Redis connection."""
@@ -90,37 +110,34 @@ class RedisRateLimiter:
             import redis.asyncio as redis
 
             self._redis = redis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
+            self._script = self._redis.register_script(_LUA_SLIDING_WINDOW)
         return self._redis
 
     async def is_allowed(self, key: str) -> tuple[bool, int, int]:
         """
-        Check if request is allowed using Redis sorted sets.
+        Check if request is allowed using atomic Lua script.
 
         Returns:
             tuple: (allowed, remaining, reset_after)
         """
         redis = await self._get_redis()
         now = time.time()
-        window_start = now - self.window
         rate_key = f"rate_limit:{key}"
+        member = f"{now}"
 
-        pipe = redis.pipeline()
-        pipe.zremrangebyscore(rate_key, 0, window_start)
-        pipe.zcard(rate_key)
-        pipe.zadd(rate_key, {str(now): now})
-        pipe.expire(rate_key, self.window)
-        results = await pipe.execute()
+        allowed_int: int = await self._script(
+            keys=[rate_key],
+            args=[now, self.window, self.requests, member],
+            client=redis,
+        )
 
-        current_count = results[1]
-        remaining = max(0, self.requests - current_count - 1)
-        reset_after = self.window
+        if allowed_int == 1:
+            # Count after add
+            count = await redis.zcard(rate_key)
+            remaining = max(0, self.requests - count)
+            return True, remaining, self.window
 
-        if current_count >= self.requests:
-            # Remove the just-added entry
-            await redis.zrem(rate_key, str(now))
-            return False, 0, reset_after
-
-        return True, remaining, reset_after
+        return False, 0, self.window
 
     async def close(self) -> None:
         """Close Redis connection."""

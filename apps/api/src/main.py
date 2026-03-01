@@ -15,10 +15,11 @@ from sqlalchemy import text
 
 from src.admin.router import router as admin_router
 from src.auth.router import router as auth_router
+from src.lib.cache import close_cache
 from src.lib.config import settings
 from src.lib.database import async_session_factory
 from src.lib.logging import configure_logging, get_logger
-from src.lib.rate_limit import rate_limit_middleware
+from src.lib.rate_limit import close_rate_limiters, rate_limit_middleware
 from src.lib.telemetry import configure_telemetry, instrument_app
 from src.medications.router import router as medications_router
 from src.navigation.router import router as navigation_router
@@ -45,6 +46,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
     # Shutdown
     logger.info("Shutting down application")
+    await close_cache()
+    await close_rate_limiters()
 
 
 app = FastAPI(
