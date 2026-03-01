@@ -147,8 +147,9 @@ async def create_waypoints_batch(
     user: CurrentUser,
 ) -> list[LocationWaypointResponse]:
     """Record multiple GPS waypoints in a batch."""
-    if payloads:
-        await authorize_host_access(db, user=user, host_id=payloads[0].host_id)
+    unique_host_ids = {p.host_id for p in payloads}
+    for host_id in unique_host_ids:
+        await authorize_host_access(db, user=user, host_id=host_id)
     wps = await service.record_waypoints_batch(db, payloads)
     return [LocationWaypointResponse.model_validate(wp) for wp in wps]
 

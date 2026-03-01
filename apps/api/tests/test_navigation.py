@@ -519,3 +519,53 @@ class TestNavigationRouter:
         )
         assert response.status_code == 200
         assert response.json() is None
+
+    @patch(
+        "src.navigation.router.service.record_waypoints_batch",
+        new_callable=AsyncMock,
+    )
+    @patch(
+        "src.navigation.router.authorize_host_access",
+        new_callable=AsyncMock,
+    )
+    def test_batch_waypoints_validates_all_host_ids(
+        self,
+        mock_auth: AsyncMock,
+        mock_batch: AsyncMock,
+        authed_client: Any,
+    ) -> None:
+        """Batch waypoint endpoint must authorize every unique host_id."""
+        other_host = uuid.UUID("00000000-0000-4000-8000-000000000002")
+        mock_batch.return_value = [_mock_waypoint(), _mock_waypoint()]
+        authed_client.post(
+            "/api/v1/navigation/waypoints/batch",
+            json=[
+                {"host_id": str(TEST_HOST_ID), "lat": 37.5665, "lng": 126.978},
+                {"host_id": str(other_host), "lat": 37.567, "lng": 126.979},
+            ],
+        )
+        # authorize_host_access should be called once for each unique host_id
+        assert mock_auth.call_count == 2
+
+    @patch(
+        "src.navigation.router.authorize_host_access",
+        new_callable=AsyncMock,
+    )
+    def test_batch_waypoints_rejects_unauthorized_host(
+        self,
+        mock_auth: AsyncMock,
+        authed_client: Any,
+    ) -> None:
+        """Batch with unauthorized host_id should return 403."""
+        from fastapi import HTTPException
+
+        other_host = uuid.UUID("00000000-0000-4000-8000-000000000002")
+        mock_auth.side_effect = HTTPException(status_code=403, detail="Forbidden")
+        response = authed_client.post(
+            "/api/v1/navigation/waypoints/batch",
+            json=[
+                {"host_id": str(TEST_HOST_ID), "lat": 37.5665, "lng": 126.978},
+                {"host_id": str(other_host), "lat": 37.567, "lng": 126.979},
+            ],
+        )
+        assert response.status_code == 403
