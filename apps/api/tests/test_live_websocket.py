@@ -96,14 +96,17 @@ class TestWebSocketBridge:
         "ignore:coroutine 'Connection._cancel' was never awaited:RuntimeWarning"
     )
     def test_websocket_rejects_expired_token(self, client: TestClient) -> None:
-        """Expired token should be rejected with 1008."""
-        payload = _mock_token_payload()
-        payload.exp = 0  # already expired
+        """Expired token should be rejected with 1008 (PyJWT raises on decode)."""
+        from fastapi import HTTPException
+
         with (  # noqa: SIM117
             pytest.raises(WebSocketDisconnect) as exc_info,
         ):
             with (
-                patch(_DECODE, return_value=payload),
+                patch(
+                    _DECODE,
+                    side_effect=HTTPException(status_code=401, detail="Expired"),
+                ),
                 client.websocket_connect("/api/v1/live/ws?token=fake"),
             ):
                 pass
