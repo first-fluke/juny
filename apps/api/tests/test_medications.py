@@ -163,6 +163,16 @@ class TestMedicationService:
         assert result.adherence_rate == 70.0
 
     @pytest.mark.asyncio
+    @patch(f"{REPO}.find_by_host_and_pill_name", new_callable=AsyncMock)
+    async def test_find_by_pill_name_special_chars(self, mock_find: AsyncMock) -> None:
+        """Verify LIKE wildcards in pill_name are escaped."""
+        from src.medications.repository import _escape_like
+
+        assert _escape_like("50%_tab") == "50\\%\\_tab"
+        assert _escape_like("normal") == "normal"
+        assert _escape_like("back\\slash") == "back\\\\slash"
+
+    @pytest.mark.asyncio
     @patch(f"{REPO}.count_adherence", new_callable=AsyncMock)
     async def test_get_adherence_stats_empty(self, mock_count: AsyncMock) -> None:
         mock_count.return_value = (0, 0)

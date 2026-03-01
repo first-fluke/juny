@@ -56,7 +56,7 @@ async def cleanup_data(
         deactivated = await repository.deactivate_old_tokens(db, before)
 
     if resource_type in ("all", "waypoints"):
-        waypoint_cutoff = datetime.now(UTC) - timedelta(days=7)
+        waypoint_cutoff = datetime.now(UTC) - timedelta(days=retention_days)
         deleted_waypoints = await navigation_repo.delete_waypoints_before(
             db, waypoint_cutoff
         )

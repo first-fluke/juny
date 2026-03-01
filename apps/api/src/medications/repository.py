@@ -71,17 +71,23 @@ async def delete(
     await db.flush()
 
 
+def _escape_like(s: str) -> str:
+    """Escape LIKE wildcard characters to prevent injection."""
+    return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 async def find_by_host_and_pill_name(
     db: AsyncSession,
     host_id: uuid.UUID,
     pill_name: str,
 ) -> Medication | None:
     """Find the closest untaken medication matching pill_name for a host."""
+    escaped = _escape_like(pill_name)
     stmt = (
         select(Medication)
         .where(
             Medication.host_id == host_id,
-            Medication.pill_name.ilike(f"%{pill_name}%"),
+            Medication.pill_name.ilike(f"%{escaped}%"),
             Medication.is_taken.is_(False),
         )
         .order_by(Medication.schedule_time.asc())
