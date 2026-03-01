@@ -69,7 +69,7 @@ class TestWithRetry:
         assert mock_fn.call_count == 3
 
     @pytest.mark.asyncio
-    async def test_retries_on_http_status_error(self) -> None:
+    async def test_retries_on_5xx_status_error(self) -> None:
         request = httpx.Request("POST", "http://example.com")
         response = httpx.Response(500, request=request)
         mock_fn = AsyncMock(
@@ -86,3 +86,22 @@ class TestWithRetry:
             await flaky()
 
         assert mock_fn.call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_no_retry_on_4xx_status_error(self) -> None:
+        request = httpx.Request("POST", "http://example.com")
+        response = httpx.Response(422, request=request)
+        mock_fn = AsyncMock(
+            side_effect=httpx.HTTPStatusError(
+                "client error", request=request, response=response
+            )
+        )
+
+        @with_retry(max_attempts=3, min_wait=0, max_wait=0)
+        async def flaky() -> str:
+            return await mock_fn()
+
+        with pytest.raises(httpx.HTTPStatusError):
+            await flaky()
+
+        assert mock_fn.call_count == 1

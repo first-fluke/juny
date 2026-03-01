@@ -27,10 +27,9 @@ async def process_task(payload: TaskPayload) -> dict[str, Any]:
     """Execute a registered job synchronously and return the result."""
     job = get_job(payload.task_type)
     if not job:
-        available = list_jobs()
         raise HTTPException(
             status_code=400,
-            detail=f"Unknown job type: {payload.task_type}. Available: {available}",
+            detail="Unknown job type",
         )
 
     if is_duplicate(payload.task_type, payload.data):

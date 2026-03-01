@@ -1,5 +1,6 @@
 """Job: Send push notifications via FCM."""
 
+import asyncio
 from typing import Any
 
 import httpx
@@ -52,8 +53,8 @@ class NotificationSendJob(BaseJob):
                 notification=notification,
                 data={k: str(v) for k, v in extra.items()},
             )
-            response: messaging.BatchResponse = messaging.send_each_for_multicast(
-                message
+            response: messaging.BatchResponse = await asyncio.to_thread(
+                messaging.send_each_for_multicast, message
             )
 
             failed_tokens: list[str] = []
