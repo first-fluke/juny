@@ -78,6 +78,25 @@ class TestFileUpload:
         assert data["error_code"] == "VAL_003"
         assert ".sh" in data["message"]
 
+    def test_upload_storage_error_sanitized(
+        self,
+        authed_client: TestClient,
+        mock_storage: AsyncMock,
+    ) -> None:
+        mock_storage.upload.side_effect = RuntimeError(
+            "S3 endpoint https://internal.minio:9000 connection refused"
+        )
+        file = BytesIO(b"hello world")
+        response = authed_client.post(
+            "/api/v1/files/upload",
+            files={"file": ("test.txt", file, "text/plain")},
+        )
+        assert response.status_code == 500
+        detail = response.json()["detail"]
+        assert "minio" not in detail["message"].lower()
+        assert "S3" not in detail["message"]
+        assert detail["message"] == "File upload failed"
+
     def test_upload_no_extension_allowed(
         self,
         authed_client: TestClient,
@@ -120,6 +139,15 @@ class TestFileGet:
         response = authed_client.get(f"/api/v1/files/{key}")
         assert response.status_code == 403
 
+    def test_get_path_traversal_403(self, authed_client: TestClient) -> None:
+        key = f"{TEST_USER_ID}/../{OTHER_USER_ID}/secret.txt"
+        response = authed_client.get(f"/api/v1/files/{key}")
+        assert response.status_code == 403
+
+    def test_get_absolute_path_403(self, authed_client: TestClient) -> None:
+        response = authed_client.get("/api/v1/files//etc/passwd")
+        assert response.status_code == 403
+
 
 class TestFileDelete:
     @pytest.fixture(autouse=True)
@@ -144,6 +172,11 @@ class TestFileDelete:
 
     def test_delete_other_user_file_403(self, authed_client: TestClient) -> None:
         key = f"{OTHER_USER_ID}/abc.txt"
+        response = authed_client.delete(f"/api/v1/files/{key}")
+        assert response.status_code == 403
+
+    def test_delete_path_traversal_403(self, authed_client: TestClient) -> None:
+        key = f"{TEST_USER_ID}/../{OTHER_USER_ID}/secret.txt"
         response = authed_client.delete(f"/api/v1/files/{key}")
         assert response.status_code == 403
 

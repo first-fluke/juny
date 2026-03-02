@@ -2,6 +2,7 @@
 
 import uuid
 
+import structlog
 from fastapi import APIRouter, Request, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -10,6 +11,8 @@ from src.common.errors import AUTHZ_002, SVC_005, VAL_003, raise_api_error
 from src.lib.auth import CurrentUserInfo
 from src.lib.dependencies import CurrentUser, StorageDep
 from src.lib.rate_limit import rate_limit
+
+logger = structlog.get_logger(__name__)
 
 router = APIRouter()
 
@@ -39,6 +42,8 @@ class FileUploadResponse(BaseModel):
 
 def _check_file_ownership(key: str, user: CurrentUserInfo) -> None:
     """Verify the file key belongs to the requesting user."""
+    if ".." in key or key.startswith("/"):
+        raise_api_error(AUTHZ_002, status.HTTP_403_FORBIDDEN)
     owner_id = key.split("/", 1)[0] if "/" in key else ""
     if owner_id != user.id:
         raise_api_error(AUTHZ_002, status.HTTP_403_FORBIDDEN)
@@ -81,11 +86,12 @@ async def upload_file(
 
     try:
         await storage.upload(DEFAULT_BUCKET, key, data, content_type=content_type)
-    except Exception as exc:
+    except Exception:
+        logger.exception("file_upload_storage_error")
         raise_api_error(
             SVC_005,
             status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message=str(exc),
+            message="File upload failed",
         )
 
     url = f"/api/v1/files/{key}"
