@@ -439,6 +439,9 @@ This template is designed to work with AI coding agents (Gemini, Claude, etc.).
 
 ## Documentation
 
+- [Usage Guide](./docs/USAGE.md) — How to use juny (endpoints, workflows, commands)
+- [Authentication](./docs/AUTH.md) — Stateless JWT authentication architecture
+- [Why This Stack?](./docs/WHY.md) — Technology choices rationale
 - [Build Guide](.agent/rules/build-guide.md)
 - [Lint & Format Guide](.agent/rules/lint-format-guide.md)
 - [Test Guide](.agent/rules/test-guide.md)

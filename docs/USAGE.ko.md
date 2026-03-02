@@ -58,6 +58,7 @@ mise dev:mobile
 ```
 
 API 서버는 **포트 8200** (`http://localhost:8200`)에서 실행됩니다.
+Worker는 **포트 8280** (`http://localhost:8280`)에서 실행됩니다.
 
 ---
 
@@ -82,7 +83,24 @@ API 서버는 **포트 8200** (`http://localhost:8200`)에서 실행됩니다.
    - **log_wellness** — 건강 관찰 기록 (normal / warning / emergency)
    - **register_medication** — 복약 일정 추가
    - **scan_medication_schedule** — 카메라 피드에서 복약 정보 일괄 추출
+   - **confirm_medication** — 복약 완료 처리 (약 이름 기준)
+   - **start_navigation** — 도보 내비게이션 시작
+   - **cancel_navigation** — 활성 내비게이션 취소
+   - **get_navigation_step** — 현재/다음 안내 조회
 6. Concierge가 같은 Room에 접속하여 모니터링 및 오디오로 개입
+
+### 사용자 관리
+
+```
+GET    /api/v1/users/me              — 내 프로필 조회
+PATCH  /api/v1/users/me              — 내 프로필 수정
+DELETE /api/v1/users/me              — 계정 삭제
+GET    /api/v1/users/me/export       — 개인 데이터 내보내기 (GDPR)
+GET    /api/v1/users                  — 전체 사용자 조회 (ORGANIZATION 전용)
+GET    /api/v1/users/{user_id}       — 특정 사용자 조회
+PATCH  /api/v1/users/{user_id}/role  — 역할 변경 (ORGANIZATION 전용)
+DELETE /api/v1/users/{user_id}       — 사용자 삭제 (ORGANIZATION 전용)
+```
 
 ### 복약 관리
 
@@ -92,6 +110,7 @@ GET    /api/v1/medications?host_id= — 복약 목록 조회 (페이지네이션
 GET    /api/v1/medications/{id}     — 단건 조회
 PATCH  /api/v1/medications/{id}     — 수정 (예: 복용 완료 표시)
 DELETE /api/v1/medications/{id}     — 삭제
+GET    /api/v1/medications/adherence?host_id=&start_date=&end_date= — 복약 순응도 통계
 ```
 
 ### 웰니스 로깅
@@ -100,6 +119,7 @@ DELETE /api/v1/medications/{id}     — 삭제
 POST   /api/v1/wellness             — 웰니스 로그 생성
 GET    /api/v1/wellness?host_id=    — 로그 목록 조회 (페이지네이션)
 GET    /api/v1/wellness/{id}        — 단건 조회
+GET    /api/v1/wellness/trends?host_id=&start_date=&end_date= — 웰니스 추세 분석
 ```
 
 ### 돌봄 관계 (RBAC)
@@ -113,6 +133,56 @@ DELETE /api/v1/relations/{id}       — 삭제
 ```
 
 역할: `host`, `concierge`, `care_worker`, `organization`. Host는 caregiver 역할을 가질 수 없습니다.
+
+### 내비게이션
+
+```
+POST   /api/v1/navigation/sessions              — 내비게이션 세션 시작
+GET    /api/v1/navigation/sessions/active        — 활성 세션 조회 (host_id 기준)
+GET    /api/v1/navigation/sessions/{session_id}  — 세션 상세 조회
+POST   /api/v1/navigation/sessions/{session_id}/cancel  — 세션 취소
+POST   /api/v1/navigation/sessions/{session_id}/reroute — 현재 위치에서 재탐색
+POST   /api/v1/navigation/waypoints             — GPS 웨이포인트 기록
+POST   /api/v1/navigation/waypoints/batch       — 다건 웨이포인트 기록
+GET    /api/v1/navigation/location/{host_id}    — 최신 위치 조회
+GET    /api/v1/navigation/trace/{session_id}    — 경로 추적 데이터
+```
+
+### 알림
+
+```
+POST   /api/v1/notifications/device-tokens      — 디바이스 토큰 등록
+GET    /api/v1/notifications/device-tokens       — 활성 디바이스 토큰 목록
+DELETE /api/v1/notifications/device-tokens/{id}  — 디바이스 토큰 비활성화
+```
+
+### 알림 로그
+
+```
+GET    /api/v1/notification-logs                  — 알림 로그 조회
+GET    /api/v1/notification-logs/preferences      — 알림 설정 조회
+PUT    /api/v1/notification-logs/preferences      — 알림 설정 변경
+PATCH  /api/v1/notification-logs/{log_id}/status  — 전달 상태 업데이트
+```
+
+### 파일
+
+```
+POST   /api/v1/files/upload         — 파일 업로드 (최대 10 MB)
+GET    /api/v1/files/{key}          — 파일 다운로드 (서명 URL 리다이렉트)
+DELETE /api/v1/files/{key}          — 파일 삭제
+```
+
+### 관리자
+
+```
+POST   /api/v1/admin/cleanup              — 오래된 데이터 정리
+GET    /api/v1/admin/inactive-relations    — 비활성 관계 조회
+GET    /api/v1/admin/wellness/aggregate    — 일별 웰니스 통계
+POST   /api/v1/admin/tokens/deactivate    — 실패한 FCM 토큰 비활성화
+GET    /api/v1/admin/audit-logs            — 감사 로그 조회
+GET    /api/v1/admin/export/{user_id}     — 사용자 데이터 내보내기 (GDPR)
+```
 
 ---
 
@@ -178,7 +248,7 @@ mise gen:api
 juny/
 ├── apps/
 │   ├── api/           # FastAPI 백엔드 (포트 8200)
-│   ├── worker/        # 백그라운드 태스크 워커 (Cloud Tasks / Pub/Sub)
+│   ├── worker/        # 백그라운드 태스크 워커 (포트 8280, Cloud Tasks / Pub/Sub)
 │   ├── mobile/        # Flutter 모바일 앱
 │   └── infra/         # Terraform (GCP Cloud Run, Cloud SQL 등)
 ├── packages/

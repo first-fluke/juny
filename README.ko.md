@@ -439,6 +439,9 @@ bundle exec fastlane ios testflight_deploy  # TestFlight 배포
 
 ## 문서
 
+- [사용 가이드](./docs/USAGE.ko.md) — juny 사용법 (엔드포인트, 워크플로우, 명령어)
+- [인증 아키텍처](./docs/AUTH.ko.md) — Stateless JWT 인증 구조
+- [기술 스택 선정](./docs/WHY.ko.md) — 기술 선정 배경
 - [빌드 가이드](.agent/rules/build-guide.md)
 - [린트 & 포맷 가이드](.agent/rules/lint-format-guide.md)
 - [테스트 가이드](.agent/rules/test-guide.md)

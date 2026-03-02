@@ -89,7 +89,7 @@ OAuthProvider: OAuth access token issued
     ↓
 Mobile: OAuth access token received
     ↓
-Mobile: POST /api/v1/auth/login { provider, access_token, email, name }
+Mobile: POST /api/v1/auth/login { provider, access_token }
     ↓
 Backend: OAuth token re-verification (Google API)
     ↓

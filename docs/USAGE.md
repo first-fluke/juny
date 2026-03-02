@@ -58,6 +58,7 @@ mise dev:mobile
 ```
 
 The API server runs on **port 8200** (`http://localhost:8200`).
+The Worker runs on **port 8280** (`http://localhost:8280`).
 
 ---
 
@@ -70,7 +71,26 @@ The API server runs on **port 8200** (`http://localhost:8200`).
 3. Backend re-verifies with the provider, creates/finds the user, and issues JWT tokens
 4. All subsequent API calls use `Authorization: Bearer <access_token>`
 
+```
+POST   /api/v1/auth/login           — Exchange OAuth token for JWT
+POST   /api/v1/auth/refresh         — Refresh access token
+POST   /api/v1/auth/logout          — Invalidate session
+```
+
 See [AUTH.md](./AUTH.md) for full details.
+
+### Users
+
+```
+GET    /api/v1/users/me             — Get current user profile
+PATCH  /api/v1/users/me             — Update current user profile
+DELETE /api/v1/users/me             — Delete current user account
+GET    /api/v1/users/me/export      — Export current user data (GDPR)
+GET    /api/v1/users                — List all users (ORGANIZATION only)
+GET    /api/v1/users/{user_id}      — Get user by ID
+PATCH  /api/v1/users/{user_id}/role — Update user role
+DELETE /api/v1/users/{user_id}      — Delete user
+```
 
 ### Real-time AI Session (LiveKit + Gemini)
 
@@ -79,19 +99,24 @@ See [AUTH.md](./AUTH.md) for full details.
 3. Host opens a WebSocket bridge: `WS /api/v1/live/ws?token=...&room=...`
 4. The backend streams Host's audio/video to Gemini Multimodal Live API
 5. Gemini analyzes the stream and can invoke tools:
-   - **log_wellness** — Record wellness observations (normal / warning / emergency)
+   - **log_wellness** — Record wellness observation (normal / warning / emergency)
    - **register_medication** — Add a medication schedule
    - **scan_medication_schedule** — Batch extract medications from camera feed
+   - **confirm_medication** — Mark a medication as taken by name
+   - **start_navigation** — Start walking navigation to a destination
+   - **cancel_navigation** — Cancel the active navigation session
+   - **get_navigation_step** — Get current/next navigation instruction
 6. Concierge joins the same Room to monitor and intervene via audio
 
 ### Medication Management
 
 ```
-POST   /api/v1/medications          — Create medication schedule
-GET    /api/v1/medications?host_id= — List medications (paginated)
-GET    /api/v1/medications/{id}     — Get single medication
-PATCH  /api/v1/medications/{id}     — Update (e.g., mark as taken)
-DELETE /api/v1/medications/{id}     — Delete medication
+POST   /api/v1/medications              — Create medication schedule
+GET    /api/v1/medications?host_id=     — List medications (paginated)
+GET    /api/v1/medications/{id}         — Get single medication
+PATCH  /api/v1/medications/{id}         — Update (e.g., mark as taken)
+DELETE /api/v1/medications/{id}         — Delete medication
+GET    /api/v1/medications/adherence?host_id=&start_date=&end_date= — Medication adherence stats
 ```
 
 ### Wellness Logging
@@ -100,6 +125,7 @@ DELETE /api/v1/medications/{id}     — Delete medication
 POST   /api/v1/wellness             — Create wellness log
 GET    /api/v1/wellness?host_id=    — List logs (paginated)
 GET    /api/v1/wellness/{id}        — Get single log
+GET    /api/v1/wellness/trends?host_id=&start_date=&end_date= — Wellness trend analysis
 ```
 
 ### Care Relations (RBAC)
@@ -113,6 +139,56 @@ DELETE /api/v1/relations/{id}       — Delete relation
 ```
 
 Roles: `host`, `concierge`, `care_worker`, `organization`. A Host cannot be assigned a caregiver role.
+
+### Navigation
+
+```
+POST   /api/v1/navigation/sessions              — Start navigation session
+GET    /api/v1/navigation/sessions/active        — Get active session (by host_id)
+GET    /api/v1/navigation/sessions/{session_id}  — Get session by ID
+POST   /api/v1/navigation/sessions/{session_id}/cancel  — Cancel session
+POST   /api/v1/navigation/sessions/{session_id}/reroute — Reroute from current location
+POST   /api/v1/navigation/waypoints             — Record GPS waypoint
+POST   /api/v1/navigation/waypoints/batch       — Record multiple waypoints
+GET    /api/v1/navigation/location/{host_id}    — Get latest location
+GET    /api/v1/navigation/trace/{session_id}    — Get waypoint trace
+```
+
+### Notifications
+
+```
+POST   /api/v1/notifications/device-tokens      — Register device token
+GET    /api/v1/notifications/device-tokens       — List active device tokens
+DELETE /api/v1/notifications/device-tokens/{id}  — Deactivate device token
+```
+
+### Notification Logs
+
+```
+GET    /api/v1/notification-logs                  — List notification logs
+GET    /api/v1/notification-logs/preferences      — Get notification preferences
+PUT    /api/v1/notification-logs/preferences      — Update notification preferences
+PATCH  /api/v1/notification-logs/{log_id}/status  — Update delivery status
+```
+
+### Files
+
+```
+POST   /api/v1/files/upload         — Upload file (max 10 MB)
+GET    /api/v1/files/{key}          — Download file (signed URL redirect)
+DELETE /api/v1/files/{key}          — Delete file
+```
+
+### Admin
+
+```
+POST   /api/v1/admin/cleanup              — Clean up old data
+GET    /api/v1/admin/inactive-relations    — List inactive relations
+GET    /api/v1/admin/wellness/aggregate    — Daily wellness stats
+POST   /api/v1/admin/tokens/deactivate    — Deactivate failed FCM tokens
+GET    /api/v1/admin/audit-logs            — List audit logs
+GET    /api/v1/admin/export/{user_id}     — Export user data (GDPR)
+```
 
 ---
 
@@ -178,7 +254,7 @@ This triggers:
 juny/
 ├── apps/
 │   ├── api/           # FastAPI backend (port 8200)
-│   ├── worker/        # Background task worker (Cloud Tasks / Pub/Sub)
+│   ├── worker/        # Background task worker (port 8280, Cloud Tasks / Pub/Sub)
 │   ├── mobile/        # Flutter mobile app
 │   └── infra/         # Terraform (GCP Cloud Run, Cloud SQL, etc.)
 ├── packages/
