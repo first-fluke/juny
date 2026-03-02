@@ -240,32 +240,38 @@ async def websocket_gemini_bridge(
                         await bot.publish_location(lat, lng, msg)
 
                     # 3. Off-route detection + reroute
-                    if (
-                        active_nav
-                        and map_provider
-                        and check_off_route(
-                            lat,
-                            lng,
-                            active_nav.route_data,
-                            active_nav.current_step_index,
-                        )
-                    ):
-                        logger.info(
-                            "navigation_off_route",
-                            session_id=str(active_nav.id),
-                        )
-                        active_nav = await reroute_navigation(
-                            loc_db, map_provider, active_nav.id, lat, lng
-                        )
-                        steps = active_nav.route_data.get("steps", [])
-                        reroute_text = "경로를 재탐색했습니다."
-                        if steps:
-                            reroute_text += f" {steps[0].get('instruction', '')}"
-                        content = genai_types.Content(
-                            parts=[genai_types.Part(text=reroute_text)]
-                        )
-                        await session.send_client_content(
-                            turns=content, turn_complete=True
+                    try:
+                        if (
+                            active_nav
+                            and map_provider
+                            and check_off_route(
+                                lat,
+                                lng,
+                                active_nav.route_data,
+                                active_nav.current_step_index,
+                            )
+                        ):
+                            logger.info(
+                                "navigation_off_route",
+                                session_id=str(active_nav.id),
+                            )
+                            active_nav = await reroute_navigation(
+                                loc_db, map_provider, active_nav.id, lat, lng
+                            )
+                            steps = active_nav.route_data.get("steps", [])
+                            reroute_text = "경로를 재탐색했습니다."
+                            if steps:
+                                reroute_text += f" {steps[0].get('instruction', '')}"
+                            content = genai_types.Content(
+                                parts=[genai_types.Part(text=reroute_text)]
+                            )
+                            await session.send_client_content(
+                                turns=content, turn_complete=True
+                            )
+                    except Exception:
+                        logger.exception(
+                            "off_route_handling_error",
+                            session_id=str(active_nav.id) if active_nav else None,
                         )
 
                     # 4. Periodic location context feed to Gemini

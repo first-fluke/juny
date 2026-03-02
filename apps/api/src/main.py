@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 from typing import Literal
 from uuid import uuid4
 
-import redis.asyncio as aioredis
 import structlog
 from fastapi import APIRouter, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +14,7 @@ from sqlalchemy import text
 
 from src.admin.router import router as admin_router
 from src.auth.router import router as auth_router
-from src.lib.cache import close_cache
+from src.lib.cache import _get_redis_sync, close_cache
 from src.lib.config import settings
 from src.lib.database import async_session_factory
 from src.lib.logging import configure_logging, get_logger
@@ -182,11 +181,11 @@ async def check_database() -> ServiceStatus:
 
 async def check_redis() -> ServiceStatus | None:
     """Check Redis connectivity if configured."""
-    if not settings.REDIS_URL:
+    client = _get_redis_sync()
+    if client is None:
         return None
 
     start = time.perf_counter()
-    client = aioredis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
     try:
         await client.ping()
         latency = (time.perf_counter() - start) * 1000
@@ -196,8 +195,6 @@ async def check_redis() -> ServiceStatus | None:
         return ServiceStatus(
             status="unhealthy", latency_ms=round(latency, 2), error=str(e)
         )
-    finally:
-        await client.aclose()
 
 
 @app.get("/health")
