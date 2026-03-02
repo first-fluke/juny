@@ -155,6 +155,12 @@ class TestCheckOffRoute:
         # Step index > total steps
         assert check_off_route(37.0, 127.0, route, 99) is False
 
+    def test_malformed_route_data_returns_false(self) -> None:
+        assert check_off_route(37.0, 127.0, {"bad": "data"}, 0) is False
+
+    def test_empty_route_data_returns_false(self) -> None:
+        assert check_off_route(37.0, 127.0, {}, 0) is False
+
 
 # ── Navigation Service ───────────────────────────────────────────
 

@@ -4,6 +4,7 @@ import math
 import uuid
 from datetime import UTC, datetime
 
+import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.lib.maps.base import LatLng, MapProvider, RouteResult
@@ -13,6 +14,8 @@ from src.navigation.schemas import (
     LocationWaypointCreate,
     NavigationSessionCreate,
 )
+
+logger = structlog.get_logger(__name__)
 
 
 async def start_navigation(
@@ -168,7 +171,11 @@ def check_off_route(
     Pure function: compares current location to the expected step's
     start/end locations using haversine distance.
     """
-    route = RouteResult.model_validate(route_data)
+    try:
+        route = RouteResult.model_validate(route_data)
+    except Exception:
+        logger.warning("check_off_route_invalid_data")
+        return False
     if not route.steps or step_index >= len(route.steps):
         return False
 
