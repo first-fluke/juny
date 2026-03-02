@@ -403,30 +403,45 @@ class TestForwardResponseNativeAudio:
 
 
 class TestForwardResponseToolCallCommit:
-    """Tests for db.commit() after tool call in _forward_response."""
+    """Tests for short-lived DB session during tool call in _forward_response."""
 
     @pytest.mark.asyncio
     async def test_db_commit_after_tool_call(self) -> None:
-        """db.commit() must be called after handle_tool_call."""
+        """A short-lived DB session must be created and committed for tool calls."""
         from src.routers.live import _forward_response
 
         ws = AsyncMock()
         orchestrator = AsyncMock()
         session = AsyncMock()
-        db = AsyncMock()
+        mock_db = AsyncMock()
+
+        mock_factory = MagicMock()
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_db)
+        mock_cm.__aexit__ = AsyncMock(return_value=False)
+        mock_factory.return_value = mock_cm
+
+        tool_context: dict[str, object] = {
+            "db": None,
+            "session_factory": mock_factory,
+        }
 
         response = MagicMock()
         response.tool_call = MagicMock()  # truthy tool_call
 
-        await _forward_response(ws, response, orchestrator, session, db=db)
+        await _forward_response(
+            ws, response, orchestrator, session, tool_context=tool_context
+        )
 
         orchestrator.handle_tool_call.assert_called_once_with(session, response)
-        db.commit.assert_called_once()
+        mock_db.commit.assert_called_once()
         ws.send_json.assert_not_called()
+        # db should be reset to None after the context manager exits
+        assert tool_context["db"] is None
 
     @pytest.mark.asyncio
-    async def test_no_db_no_commit(self) -> None:
-        """When db is None, commit should not be attempted."""
+    async def test_no_tool_context_no_commit(self) -> None:
+        """When tool_context is None, tool call still executes without DB."""
         from src.routers.live import _forward_response
 
         ws = AsyncMock()
@@ -436,7 +451,7 @@ class TestForwardResponseToolCallCommit:
         response = MagicMock()
         response.tool_call = MagicMock()
 
-        await _forward_response(ws, response, orchestrator, session, db=None)
+        await _forward_response(ws, response, orchestrator, session, tool_context=None)
 
         orchestrator.handle_tool_call.assert_called_once()
 

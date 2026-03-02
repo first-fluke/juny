@@ -190,187 +190,185 @@ async def websocket_gemini_bridge(
         if bot:
             await bot.connect()
 
-        async with async_session_factory() as db:
-            # Build map provider if configured
-            map_provider = create_map_provider() if settings.maps_configured else None
-            tool_context: dict[str, Any] = {
-                "db": db,
-                "host_id": user_id,
-                "user_role": user_role,
-                "map_provider": map_provider,
-            }
-            orchestrator = GeminiLiveOrchestrator(
-                tool_definitions=get_tool_definitions(),
-                tool_handler=get_tool_handler(context=tool_context),
-            )
+        # Build map provider if configured
+        map_provider = create_map_provider() if settings.maps_configured else None
+        tool_context: dict[str, Any] = {
+            "db": None,
+            "host_id": user_id,
+            "user_role": user_role,
+            "map_provider": map_provider,
+            "session_factory": async_session_factory,
+        }
+        orchestrator = GeminiLiveOrchestrator(
+            tool_definitions=get_tool_definitions(),
+            tool_handler=get_tool_handler(context=tool_context),
+        )
 
-            async with orchestrator.connect() as session:
-                await ws.send_json({"type": "connected"})
+        async with orchestrator.connect() as session:
+            await ws.send_json({"type": "connected"})
 
-                # State for location throttling
-                last_location_feed: float = 0.0
-                _LOCATION_FEED_INTERVAL = 10.0  # seconds
+            # State for location throttling
+            last_location_feed: float = 0.0
+            _LOCATION_FEED_INTERVAL = 10.0  # seconds
 
-                async def _handle_location(
-                    msg: dict[str, Any],
-                ) -> None:
-                    """Process a location message: persist, relay, detect off-route."""
-                    nonlocal last_location_feed
-                    lat = msg.get("lat", 0.0)
-                    lng = msg.get("lng", 0.0)
+            async def _handle_location(
+                msg: dict[str, Any],
+            ) -> None:
+                """Process a location message: persist, relay, detect off-route."""
+                nonlocal last_location_feed
+                lat = msg.get("lat", 0.0)
+                lng = msg.get("lng", 0.0)
 
-                    # Use a short-lived DB session to avoid stale objects
-                    async with async_session_factory() as loc_db:
-                        # 1. Record waypoint in DB
-                        active_nav = await nav_repo.find_active_session(loc_db, user_id)
-                        wp_payload = LocationWaypointCreate(
-                            host_id=user_id,
-                            session_id=active_nav.id if active_nav else None,
-                            lat=lat,
-                            lng=lng,
-                            altitude=msg.get("altitude"),
-                            accuracy=msg.get("accuracy"),
-                            speed=msg.get("speed"),
-                            heading=msg.get("heading"),
+                # Use a short-lived DB session to avoid stale objects
+                async with async_session_factory() as loc_db:
+                    # 1. Record waypoint in DB
+                    active_nav = await nav_repo.find_active_session(loc_db, user_id)
+                    wp_payload = LocationWaypointCreate(
+                        host_id=user_id,
+                        session_id=active_nav.id if active_nav else None,
+                        lat=lat,
+                        lng=lng,
+                        altitude=msg.get("altitude"),
+                        accuracy=msg.get("accuracy"),
+                        speed=msg.get("speed"),
+                        heading=msg.get("heading"),
+                    )
+                    await record_waypoint(loc_db, wp_payload)
+
+                    # 2. Relay location to Concierge via LiveKit data channel
+                    if bot:
+                        await bot.publish_location(lat, lng, msg)
+
+                    # 3. Off-route detection + reroute
+                    if (
+                        active_nav
+                        and map_provider
+                        and check_off_route(
+                            lat,
+                            lng,
+                            active_nav.route_data,
+                            active_nav.current_step_index,
                         )
-                        await record_waypoint(loc_db, wp_payload)
+                    ):
+                        logger.info(
+                            "navigation_off_route",
+                            session_id=str(active_nav.id),
+                        )
+                        active_nav = await reroute_navigation(
+                            loc_db, map_provider, active_nav.id, lat, lng
+                        )
+                        steps = active_nav.route_data.get("steps", [])
+                        reroute_text = "경로를 재탐색했습니다."
+                        if steps:
+                            reroute_text += f" {steps[0].get('instruction', '')}"
+                        content = genai_types.Content(
+                            parts=[genai_types.Part(text=reroute_text)]
+                        )
+                        await session.send_client_content(
+                            turns=content, turn_complete=True
+                        )
 
-                        # 2. Relay location to Concierge via LiveKit data channel
-                        if bot:
-                            await bot.publish_location(lat, lng, msg)
-
-                        # 3. Off-route detection + reroute
-                        if (
-                            active_nav
-                            and map_provider
-                            and check_off_route(
-                                lat,
-                                lng,
-                                active_nav.route_data,
-                                active_nav.current_step_index,
-                            )
-                        ):
-                            logger.info(
-                                "navigation_off_route",
-                                session_id=str(active_nav.id),
-                            )
-                            active_nav = await reroute_navigation(
-                                loc_db, map_provider, active_nav.id, lat, lng
-                            )
+                    # 4. Periodic location context feed to Gemini
+                    now = time.monotonic()
+                    if now - last_location_feed >= _LOCATION_FEED_INTERVAL:
+                        last_location_feed = now
+                        next_step = ""
+                        if active_nav:
                             steps = active_nav.route_data.get("steps", [])
-                            reroute_text = "경로를 재탐색했습니다."
-                            if steps:
-                                reroute_text += f" {steps[0].get('instruction', '')}"
-                            content = genai_types.Content(
-                                parts=[genai_types.Part(text=reroute_text)]
-                            )
-                            await session.send_client_content(
-                                turns=content, turn_complete=True
-                            )
+                            idx = active_nav.current_step_index
+                            if idx < len(steps):
+                                next_step = steps[idx].get("instruction", "")
+                        ctx_text = f"현재 위치: ({lat:.6f}, {lng:.6f})"
+                        if next_step:
+                            ctx_text += f", 다음 안내: {next_step}"
+                        content = genai_types.Content(
+                            parts=[genai_types.Part(text=ctx_text)]
+                        )
+                        await session.send_client_content(
+                            turns=content, turn_complete=True
+                        )
 
-                        # 4. Periodic location context feed to Gemini
-                        now = time.monotonic()
-                        if now - last_location_feed >= _LOCATION_FEED_INTERVAL:
-                            last_location_feed = now
-                            next_step = ""
-                            if active_nav:
-                                steps = active_nav.route_data.get("steps", [])
-                                idx = active_nav.current_step_index
-                                if idx < len(steps):
-                                    next_step = steps[idx].get("instruction", "")
-                            ctx_text = f"현재 위치: ({lat:.6f}, {lng:.6f})"
-                            if next_step:
-                                ctx_text += f", 다음 안내: {next_step}"
-                            content = genai_types.Content(
-                                parts=[genai_types.Part(text=ctx_text)]
-                            )
-                            await session.send_client_content(
-                                turns=content, turn_complete=True
-                            )
+                    await loc_db.commit()
 
-                        await loc_db.commit()
-
-                async def client_to_gemini() -> None:
-                    """Forward client messages to Gemini Live session."""
-                    try:
-                        while True:
-                            raw = await asyncio.wait_for(
-                                ws.receive_text(),
-                                timeout=settings.WS_INACTIVITY_TIMEOUT,
-                            )
-
-                            if len(raw) > settings.WS_MAX_MESSAGE_SIZE:
-                                await ws.send_json(
-                                    {"type": "error", "message": "Message too large"}
-                                )
-                                continue
-
-                            msg = json.loads(raw)
-                            msg_type = msg.get("type")
-
-                            if msg_type == "text":
-                                content = genai_types.Content(
-                                    parts=[genai_types.Part(text=msg.get("text", ""))]
-                                )
-                                await session.send_client_content(
-                                    turns=content,
-                                    turn_complete=True,
-                                )
-                            elif msg_type == "audio":
-                                await session.send_realtime_input(
-                                    audio=msg.get("data", ""),
-                                )
-                            elif msg_type == "video":
-                                await session.send_realtime_input(
-                                    video=msg.get("data", ""),
-                                )
-                            elif msg_type == "location":
-                                await _handle_location(msg)
-                    except TimeoutError:
-                        logger.info("ws_inactivity_timeout", user_id=user_key)
-                        await ws.close(code=status.WS_1000_NORMAL_CLOSURE)
-                    except WebSocketDisconnect:
-                        pass
-
-                async def gemini_to_client() -> None:
-                    """Forward Gemini responses to client."""
-                    try:
-                        async for resp in session.receive():
-                            await _forward_response(
-                                ws,
-                                resp,
-                                orchestrator,
-                                session,
-                                bot=bot,
-                                db=db,
-                            )
-                    except (WebSocketDisconnect, RuntimeError):
-                        logger.info("gemini_to_client_ws_closed")
-                    except Exception:
-                        logger.exception("gemini_receive_error")
-
-                async def keepalive() -> None:
-                    """Send periodic ping messages to keep the connection alive."""
-                    try:
-                        while True:
-                            await asyncio.sleep(settings.WS_PING_INTERVAL)
-                            await ws.send_json({"type": "ping"})
-                    except (WebSocketDisconnect, RuntimeError):
-                        pass
-
-                tasks = [
-                    asyncio.create_task(client_to_gemini()),
-                    asyncio.create_task(gemini_to_client()),
-                    asyncio.create_task(keepalive()),
-                ]
+            async def client_to_gemini() -> None:
+                """Forward client messages to Gemini Live session."""
                 try:
-                    await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-                finally:
-                    for t in tasks:
-                        t.cancel()
-                    await asyncio.gather(*tasks, return_exceptions=True)
+                    while True:
+                        raw = await asyncio.wait_for(
+                            ws.receive_text(),
+                            timeout=settings.WS_INACTIVITY_TIMEOUT,
+                        )
 
-            await db.commit()
+                        if len(raw) > settings.WS_MAX_MESSAGE_SIZE:
+                            await ws.send_json(
+                                {"type": "error", "message": "Message too large"}
+                            )
+                            continue
+
+                        msg = json.loads(raw)
+                        msg_type = msg.get("type")
+
+                        if msg_type == "text":
+                            content = genai_types.Content(
+                                parts=[genai_types.Part(text=msg.get("text", ""))]
+                            )
+                            await session.send_client_content(
+                                turns=content,
+                                turn_complete=True,
+                            )
+                        elif msg_type == "audio":
+                            await session.send_realtime_input(
+                                audio=msg.get("data", ""),
+                            )
+                        elif msg_type == "video":
+                            await session.send_realtime_input(
+                                video=msg.get("data", ""),
+                            )
+                        elif msg_type == "location":
+                            await _handle_location(msg)
+                except TimeoutError:
+                    logger.info("ws_inactivity_timeout", user_id=user_key)
+                    await ws.close(code=status.WS_1000_NORMAL_CLOSURE)
+                except WebSocketDisconnect:
+                    pass
+
+            async def gemini_to_client() -> None:
+                """Forward Gemini responses to client."""
+                try:
+                    async for resp in session.receive():
+                        await _forward_response(
+                            ws,
+                            resp,
+                            orchestrator,
+                            session,
+                            bot=bot,
+                            tool_context=tool_context,
+                        )
+                except (WebSocketDisconnect, RuntimeError):
+                    logger.info("gemini_to_client_ws_closed")
+                except Exception:
+                    logger.exception("gemini_receive_error")
+
+            async def keepalive() -> None:
+                """Send periodic ping messages to keep the connection alive."""
+                try:
+                    while True:
+                        await asyncio.sleep(settings.WS_PING_INTERVAL)
+                        await ws.send_json({"type": "ping"})
+                except (WebSocketDisconnect, RuntimeError):
+                    pass
+
+            tasks = [
+                asyncio.create_task(client_to_gemini()),
+                asyncio.create_task(gemini_to_client()),
+                asyncio.create_task(keepalive()),
+            ]
+            try:
+                await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            finally:
+                for t in tasks:
+                    t.cancel()
+                await asyncio.gather(*tasks, return_exceptions=True)
 
     except WebSocketDisconnect:
         logger.info("websocket_disconnected")
@@ -409,7 +407,7 @@ async def _forward_response(
     session: Any,
     *,
     bot: DuckingBotParticipant | None = None,
-    db: Any = None,
+    tool_context: dict[str, Any] | None = None,
 ) -> None:
     """Parse a Gemini response and forward relevant parts.
 
@@ -417,9 +415,14 @@ async def _forward_response(
     suppressed while text messages pass through.
     """
     if hasattr(response, "tool_call") and response.tool_call:
-        await orchestrator.handle_tool_call(session, response)
-        if db is not None:
-            await db.commit()
+        if tool_context and "session_factory" in tool_context:
+            async with tool_context["session_factory"]() as tool_db:
+                tool_context["db"] = tool_db
+                await orchestrator.handle_tool_call(session, response)
+                await tool_db.commit()
+            tool_context["db"] = None
+        else:
+            await orchestrator.handle_tool_call(session, response)
         return
 
     # AI Studio: text arrives directly on response.text
