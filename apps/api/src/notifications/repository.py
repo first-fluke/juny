@@ -22,6 +22,22 @@ async def find_by_user(
     return list(result.scalars().all())
 
 
+async def find_by_users(
+    db: AsyncSession,
+    user_ids: list[uuid.UUID],
+    *,
+    active_only: bool = True,
+) -> list[DeviceToken]:
+    """Return all device tokens for a list of users."""
+    if not user_ids:
+        return []
+    stmt = select(DeviceToken).where(DeviceToken.user_id.in_(user_ids))
+    if active_only:
+        stmt = stmt.where(DeviceToken.is_active.is_(True))
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
 async def find_by_token(
     db: AsyncSession,
     token: str,

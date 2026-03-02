@@ -64,3 +64,14 @@ async def get_user_token_strings(
     """Return raw FCM token strings for a user."""
     tokens = await repository.find_by_user(db, user_id, active_only=active_only)
     return [t.token for t in tokens]
+
+
+async def get_tokens_for_users(
+    db: AsyncSession,
+    user_ids: list[uuid.UUID],
+    *,
+    active_only: bool = True,
+) -> list[str]:
+    """Return raw FCM token strings for multiple users in a single query."""
+    tokens = await repository.find_by_users(db, user_ids, active_only=active_only)
+    return [t.token for t in tokens]

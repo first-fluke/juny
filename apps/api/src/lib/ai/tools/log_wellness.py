@@ -7,7 +7,7 @@ import structlog
 from src.common.enums import WellnessStatus
 from src.lib.ai.tools.base import BaseTool, ToolContext, register_tool
 from src.lib.task_client import dispatch_task
-from src.notifications.service import get_user_token_strings
+from src.notifications.service import get_tokens_for_users
 from src.relations import repository as relations_repo
 from src.wellness.schemas import WellnessLogCreate
 from src.wellness.service import create_wellness_log
@@ -99,10 +99,8 @@ class LogWellnessTool(BaseTool):
         # Alert caregivers on warning/emergency via worker
         if status_val in {"warning", "emergency"}:
             relations, _ = await relations_repo.find_by_host(db, host_id, limit=1000)
-            all_tokens: list[str] = []
-            for rel in relations:
-                tokens = await get_user_token_strings(db, rel.caregiver_id)
-                all_tokens.extend(tokens)
+            caregiver_ids = [rel.caregiver_id for rel in relations]
+            all_tokens = await get_tokens_for_users(db, caregiver_ids)
 
             if all_tokens:
                 await dispatch_task(

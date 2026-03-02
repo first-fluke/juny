@@ -19,7 +19,7 @@ from src.lib.ai.tools.register_medication import RegisterMedicationTool
 from src.lib.ai.tools.scan_medication_schedule import ScanMedicationScheduleTool
 
 _DISPATCH = "src.lib.ai.tools.log_wellness.dispatch_task"
-_GET_TOKENS = "src.lib.ai.tools.log_wellness.get_user_token_strings"
+_GET_TOKENS = "src.lib.ai.tools.log_wellness.get_tokens_for_users"
 _FIND_BY_HOST = "src.lib.ai.tools.log_wellness.relations_repo.find_by_host"
 _CREATE_WELLNESS = "src.lib.ai.tools.log_wellness.create_wellness_log"
 _CREATE_MED = "src.lib.ai.tools.register_medication.create_medication"
@@ -252,7 +252,7 @@ class TestLogWellnessTool:
             [MagicMock(caregiver_id=cg1), MagicMock(caregiver_id=cg2)],
             2,
         )
-        mock_get_tokens.side_effect = [["tok-cg1"], ["tok-cg2"]]
+        mock_get_tokens.return_value = ["tok-cg1", "tok-cg2"]
 
         tool = LogWellnessTool()
         ctx = _make_db_context()
@@ -263,6 +263,10 @@ class TestLogWellnessTool:
             summary="Skipped meal",
         )
 
+        mock_get_tokens.assert_called_once_with(
+            ctx["db"],
+            [cg1, cg2],
+        )
         mock_dispatch.assert_called_once()
         data = mock_dispatch.call_args[0][1]
         assert set(data["tokens"]) == {"tok-cg1", "tok-cg2"}
