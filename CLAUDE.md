@@ -198,6 +198,8 @@ Branch naming: `feature/*`, `fix/*`, `hotfix/*`, `release/*`
 - **LIKE 와일드카드 이스케이프**: repository에서 `.ilike()` 사용 시 `_escape_like()`로 `%`, `_`, `\` 이스케이프. 사용자 입력이 와일드카드로 해석되는 것을 방지.
 - **Worker 재시도 정책**: `_retry_if_server_error`로 HTTP 5xx만 재시도. 4xx 클라이언트 에러는 즉시 실패. `RETRYABLE_EXCEPTIONS`는 `ConnectError` + `TimeoutException`만 포함.
 - **Worker 에러 응답 최소화**: 태스크 라우터의 에러 detail에 내부 job 목록을 노출하지 않음. `GET /tasks/jobs`로만 조회 가능.
+- **CLAUDE.md gitignore**: CLAUDE.md가 `.gitignore`에 포함됨. 커밋 시 `git add -f CLAUDE.md` 필수.
+- **`defaultdict` 빈 키 정리 주의**: `defaultdict(list)`에서 빈 키 삭제 후 early return하면 새 엔트리가 기록되지 않음. 삭제와 기록을 분리하여 정상 흐름으로 fall-through 시킬 것.
 
 ## Local Infrastructure
 
