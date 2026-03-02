@@ -15,7 +15,7 @@ async def register_token(
     payload: DeviceTokenCreate,
 ) -> DeviceToken:
     """Register a new device token, or reactivate an existing one."""
-    existing = await repository.find_by_token(db, payload.token)
+    existing = await repository.find_by_token_for_update(db, payload.token)
     if existing:
         # Reactivate if owned by same user, or reassign
         existing.user_id = user_id

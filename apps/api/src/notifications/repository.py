@@ -47,6 +47,17 @@ async def find_by_token(
     return result.scalar_one_or_none()
 
 
+async def find_by_token_for_update(
+    db: AsyncSession,
+    token: str,
+) -> DeviceToken | None:
+    """Find a device token by its raw token string with row lock."""
+    result = await db.execute(
+        select(DeviceToken).where(DeviceToken.token == token).with_for_update(),
+    )
+    return result.scalar_one_or_none()
+
+
 async def find_by_id(
     db: AsyncSession,
     token_id: uuid.UUID,

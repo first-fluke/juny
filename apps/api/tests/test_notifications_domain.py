@@ -49,7 +49,7 @@ def _mock_device_token(**overrides: Any) -> MagicMock:
 class TestNotificationService:
     @pytest.mark.asyncio
     @patch(f"{REPO}.create", new_callable=AsyncMock)
-    @patch(f"{REPO}.find_by_token", new_callable=AsyncMock)
+    @patch(f"{REPO}.find_by_token_for_update", new_callable=AsyncMock)
     async def test_register_token_new(
         self, mock_find: AsyncMock, mock_create: AsyncMock
     ) -> None:
@@ -62,7 +62,7 @@ class TestNotificationService:
         mock_create.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch(f"{REPO}.find_by_token", new_callable=AsyncMock)
+    @patch(f"{REPO}.find_by_token_for_update", new_callable=AsyncMock)
     async def test_register_token_existing_reactivate(
         self, mock_find: AsyncMock
     ) -> None:
@@ -72,6 +72,20 @@ class TestNotificationService:
         payload = DeviceTokenCreate(token="fcm-token-abc123", platform="android")  # noqa: S106
         result = await register_token(db, MOCK_USER_ID, payload)
         assert result.is_active is True
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.create", new_callable=AsyncMock)
+    @patch(f"{REPO}.find_by_token_for_update", new_callable=AsyncMock)
+    async def test_register_token_uses_for_update(
+        self, mock_find: AsyncMock, mock_create: AsyncMock
+    ) -> None:
+        """register_token must use find_by_token_for_update (row lock)."""
+        mock_find.return_value = None
+        mock_create.return_value = _mock_device_token()
+        db = AsyncMock()
+        payload = DeviceTokenCreate(token="fcm-token-abc123", platform="android")  # noqa: S106
+        await register_token(db, MOCK_USER_ID, payload)
+        mock_find.assert_called_once_with(db, "fcm-token-abc123")
 
     @pytest.mark.asyncio
     @patch(f"{REPO}.deactivate", new_callable=AsyncMock)
