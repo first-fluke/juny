@@ -73,7 +73,7 @@ class DuckingBotParticipant:
             else:
                 self.ducking_active.clear()
                 logger.info("ducking_deactivated", room=self.room_name)
-        except (json.JSONDecodeError, AttributeError):
+        except Exception:
             logger.warning("ducking_invalid_data_packet", room=self.room_name)
 
     async def publish_location(
