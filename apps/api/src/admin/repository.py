@@ -87,7 +87,8 @@ async def aggregate_wellness(
         select(WellnessLog.status, func.count().label("count"))
         .where(
             WellnessLog.host_id == host_id,
-            func.date(WellnessLog.created_at) == dt.date.fromisoformat(date),
+            func.date(func.timezone("UTC", WellnessLog.created_at))
+            == dt.date.fromisoformat(date),
         )
         .group_by(WellnessLog.status)
     )

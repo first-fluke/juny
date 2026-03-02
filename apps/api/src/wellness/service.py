@@ -5,6 +5,7 @@ from datetime import date
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.lib.logging import get_logger
 from src.wellness import repository
 from src.wellness.model import WellnessLog
 from src.wellness.schemas import (
@@ -12,6 +13,8 @@ from src.wellness.schemas import (
     WellnessLogCreate,
     WellnessTrendResponse,
 )
+
+logger = get_logger(__name__)
 
 
 async def create_wellness_log(
@@ -70,6 +73,12 @@ async def get_wellness_trend(
             stat.warning = count
         elif status_name == "emergency":
             stat.emergency = count
+        else:
+            logger.warning(
+                "wellness_trend_unknown_status",
+                status=status_name,
+                count=count,
+            )
 
     return WellnessTrendResponse(
         host_id=host_id,
