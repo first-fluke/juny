@@ -2,12 +2,10 @@
 
 from typing import Any
 
-import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
-from src.lib.config import settings
-from src.lib.retry import with_retry
+from src.lib.dispatch import dispatch_local
 
 logger = structlog.get_logger(__name__)
 
@@ -18,17 +16,6 @@ class WellnessEscalationJob(BaseJob):
     @property
     def job_type(self) -> str:
         return "wellness.escalation"
-
-    @with_retry()
-    async def _dispatch_notification(self, payload: dict[str, Any]) -> int:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{settings.WORKER_BASE_URL}/tasks/process",
-                json=payload,
-                timeout=10.0,
-            )
-            response.raise_for_status()
-            return response.status_code
 
     async def execute(self, data: dict[str, Any]) -> dict[str, Any]:
         log_id: str = data.get("log_id", "")
@@ -45,18 +32,16 @@ class WellnessEscalationJob(BaseJob):
             )
             return {"escalated": False, "reason": "no_contacts"}
 
-        dispatch_status = await self._dispatch_notification(
+        await dispatch_local(
+            "notification.send",
             {
-                "task_type": "notification.send",
+                "tokens": contact_tokens,
+                "title": f"URGENT: Wellness {status.upper()}",
+                "body": summary or "Immediate attention required",
                 "data": {
-                    "tokens": contact_tokens,
-                    "title": f"URGENT: Wellness {status.upper()}",
-                    "body": summary or "Immediate attention required",
-                    "data": {
-                        "log_id": log_id,
-                        "host_id": host_id,
-                        "type": "wellness_escalation",
-                    },
+                    "log_id": log_id,
+                    "host_id": host_id,
+                    "type": "wellness_escalation",
                 },
             },
         )
@@ -66,7 +51,6 @@ class WellnessEscalationJob(BaseJob):
             log_id=log_id,
             host_id=host_id,
             contact_count=len(contact_tokens),
-            dispatch_status=dispatch_status,
         )
         return {
             "escalated": True,

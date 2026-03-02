@@ -2,12 +2,10 @@
 
 from typing import Any
 
-import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
-from src.lib.config import settings
-from src.lib.retry import with_retry
+from src.lib.dispatch import dispatch_local
 
 logger = structlog.get_logger(__name__)
 
@@ -19,17 +17,6 @@ class MedicationReminderJob(BaseJob):
     def job_type(self) -> str:
         return "medication.reminder"
 
-    @with_retry()
-    async def _dispatch_notification(self, payload: dict[str, Any]) -> int:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{settings.WORKER_BASE_URL}/tasks/process",
-                json=payload,
-                timeout=10.0,
-            )
-            response.raise_for_status()
-            return response.status_code
-
     async def execute(self, data: dict[str, Any]) -> dict[str, Any]:
         host_id: str = data.get("host_id", "")
         pill_name: str = data.get("pill_name", "Unknown")
@@ -39,15 +26,13 @@ class MedicationReminderJob(BaseJob):
             logger.warning("medication_reminder_no_tokens", host_id=host_id)
             return {"sent_count": 0, "skipped": True}
 
-        status_code = await self._dispatch_notification(
+        await dispatch_local(
+            "notification.send",
             {
-                "task_type": "notification.send",
-                "data": {
-                    "tokens": tokens,
-                    "title": "Medication Reminder",
-                    "body": f"Time to take {pill_name}",
-                    "data": {"host_id": host_id, "type": "medication_reminder"},
-                },
+                "tokens": tokens,
+                "title": "Medication Reminder",
+                "body": f"Time to take {pill_name}",
+                "data": {"host_id": host_id, "type": "medication_reminder"},
             },
         )
 
@@ -55,7 +40,6 @@ class MedicationReminderJob(BaseJob):
             "medication_reminder_dispatched",
             host_id=host_id,
             pill_name=pill_name,
-            status=status_code,
         )
         return {"dispatched": True, "pill_name": pill_name}
 

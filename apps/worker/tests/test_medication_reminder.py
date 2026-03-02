@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -28,15 +28,12 @@ class TestMedicationReminderJob:
         assert result["skipped"] is True
 
     @pytest.mark.asyncio
-    @patch("src.jobs.medication_reminder.httpx.AsyncClient")
-    async def test_execute_dispatches(self, mock_client_cls: AsyncMock) -> None:
-        mock_client = AsyncMock()
-        mock_client_cls.return_value.__aenter__ = AsyncMock(return_value=mock_client)
-        mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=None)
-        mock_response = AsyncMock()
-        mock_response.status_code = 200
-        mock_response.raise_for_status = MagicMock()
-        mock_client.post.return_value = mock_response
+    @patch(
+        "src.jobs.medication_reminder.dispatch_local",
+        new_callable=AsyncMock,
+    )
+    async def test_execute_dispatches(self, mock_dispatch: AsyncMock) -> None:
+        mock_dispatch.return_value = {"status": "completed"}
 
         job = MedicationReminderJob()
         result = await job.execute(
@@ -48,3 +45,12 @@ class TestMedicationReminderJob:
         )
         assert result["dispatched"] is True
         assert result["pill_name"] == "Aspirin"
+        mock_dispatch.assert_called_once_with(
+            "notification.send",
+            {
+                "tokens": ["tok-1"],
+                "title": "Medication Reminder",
+                "body": "Time to take Aspirin",
+                "data": {"host_id": "host-001", "type": "medication_reminder"},
+            },
+        )
