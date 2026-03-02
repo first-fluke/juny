@@ -368,6 +368,74 @@ class TestAdminService:
         assert "device_tokens" in result
 
     @pytest.mark.asyncio
+    @patch("src.notifications.repository.find_by_user", new_callable=AsyncMock)
+    @patch("src.medications.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.wellness.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.relations.repository.find_by_caregiver", new_callable=AsyncMock)
+    @patch("src.relations.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.users.repository.find_by_id", new_callable=AsyncMock)
+    async def test_export_user_data_paginates(
+        self,
+        mock_user: AsyncMock,
+        mock_rel_host: AsyncMock,
+        mock_rel_cg: AsyncMock,
+        mock_wellness: AsyncMock,
+        mock_meds: AsyncMock,
+        mock_tokens: AsyncMock,
+    ) -> None:
+        from src.admin.service import export_user_data
+
+        user_id = uuid.UUID("00000000-0000-4000-8000-000000000802")
+        mock_user.return_value = MagicMock(email="page@example.com")
+        # Simulate 2 pages for relations (total=1500, page_size=1000)
+        page1 = [MagicMock() for _ in range(1000)]
+        page2 = [MagicMock() for _ in range(500)]
+        mock_rel_host.side_effect = [(page1, 1500), (page2, 1500)]
+        mock_rel_cg.return_value = ([], 0)
+        mock_wellness.return_value = ([], 0)
+        mock_meds.return_value = ([], 0)
+        mock_tokens.return_value = []
+
+        db = AsyncMock()
+        result = await export_user_data(db, user_id)
+
+        assert len(result["relations_as_host"]) == 1500
+        assert mock_rel_host.call_count == 2
+
+    @pytest.mark.asyncio
+    @patch("src.admin.service._MAX_EXPORT_RECORDS", 10)
+    @patch("src.notifications.repository.find_by_user", new_callable=AsyncMock)
+    @patch("src.medications.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.wellness.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.relations.repository.find_by_caregiver", new_callable=AsyncMock)
+    @patch("src.relations.repository.find_by_host", new_callable=AsyncMock)
+    @patch("src.users.repository.find_by_id", new_callable=AsyncMock)
+    async def test_export_user_data_caps_at_max_records(
+        self,
+        mock_user: AsyncMock,
+        mock_rel_host: AsyncMock,
+        mock_rel_cg: AsyncMock,
+        mock_wellness: AsyncMock,
+        mock_meds: AsyncMock,
+        mock_tokens: AsyncMock,
+    ) -> None:
+        from src.admin.service import export_user_data
+
+        user_id = uuid.UUID("00000000-0000-4000-8000-000000000803")
+        mock_user.return_value = MagicMock(email="cap@example.com")
+        # Return 20 items (exceeds patched max of 10)
+        page = [MagicMock() for _ in range(20)]
+        mock_rel_host.return_value = (page, 20)
+        mock_rel_cg.return_value = ([], 0)
+        mock_wellness.return_value = ([], 0)
+        mock_meds.return_value = ([], 0)
+        mock_tokens.return_value = []
+
+        db = AsyncMock()
+        with pytest.raises(ValueError, match="Export exceeded maximum"):
+            await export_user_data(db, user_id)
+
+    @pytest.mark.asyncio
     @patch("src.users.repository.find_by_id", new_callable=AsyncMock)
     async def test_export_user_data_not_found(
         self,

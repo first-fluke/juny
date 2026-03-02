@@ -1,5 +1,6 @@
 """Admin business logic."""
 
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
@@ -137,6 +138,30 @@ async def get_wellness_aggregate(
     )
 
 
+_MAX_EXPORT_RECORDS = 50_000
+
+
+async def _collect_all_pages(
+    fetch: Callable[..., Awaitable[tuple[list[Any], int]]],
+    *args: Any,
+    page_size: int = 1000,
+    **kwargs: Any,
+) -> list[Any]:
+    """Paginate through a repository query to collect all records."""
+    all_items: list[Any] = []
+    offset = 0
+    while True:
+        items, total = await fetch(*args, limit=page_size, offset=offset, **kwargs)
+        all_items.extend(items)
+        offset += len(items)
+        if len(all_items) > _MAX_EXPORT_RECORDS:
+            msg = f"Export exceeded maximum {_MAX_EXPORT_RECORDS} records"
+            raise ValueError(msg)
+        if offset >= total or not items:
+            break
+    return all_items
+
+
 async def export_user_data(db: AsyncSession, user_id: UUID) -> dict[str, Any]:
     """Collect all data for a user across every domain (GDPR export).
 
@@ -147,17 +172,27 @@ async def export_user_data(db: AsyncSession, user_id: UUID) -> dict[str, Any]:
     if user is None:
         return {}
 
-    relations, _ = await relation_repo.find_by_host(
-        db, user_id, active_only=False, limit=10000, offset=0
+    relations = await _collect_all_pages(
+        relation_repo.find_by_host,
+        db,
+        user_id,
+        active_only=False,
     )
-    caregiver_relations, _ = await relation_repo.find_by_caregiver(
-        db, user_id, active_only=False, limit=10000, offset=0
+    caregiver_relations = await _collect_all_pages(
+        relation_repo.find_by_caregiver,
+        db,
+        user_id,
+        active_only=False,
     )
-    wellness_logs, _ = await wellness_repo.find_by_host(
-        db, user_id, limit=10000, offset=0
+    wellness_logs = await _collect_all_pages(
+        wellness_repo.find_by_host,
+        db,
+        user_id,
     )
-    medications, _ = await medication_repo.find_by_host(
-        db, user_id, limit=10000, offset=0
+    medications = await _collect_all_pages(
+        medication_repo.find_by_host,
+        db,
+        user_id,
     )
     device_tokens = await notification_repo.find_by_user(db, user_id, active_only=False)
 
