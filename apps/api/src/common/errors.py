@@ -28,6 +28,7 @@ RES_007: ErrorTuple = ("RES_007", "No active navigation session")
 # ── Validation ─────────────────────────────────────────────────────
 VAL_001: ErrorTuple = ("VAL_001", "Invalid caregiver role")
 VAL_002: ErrorTuple = ("VAL_002", "Self-relation not allowed")
+VAL_003: ErrorTuple = ("VAL_003", "File type not allowed")
 
 # ── Service ────────────────────────────────────────────────────────
 SVC_001: ErrorTuple = ("SVC_001", "LiveKit is not configured")

@@ -67,6 +67,29 @@ class TestFileUpload:
         )
         assert response.status_code == 413
 
+    def test_upload_disallowed_extension(self, authed_client: TestClient) -> None:
+        file = BytesIO(b"#!/bin/bash\necho hi")
+        response = authed_client.post(
+            "/api/v1/files/upload",
+            files={"file": ("script.sh", file, "application/x-sh")},
+        )
+        assert response.status_code == 422
+        data = response.json()["detail"]
+        assert data["error_code"] == "VAL_003"
+        assert ".sh" in data["message"]
+
+    def test_upload_no_extension_allowed(
+        self,
+        authed_client: TestClient,
+        mock_storage: AsyncMock,
+    ) -> None:
+        file = BytesIO(b"binary data")
+        response = authed_client.post(
+            "/api/v1/files/upload",
+            files={"file": ("noext", file, "application/octet-stream")},
+        )
+        assert response.status_code == 201
+
 
 class TestFileGet:
     @pytest.fixture(autouse=True)

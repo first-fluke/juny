@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
-from src.common.errors import AUTHZ_002, SVC_005, raise_api_error
+from src.common.errors import AUTHZ_002, SVC_005, VAL_003, raise_api_error
 from src.lib.auth import CurrentUserInfo
 from src.lib.dependencies import CurrentUser, StorageDep
 from src.lib.rate_limit import rate_limit
@@ -15,6 +15,17 @@ router = APIRouter()
 
 DEFAULT_BUCKET = "juny-uploads"
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+_ALLOWED_EXTENSIONS: set[str] = {
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".heic",
+    ".pdf",
+    ".txt",
+    ".csv",
+}
 
 
 class FileUploadResponse(BaseModel):
@@ -57,6 +68,13 @@ async def upload_file(
     ext = ""
     if file.filename and "." in file.filename:
         ext = "." + file.filename.rsplit(".", 1)[-1].lower()
+
+    if ext and ext not in _ALLOWED_EXTENSIONS:
+        raise_api_error(
+            VAL_003,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            message=f"File type '{ext}' is not allowed",
+        )
 
     key = f"{user.id}/{uuid.uuid4()}{ext}"
     content_type = file.content_type or "application/octet-stream"
