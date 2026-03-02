@@ -186,10 +186,9 @@ async def check_redis() -> ServiceStatus | None:
         return None
 
     start = time.perf_counter()
+    client = aioredis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
     try:
-        client = aioredis.from_url(settings.REDIS_URL)  # type: ignore[no-untyped-call]
         await client.ping()
-        await client.aclose()
         latency = (time.perf_counter() - start) * 1000
         return ServiceStatus(status="healthy", latency_ms=round(latency, 2))
     except Exception as e:
@@ -197,6 +196,8 @@ async def check_redis() -> ServiceStatus | None:
         return ServiceStatus(
             status="unhealthy", latency_ms=round(latency, 2), error=str(e)
         )
+    finally:
+        await client.aclose()
 
 
 @app.get("/health")

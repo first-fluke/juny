@@ -45,6 +45,40 @@ class TestWithRetry:
         with pytest.raises(ValueError, match="not retryable"):
             await raises_value_error()
 
+    @pytest.mark.asyncio
+    async def test_4xx_not_retried(self) -> None:
+        call_count = 0
+        req = httpx.Request("GET", "http://x")
+        resp_404 = httpx.Response(404, request=req)
+
+        @with_retry(max_attempts=3, min_wait=0, max_wait=0)
+        async def client_error() -> str:
+            nonlocal call_count
+            call_count += 1
+            raise httpx.HTTPStatusError("not found", request=req, response=resp_404)
+
+        with pytest.raises(httpx.HTTPStatusError):
+            await client_error()
+        assert call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_5xx_retried(self) -> None:
+        call_count = 0
+        req = httpx.Request("GET", "http://x")
+        resp_502 = httpx.Response(502, request=req)
+
+        @with_retry(max_attempts=3, min_wait=0, max_wait=0)
+        async def server_error() -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:
+                raise httpx.HTTPStatusError("bad gw", request=req, response=resp_502)
+            return "recovered"
+
+        result = await server_error()
+        assert result == "recovered"
+        assert call_count == 3
+
 
 class TestWithTimeout:
     @pytest.mark.asyncio
