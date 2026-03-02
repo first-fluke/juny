@@ -17,8 +17,8 @@ class TestWellnessAggregateJob:
     @pytest.mark.asyncio
     async def test_execute_missing_params(self) -> None:
         job = WellnessAggregateJob()
-        result = await job.execute({})
-        assert "error" in result
+        with pytest.raises(ValueError, match="host_id and date are required"):
+            await job.execute({})
 
     @pytest.mark.asyncio
     @patch("src.jobs.wellness_aggregate.httpx.AsyncClient")

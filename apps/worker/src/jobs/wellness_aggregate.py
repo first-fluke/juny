@@ -36,8 +36,8 @@ class WellnessAggregateJob(BaseJob):
         date: str = data.get("date", "")
 
         if not host_id or not date:
-            logger.warning("wellness_aggregate_missing_params")
-            return {"error": "host_id and date are required"}
+            msg = "host_id and date are required"
+            raise ValueError(msg)
 
         logger.info(
             "wellness_aggregate_start",
