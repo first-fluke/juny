@@ -8,7 +8,7 @@ from opentelemetry import trace
 from pydantic import BaseModel
 
 from src.jobs.base import get_job, list_jobs
-from src.lib.idempotency import is_duplicate, mark_processed
+from src.lib.idempotency import try_claim
 
 tracer = trace.get_tracer(__name__)
 
@@ -32,7 +32,7 @@ async def process_task(payload: TaskPayload) -> dict[str, Any]:
             detail="Unknown job type",
         )
 
-    if is_duplicate(payload.task_type, payload.data):
+    if not try_claim(payload.task_type, payload.data):
         logger.info("job_duplicate_skipped", job_type=payload.task_type)
         return {"status": "duplicate"}
 
@@ -42,7 +42,6 @@ async def process_task(payload: TaskPayload) -> dict[str, Any]:
         attributes={"job.type": payload.task_type},
     ):
         result = await job.execute(payload.data)
-    mark_processed(payload.task_type, payload.data)
     logger.info("job_execute_complete", job_type=payload.task_type)
     return {"status": "completed", **result}
 

@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from src.jobs.base import get_job
-from src.lib.idempotency import is_duplicate, mark_processed
+from src.lib.idempotency import try_claim
 
 logger = structlog.get_logger(__name__)
 
@@ -47,12 +47,11 @@ async def handle_pubsub_push(envelope: PubSubEnvelope) -> dict[str, Any]:
     idempotency_key = envelope.message.messageId or None
     data = payload.get("data", {})
 
-    if is_duplicate(task_type, data, idempotency_key=idempotency_key):
+    if not try_claim(task_type, data, idempotency_key=idempotency_key):
         logger.info("pubsub_duplicate_skipped", job_type=task_type)
         return {"status": "duplicate"}
 
     logger.info("pubsub_job_execute_start", job_type=task_type)
     result = await job.execute(data)
-    mark_processed(task_type, data, idempotency_key=idempotency_key)
     logger.info("pubsub_job_execute_complete", job_type=task_type)
     return {"status": "completed", **result}

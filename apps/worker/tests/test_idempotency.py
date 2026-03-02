@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from unittest.mock import patch
 
-from src.lib.idempotency import clear, is_duplicate, mark_processed
+from src.lib.idempotency import clear, is_duplicate, mark_processed, try_claim
 
 
 class TestIdempotency:
@@ -55,3 +55,27 @@ class TestIdempotency:
         mark_processed("send_notification", {"user": "abc"})
         clear()
         assert is_duplicate("send_notification", {"user": "abc"}) is False
+
+
+class TestTryClaim:
+    def setup_method(self) -> None:
+        clear()
+
+    def test_first_claim_returns_true(self) -> None:
+        assert try_claim("send_notification", {"user": "abc"}) is True
+
+    def test_second_claim_returns_false(self) -> None:
+        try_claim("send_notification", {"user": "abc"})
+        assert try_claim("send_notification", {"user": "abc"}) is False
+
+    def test_claim_with_idempotency_key(self) -> None:
+        claimed = try_claim("send_notification", {"a": 1}, idempotency_key="msg-1")
+        assert claimed is True
+        dup = try_claim("send_notification", {"b": 2}, idempotency_key="msg-1")
+        assert dup is False
+
+    def test_expired_claim_can_be_reclaimed(self) -> None:
+        try_claim("send_notification", {"user": "abc"}, ttl=0)
+        with patch("src.lib.idempotency.time") as mock_time:
+            mock_time.monotonic.return_value = time.monotonic() + 1
+            assert try_claim("send_notification", {"user": "abc"}) is True

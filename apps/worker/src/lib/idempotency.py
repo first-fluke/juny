@@ -57,6 +57,22 @@ class _IdempotencyStore:
         key = self._make_key(task_type, data, idempotency_key=idempotency_key)
         self._store[key] = time.monotonic() + ttl
 
+    def try_claim(
+        self,
+        task_type: str,
+        data: dict[str, Any],
+        *,
+        idempotency_key: str | None = None,
+        ttl: int = _DEFAULT_TTL,
+    ) -> bool:
+        """Atomically check and mark. Returns True if claimed (not duplicate)."""
+        self._evict_expired()
+        key = self._make_key(task_type, data, idempotency_key=idempotency_key)
+        if key in self._store:
+            return False
+        self._store[key] = time.monotonic() + ttl
+        return True
+
     def clear(self) -> None:
         """Clear all entries (for testing)."""
         self._store.clear()
@@ -66,4 +82,5 @@ _store = _IdempotencyStore()
 
 is_duplicate = _store.is_duplicate
 mark_processed = _store.mark_processed
+try_claim = _store.try_claim
 clear = _store.clear
