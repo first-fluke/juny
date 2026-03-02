@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import functools
 import time
-from collections import defaultdict
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, cast
@@ -46,7 +45,7 @@ class InMemoryRateLimiter:
 
     requests: int
     window: int
-    _storage: dict[str, list[float]] = field(default_factory=lambda: defaultdict(list))
+    _storage: dict[str, list[float]] = field(default_factory=dict)
 
     def is_allowed(self, key: str) -> tuple[bool, int, int]:
         """
@@ -59,21 +58,18 @@ class InMemoryRateLimiter:
         window_start = now - self.window
 
         # Clean old entries
-        entries = [ts for ts in self._storage[key] if ts > window_start]
-        if entries:
-            self._storage[key] = entries
-        elif key in self._storage:
-            # Remove empty keys to prevent memory leak
-            del self._storage[key]
+        entries = [ts for ts in self._storage.get(key, []) if ts > window_start]
 
         current_count = len(entries)
         remaining = max(0, self.requests - current_count - 1)
         reset_after = int(self.window - (now - entries[0])) if entries else self.window
 
         if current_count >= self.requests:
+            self._storage[key] = entries
             return False, 0, reset_after
 
-        self._storage[key].append(now)
+        entries.append(now)
+        self._storage[key] = entries
         return True, remaining, reset_after
 
 

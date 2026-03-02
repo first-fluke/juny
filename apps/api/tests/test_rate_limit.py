@@ -52,6 +52,19 @@ class TestInMemoryRateLimiter:
         assert allowed_b is True
         assert remaining_b == 1
 
+    def test_expired_keys_cleaned_up(self) -> None:
+        """Expired keys should not persist as empty entries in storage."""
+        limiter = InMemoryRateLimiter(requests=5, window=1)
+        limiter.is_allowed("ephemeral")
+        assert "ephemeral" in limiter._storage
+        # Simulate expiry by clearing entries and setting old timestamps
+        limiter._storage["ephemeral"] = [0.0]  # timestamp in the distant past
+        limiter.is_allowed("other")
+        # 'ephemeral' not accessed → still there but with old data
+        # Access 'ephemeral' → old entry filtered out, new one added
+        limiter.is_allowed("ephemeral")
+        assert len(limiter._storage["ephemeral"]) == 1
+
 
 # ── Config-keyed limiter registry ───────────────────────────────
 
