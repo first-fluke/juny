@@ -45,7 +45,13 @@ class NotificationSendJob(BaseJob):
             return {"sent_count": 0}
 
         if settings.NOTIFICATION_PROVIDER == "fcm":
+            import firebase_admin  # optional dep
             from firebase_admin import messaging  # optional dep
+
+            try:
+                firebase_admin.get_app()
+            except ValueError:
+                firebase_admin.initialize_app()
 
             notification = messaging.Notification(title=title, body=body)
             message = messaging.MulticastMessage(
@@ -53,8 +59,9 @@ class NotificationSendJob(BaseJob):
                 notification=notification,
                 data={k: str(v) for k, v in extra.items()},
             )
-            response: messaging.BatchResponse = await asyncio.to_thread(
-                messaging.send_each_for_multicast, message
+            response: messaging.BatchResponse = await asyncio.wait_for(
+                asyncio.to_thread(messaging.send_each_for_multicast, message),
+                timeout=30.0,
             )
 
             failed_tokens: list[str] = []

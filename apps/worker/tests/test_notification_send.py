@@ -182,3 +182,30 @@ class TestNotificationSendJob:
                 {"tokens": ["tok-bad"], "title": "Hi", "body": "Test"}
             )
         assert result["failed_count"] == 1
+
+    @pytest.mark.asyncio
+    @patch("src.jobs.notification_send.settings")
+    async def test_execute_fcm_initializes_app(self, mock_settings: object) -> None:
+        """FCM branch should call firebase_admin.get_app() to check init."""
+        mock_settings.NOTIFICATION_PROVIDER = "fcm"  # type: ignore[attr-defined]
+
+        fake_messaging = MagicMock()
+        sr_ok = MagicMock(success=True, exception=None)
+        batch_resp = MagicMock()
+        batch_resp.success_count = 1
+        batch_resp.failure_count = 0
+        batch_resp.responses = [sr_ok]
+        fake_messaging.send_each_for_multicast.return_value = batch_resp
+
+        fake_firebase = MagicMock()
+        fake_firebase.messaging = fake_messaging
+        with patch.dict(
+            sys.modules,
+            {
+                "firebase_admin": fake_firebase,
+                "firebase_admin.messaging": fake_messaging,
+            },
+        ):
+            job = NotificationSendJob()
+            await job.execute({"tokens": ["tok-1"], "title": "Hi", "body": "Test"})
+        fake_firebase.get_app.assert_called_once()
