@@ -68,11 +68,11 @@ async def refresh_token(
     if not user:
         raise_api_error(AUTH_002, status.HTTP_401_UNAUTHORIZED)
 
-    access_token, _ = service.issue_tokens(str(user.id), role=user.role)
+    access_token, new_refresh = service.issue_tokens(str(user.id), role=user.role)
 
     return TokenResponse(
         access_token=access_token,
-        refresh_token=body.refresh_token,
+        refresh_token=new_refresh,
     )
 
 

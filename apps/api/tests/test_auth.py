@@ -242,7 +242,10 @@ class TestAuthRouter:
         assert response.status_code == 200
         data = response.json()
         assert "access_token" in data
-        assert data["refresh_token"] == refresh
+        # Refresh token should be a newly issued token (rotated)
+        new_payload = decode_token(data["refresh_token"])
+        assert new_payload.token_type == "refresh"  # noqa: S105
+        assert new_payload.user_id == str(MOCK_USER_ID)
 
     def test_refresh_invalid_token_type_401(self, client: TestClient) -> None:
         access = create_access_token(str(MOCK_USER_ID), role="host")
