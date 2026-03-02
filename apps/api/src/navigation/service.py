@@ -87,7 +87,7 @@ async def reroute_navigation(
     current_lng: float,
 ) -> NavigationSession:
     """Recalculate route from current position to existing destination."""
-    nav = await repository.find_session_by_id(db, session_id)
+    nav = await repository.find_session_by_id_for_update(db, session_id)
     if nav is None:
         msg = f"Navigation session not found: {session_id}"
         raise ValueError(msg)

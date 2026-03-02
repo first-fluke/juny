@@ -19,6 +19,7 @@ TEST_SESSION_ID = uuid.UUID("00000000-0000-4000-8000-000000000501")
 _FIND_ACTIVE = "src.navigation.repository.find_active_session"
 _FIND_ACTIVE_FOR_UPDATE = "src.navigation.repository.find_active_session_for_update"
 _FIND_BY_ID = "src.navigation.repository.find_session_by_id"
+_FIND_BY_ID_FOR_UPDATE = "src.navigation.repository.find_session_by_id_for_update"
 _CREATE_SESSION = "src.navigation.repository.create_session"
 _UPDATE_STATUS = "src.navigation.repository.update_session_status"
 _UPDATE_ROUTE = "src.navigation.repository.update_session_route"
@@ -220,6 +221,33 @@ class TestNavigationService:
 
         with pytest.raises(ValueError, match="Could not geocode"):
             await start_navigation(db, mock_map, payload)
+
+    @pytest.mark.asyncio
+    @patch(_UPDATE_ROUTE, new_callable=AsyncMock)
+    @patch(_FIND_BY_ID_FOR_UPDATE, new_callable=AsyncMock)
+    async def test_reroute_uses_for_update(
+        self,
+        mock_find: AsyncMock,
+        mock_update_route: AsyncMock,
+    ) -> None:
+        from src.navigation.service import reroute_navigation
+
+        nav = _mock_nav_session()
+        mock_find.return_value = nav
+        mock_map = AsyncMock()
+        mock_map.get_directions.return_value = RouteResult(
+            steps=[],
+            total_distance_meters=500,
+            total_duration_seconds=300,
+            overview_polyline="new",
+        )
+
+        db = AsyncMock()
+        result = await reroute_navigation(db, mock_map, TEST_SESSION_ID, 37.57, 126.98)
+
+        mock_find.assert_called_once_with(db, TEST_SESSION_ID)
+        mock_update_route.assert_called_once()
+        assert result is nav
 
 
 # ── AI Tools ─────────────────────────────────────────────────────

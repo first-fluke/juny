@@ -66,6 +66,19 @@ async def find_session_by_id(
     return result.scalar_one_or_none()
 
 
+async def find_session_by_id_for_update(
+    db: AsyncSession,
+    session_id: uuid.UUID,
+) -> NavigationSession | None:
+    """Find a navigation session by primary key with SELECT ... FOR UPDATE."""
+    result = await db.execute(
+        select(NavigationSession)
+        .where(NavigationSession.id == session_id)
+        .with_for_update(),
+    )
+    return result.scalar_one_or_none()
+
+
 async def update_session_status(
     db: AsyncSession,
     session_id: uuid.UUID,
