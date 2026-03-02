@@ -37,6 +37,24 @@ async def find_active_session(
     return result.scalar_one_or_none()
 
 
+async def find_active_session_for_update(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+) -> NavigationSession | None:
+    """Find active session with SELECT ... FOR UPDATE row lock."""
+    result = await db.execute(
+        select(NavigationSession)
+        .where(
+            NavigationSession.host_id == host_id,
+            NavigationSession.status == "active",
+        )
+        .order_by(NavigationSession.created_at.desc())
+        .limit(1)
+        .with_for_update(),
+    )
+    return result.scalar_one_or_none()
+
+
 async def find_session_by_id(
     db: AsyncSession,
     session_id: uuid.UUID,

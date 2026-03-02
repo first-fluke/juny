@@ -17,6 +17,7 @@ TEST_HOST_ID = uuid.UUID("00000000-0000-4000-8000-000000000001")
 TEST_SESSION_ID = uuid.UUID("00000000-0000-4000-8000-000000000501")
 
 _FIND_ACTIVE = "src.navigation.repository.find_active_session"
+_FIND_ACTIVE_FOR_UPDATE = "src.navigation.repository.find_active_session_for_update"
 _FIND_BY_ID = "src.navigation.repository.find_session_by_id"
 _CREATE_SESSION = "src.navigation.repository.create_session"
 _UPDATE_STATUS = "src.navigation.repository.update_session_status"
@@ -160,7 +161,7 @@ class TestCheckOffRoute:
 class TestNavigationService:
     @pytest.mark.asyncio
     @patch(_CREATE_SESSION, new_callable=AsyncMock)
-    @patch(_FIND_ACTIVE, new_callable=AsyncMock, return_value=None)
+    @patch(_FIND_ACTIVE_FOR_UPDATE, new_callable=AsyncMock, return_value=None)
     async def test_start_navigation_success(
         self,
         mock_find_active: AsyncMock,
@@ -198,7 +199,7 @@ class TestNavigationService:
         mock_map.get_directions.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch(_FIND_ACTIVE, new_callable=AsyncMock, return_value=None)
+    @patch(_FIND_ACTIVE_FOR_UPDATE, new_callable=AsyncMock, return_value=None)
     async def test_start_navigation_geocode_fail(
         self,
         mock_find_active: AsyncMock,

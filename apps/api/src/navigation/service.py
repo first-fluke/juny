@@ -21,8 +21,8 @@ async def start_navigation(
     payload: NavigationSessionCreate,
 ) -> NavigationSession:
     """Geocode destination, get directions, and create a new session."""
-    # Cancel any existing active session
-    existing = await repository.find_active_session(db, payload.host_id)
+    # Cancel any existing active session (lock row to prevent TOCTOU)
+    existing = await repository.find_active_session_for_update(db, payload.host_id)
     if existing:
         await repository.update_session_status(
             db,
@@ -97,11 +97,8 @@ async def reroute_navigation(
     route = await map_provider.get_directions(origin, destination)
 
     await repository.update_session_route(db, session_id, route.model_dump())
-
-    # Refresh the session object
-    refreshed = await repository.find_session_by_id(db, session_id)
-    assert refreshed is not None
-    return refreshed
+    await db.refresh(nav)
+    return nav
 
 
 async def record_waypoint(
