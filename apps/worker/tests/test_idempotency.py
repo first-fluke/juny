@@ -100,3 +100,31 @@ class TestTryClaim:
 
     def test_release_claim_nonexistent_is_noop(self) -> None:
         release_claim("send_notification", {"no": "entry"})  # no error
+
+
+class TestMaxSizeEnforcement:
+    def setup_method(self) -> None:
+        clear()
+
+    @patch("src.lib.idempotency._MAX_SIZE", 10)
+    def test_evicts_oldest_when_max_size_exceeded(self) -> None:
+        # Fill to capacity
+        for i in range(10):
+            mark_processed("job", {"i": i}, ttl=9999)
+
+        # The 11th entry should trigger eviction of oldest
+        mark_processed("job", {"i": 10}, ttl=9999)
+
+        # After eviction of 10% (1 entry), oldest should be gone
+        assert is_duplicate("job", {"i": 0}) is False
+        # Newer entries should still be present
+        assert is_duplicate("job", {"i": 10}) is True
+
+    @patch("src.lib.idempotency._MAX_SIZE", 10)
+    def test_try_claim_enforces_max_size(self) -> None:
+        for i in range(10):
+            try_claim("job", {"i": i}, ttl=9999)
+
+        # 11th claim triggers eviction
+        assert try_claim("job", {"i": 10}) is True
+        assert is_duplicate("job", {"i": 0}) is False

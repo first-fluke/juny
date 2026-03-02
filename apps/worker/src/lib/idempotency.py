@@ -6,6 +6,7 @@ import time
 from typing import Any
 
 _DEFAULT_TTL = 3600  # 1 hour
+_MAX_SIZE = 10_000
 
 
 class _IdempotencyStore:
@@ -33,6 +34,14 @@ class _IdempotencyStore:
         for k in expired:
             del self._store[k]
 
+    def _enforce_max_size(self) -> None:
+        if len(self._store) < _MAX_SIZE:
+            return
+        sorted_keys = sorted(self._store, key=self._store.__getitem__)
+        to_remove = max(1, _MAX_SIZE // 10)
+        for k in sorted_keys[:to_remove]:
+            del self._store[k]
+
     def is_duplicate(
         self,
         task_type: str,
@@ -54,6 +63,8 @@ class _IdempotencyStore:
         ttl: int = _DEFAULT_TTL,
     ) -> None:
         """Mark a task as processed with TTL."""
+        self._evict_expired()
+        self._enforce_max_size()
         key = self._make_key(task_type, data, idempotency_key=idempotency_key)
         self._store[key] = time.monotonic() + ttl
 
@@ -67,6 +78,7 @@ class _IdempotencyStore:
     ) -> bool:
         """Atomically check and mark. Returns True if claimed (not duplicate)."""
         self._evict_expired()
+        self._enforce_max_size()
         key = self._make_key(task_type, data, idempotency_key=idempotency_key)
         if key in self._store:
             return False
