@@ -5,7 +5,13 @@ from __future__ import annotations
 import time
 from unittest.mock import patch
 
-from src.lib.idempotency import clear, is_duplicate, mark_processed, try_claim
+from src.lib.idempotency import (
+    clear,
+    is_duplicate,
+    mark_processed,
+    release_claim,
+    try_claim,
+)
 
 
 class TestIdempotency:
@@ -79,3 +85,18 @@ class TestTryClaim:
         with patch("src.lib.idempotency.time") as mock_time:
             mock_time.monotonic.return_value = time.monotonic() + 1
             assert try_claim("send_notification", {"user": "abc"}) is True
+
+    def test_release_claim_allows_retry(self) -> None:
+        try_claim("send_notification", {"user": "abc"})
+        assert try_claim("send_notification", {"user": "abc"}) is False
+        release_claim("send_notification", {"user": "abc"})
+        assert try_claim("send_notification", {"user": "abc"}) is True
+
+    def test_release_claim_with_idempotency_key(self) -> None:
+        try_claim("send_notification", {"a": 1}, idempotency_key="k1")
+        release_claim("send_notification", {"a": 1}, idempotency_key="k1")
+        reclaimed = try_claim("send_notification", {"a": 1}, idempotency_key="k1")
+        assert reclaimed is True
+
+    def test_release_claim_nonexistent_is_noop(self) -> None:
+        release_claim("send_notification", {"no": "entry"})  # no error

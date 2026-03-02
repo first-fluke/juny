@@ -8,7 +8,7 @@ from opentelemetry import trace
 from pydantic import BaseModel
 
 from src.jobs.base import get_job, list_jobs
-from src.lib.idempotency import try_claim
+from src.lib.idempotency import release_claim, try_claim
 
 tracer = trace.get_tracer(__name__)
 
@@ -37,11 +37,15 @@ async def process_task(payload: TaskPayload) -> dict[str, Any]:
         return {"status": "duplicate"}
 
     logger.info("job_execute_start", job_type=payload.task_type)
-    with tracer.start_as_current_span(
-        f"job.execute:{payload.task_type}",
-        attributes={"job.type": payload.task_type},
-    ):
-        result = await job.execute(payload.data)
+    try:
+        with tracer.start_as_current_span(
+            f"job.execute:{payload.task_type}",
+            attributes={"job.type": payload.task_type},
+        ):
+            result = await job.execute(payload.data)
+    except Exception:
+        release_claim(payload.task_type, payload.data)
+        raise
     logger.info("job_execute_complete", job_type=payload.task_type)
     return {"status": "completed", **result}
 

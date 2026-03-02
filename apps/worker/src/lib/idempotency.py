@@ -73,6 +73,17 @@ class _IdempotencyStore:
         self._store[key] = time.monotonic() + ttl
         return True
 
+    def release_claim(
+        self,
+        task_type: str,
+        data: dict[str, Any],
+        *,
+        idempotency_key: str | None = None,
+    ) -> None:
+        """Remove a claimed key so it can be retried on execution failure."""
+        key = self._make_key(task_type, data, idempotency_key=idempotency_key)
+        self._store.pop(key, None)
+
     def clear(self) -> None:
         """Clear all entries (for testing)."""
         self._store.clear()
@@ -83,4 +94,5 @@ _store = _IdempotencyStore()
 is_duplicate = _store.is_duplicate
 mark_processed = _store.mark_processed
 try_claim = _store.try_claim
+release_claim = _store.release_claim
 clear = _store.clear
