@@ -13,7 +13,7 @@ from tenacity import (
 _F = TypeVar("_F", bound=Callable[..., object])
 
 RETRYABLE_EXCEPTIONS: tuple[type[Exception], ...] = (
-    httpx.ConnectError,
+    httpx.NetworkError,
     httpx.TimeoutException,
 )
 
