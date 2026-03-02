@@ -487,6 +487,36 @@ class TestNavigationRouter:
         assert response.status_code == 503
 
     @patch(
+        "src.navigation.router.service.start_navigation",
+        new_callable=AsyncMock,
+    )
+    @patch(
+        "src.navigation.router.authorize_host_access",
+        new_callable=AsyncMock,
+    )
+    @patch("src.navigation.router.settings")
+    def test_start_navigation_geocode_fail_422(
+        self,
+        mock_settings: MagicMock,
+        mock_auth: AsyncMock,
+        mock_start: AsyncMock,
+        authed_client: Any,
+    ) -> None:
+        mock_settings.maps_configured = True
+        mock_start.side_effect = ValueError("Could not geocode destination")
+        response = authed_client.post(
+            "/api/v1/navigation/sessions",
+            json={
+                "host_id": str(TEST_HOST_ID),
+                "destination_query": "없는장소",
+                "origin_lat": 37.5665,
+                "origin_lng": 126.978,
+            },
+        )
+        assert response.status_code == 422
+        assert "Could not geocode" in response.json()["detail"]
+
+    @patch(
         "src.navigation.router.repository.find_active_session",
         new_callable=AsyncMock,
         return_value=None,

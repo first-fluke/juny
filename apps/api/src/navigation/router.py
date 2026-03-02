@@ -2,7 +2,7 @@
 
 import uuid
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from src.common.errors import RES_006, RES_007, SVC_006, raise_api_error
 from src.lib.authorization import authorize_host_access
@@ -42,7 +42,13 @@ async def start_navigation(
     """Start a new navigation session for a host."""
     _require_maps()
     await authorize_host_access(db, user=user, host_id=payload.host_id)
-    nav = await service.start_navigation(db, maps, payload)
+    try:
+        nav = await service.start_navigation(db, maps, payload)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(e),
+        ) from e
     return NavigationSessionResponse.model_validate(nav)
 
 
