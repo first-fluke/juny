@@ -57,10 +57,11 @@ async def update_medication(
     if payload.schedule_time is not None:
         medication.schedule_time = payload.schedule_time
     if payload.is_taken is not None:
+        was_taken = medication.is_taken
         medication.is_taken = payload.is_taken
-        if payload.is_taken:
+        if payload.is_taken and not was_taken:
             medication.taken_at = datetime.now(UTC)
-        else:
+        elif not payload.is_taken:
             medication.taken_at = None
     return await repository.save(db, medication)
 

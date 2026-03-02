@@ -103,6 +103,21 @@ class TestMedicationService:
 
     @pytest.mark.asyncio
     @patch(f"{REPO}.save", new_callable=AsyncMock)
+    async def test_update_medication_retaken_preserves_taken_at(
+        self, mock_save: AsyncMock
+    ) -> None:
+        """Re-marking is_taken=True should not overwrite existing taken_at."""
+        original_taken_at = datetime(2026, 1, 1, 8, 0, tzinfo=UTC)
+        med = _mock_medication(is_taken=True, taken_at=original_taken_at)
+        mock_save.return_value = med
+        db = AsyncMock()
+        payload = MedicationUpdate(is_taken=True)
+        await update_medication(db, med, payload)
+        assert med.is_taken is True
+        assert med.taken_at == original_taken_at
+
+    @pytest.mark.asyncio
+    @patch(f"{REPO}.save", new_callable=AsyncMock)
     async def test_update_medication_pill_name(self, mock_save: AsyncMock) -> None:
         med = _mock_medication()
         mock_save.return_value = med

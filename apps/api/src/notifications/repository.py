@@ -2,7 +2,7 @@
 
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.notifications.model import DeviceToken
@@ -63,11 +63,13 @@ async def deactivate_tokens(db: AsyncSession, tokens: list[str]) -> int:
     """
     if not tokens:
         return 0
-    count = 0
-    for token_str in tokens:
-        dt = await find_by_token(db, token_str)
-        if dt and dt.is_active:
-            dt.is_active = False
-            count += 1
+    result = await db.execute(
+        update(DeviceToken)
+        .where(
+            DeviceToken.token.in_(tokens),
+            DeviceToken.is_active.is_(True),
+        )
+        .values(is_active=False)
+    )
     await db.flush()
-    return count
+    return result.rowcount  # type: ignore[no-any-return,attr-defined]
