@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from src.jobs.wellness_aggregate import WellnessAggregateJob
 
@@ -17,8 +18,15 @@ class TestWellnessAggregateJob:
     @pytest.mark.asyncio
     async def test_execute_missing_params(self) -> None:
         job = WellnessAggregateJob()
-        with pytest.raises(ValueError, match="host_id and date are required"):
+        with pytest.raises(ValidationError):
             await job.execute({})
+
+    @pytest.mark.asyncio
+    async def test_execute_empty_host_id(self) -> None:
+        """host_id must be non-empty."""
+        job = WellnessAggregateJob()
+        with pytest.raises(ValidationError):
+            await job.execute({"host_id": "", "date": "2026-01-01"})
 
     @pytest.mark.asyncio
     @patch("src.jobs.wellness_aggregate.httpx.AsyncClient")

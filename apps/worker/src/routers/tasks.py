@@ -5,7 +5,7 @@ from typing import Any
 import structlog
 from fastapi import APIRouter, HTTPException
 from opentelemetry import trace
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from src.jobs.base import get_job, list_jobs
 from src.lib.idempotency import release_claim, try_claim
@@ -43,6 +43,14 @@ async def process_task(payload: TaskPayload) -> dict[str, Any]:
             attributes={"job.type": payload.task_type},
         ):
             result = await job.execute(payload.data)
+    except (ValueError, ValidationError) as exc:
+        release_claim(payload.task_type, payload.data)
+        logger.warning(
+            "job_payload_invalid",
+            job_type=payload.task_type,
+            error=str(exc),
+        )
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception:
         release_claim(payload.task_type, payload.data)
         raise

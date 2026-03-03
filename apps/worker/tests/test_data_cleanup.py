@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from src.jobs.data_cleanup import DataCleanupJob
 
@@ -13,6 +14,13 @@ class TestDataCleanupJob:
     def test_job_type(self) -> None:
         job = DataCleanupJob()
         assert job.job_type == "data.cleanup"
+
+    @pytest.mark.asyncio
+    async def test_execute_invalid_retention_days_type(self) -> None:
+        """retention_days must be an integer."""
+        job = DataCleanupJob()
+        with pytest.raises(ValidationError):
+            await job.execute({"retention_days": "not-an-int"})
 
     @pytest.mark.asyncio
     @patch("src.jobs.data_cleanup.httpx.AsyncClient")

@@ -6,7 +6,7 @@ from typing import Any
 
 import structlog
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from src.jobs.base import get_job
 from src.lib.idempotency import release_claim, try_claim
@@ -54,6 +54,14 @@ async def handle_pubsub_push(envelope: PubSubEnvelope) -> dict[str, Any]:
     logger.info("pubsub_job_execute_start", job_type=task_type)
     try:
         result = await job.execute(data)
+    except (ValueError, ValidationError) as exc:
+        release_claim(task_type, data, idempotency_key=idempotency_key)
+        logger.warning(
+            "pubsub_job_payload_invalid",
+            job_type=task_type,
+            error=str(exc),
+        )
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception:
         release_claim(task_type, data, idempotency_key=idempotency_key)
         raise

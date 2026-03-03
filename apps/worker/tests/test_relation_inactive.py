@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from src.jobs.relation_inactive import RelationInactiveCheckJob
 
@@ -13,6 +14,13 @@ class TestRelationInactiveCheckJob:
     def test_job_type(self) -> None:
         job = RelationInactiveCheckJob()
         assert job.job_type == "relation.inactive_check"
+
+    @pytest.mark.asyncio
+    async def test_execute_invalid_threshold_days_type(self) -> None:
+        """threshold_days must be an integer."""
+        job = RelationInactiveCheckJob()
+        with pytest.raises(ValidationError):
+            await job.execute({"threshold_days": "not-an-int"})
 
     @pytest.mark.asyncio
     @patch("src.jobs.relation_inactive.httpx.AsyncClient")

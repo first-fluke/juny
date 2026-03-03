@@ -6,6 +6,7 @@ import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
+from src.jobs.schemas import WellnessAggregatePayload
 from src.lib.config import settings
 from src.lib.retry import with_retry
 
@@ -32,32 +33,33 @@ class WellnessAggregateJob(BaseJob):
             return response.status_code
 
     async def execute(self, data: dict[str, Any]) -> dict[str, Any]:
-        host_id: str = data.get("host_id", "")
-        date: str = data.get("date", "")
-
-        if not host_id or not date:
-            msg = "host_id and date are required"
-            raise ValueError(msg)
+        payload = WellnessAggregatePayload.model_validate(data)
 
         logger.info(
             "wellness_aggregate_start",
-            host_id=host_id,
-            date=date,
+            host_id=payload.host_id,
+            date=payload.date,
         )
 
         headers: dict[str, str] = {}
         if settings.INTERNAL_API_KEY:
             headers["X-Internal-Key"] = settings.INTERNAL_API_KEY
 
-        status_code = await self._call_api(headers, {"host_id": host_id, "date": date})
+        status_code = await self._call_api(
+            headers, {"host_id": payload.host_id, "date": payload.date}
+        )
 
         logger.info(
             "wellness_aggregate_complete",
-            host_id=host_id,
-            date=date,
+            host_id=payload.host_id,
+            date=payload.date,
             api_status=status_code,
         )
-        return {"host_id": host_id, "date": date, "aggregated": True}
+        return {
+            "host_id": payload.host_id,
+            "date": payload.date,
+            "aggregated": True,
+        }
 
 
 register_job(WellnessAggregateJob())

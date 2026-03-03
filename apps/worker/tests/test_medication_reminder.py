@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from src.jobs.medication_reminder import MedicationReminderJob
 
@@ -13,6 +14,13 @@ class TestMedicationReminderJob:
     def test_job_type(self) -> None:
         job = MedicationReminderJob()
         assert job.job_type == "medication.reminder"
+
+    @pytest.mark.asyncio
+    async def test_execute_invalid_tokens_type(self) -> None:
+        """tokens must be a list of strings."""
+        job = MedicationReminderJob()
+        with pytest.raises(ValidationError):
+            await job.execute({"tokens": 123})
 
     @pytest.mark.asyncio
     async def test_execute_no_tokens(self) -> None:

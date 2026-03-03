@@ -5,6 +5,7 @@ from typing import Any
 import structlog
 
 from src.jobs.base import BaseJob, register_job
+from src.jobs.schemas import WellnessEscalationPayload
 from src.lib.dispatch import dispatch_local
 
 logger = structlog.get_logger(__name__)
@@ -18,29 +19,25 @@ class WellnessEscalationJob(BaseJob):
         return "wellness.escalation"
 
     async def execute(self, data: dict[str, Any]) -> dict[str, Any]:
-        log_id: str = data.get("log_id", "")
-        host_id: str = data.get("host_id", "")
-        status: str = data.get("status", "")
-        summary: str = data.get("summary", "")
-        contact_tokens: list[str] = data.get("contact_tokens", [])
+        payload = WellnessEscalationPayload.model_validate(data)
 
-        if not contact_tokens:
+        if not payload.contact_tokens:
             logger.warning(
                 "wellness_escalation_no_contacts",
-                log_id=log_id,
-                host_id=host_id,
+                log_id=payload.log_id,
+                host_id=payload.host_id,
             )
             return {"escalated": False, "reason": "no_contacts"}
 
         await dispatch_local(
             "notification.send",
             {
-                "tokens": contact_tokens,
-                "title": f"URGENT: Wellness {status.upper()}",
-                "body": summary or "Immediate attention required",
+                "tokens": payload.contact_tokens,
+                "title": f"URGENT: Wellness {payload.status.upper()}",
+                "body": payload.summary or "Immediate attention required",
                 "data": {
-                    "log_id": log_id,
-                    "host_id": host_id,
+                    "log_id": payload.log_id,
+                    "host_id": payload.host_id,
                     "type": "wellness_escalation",
                 },
             },
@@ -48,13 +45,13 @@ class WellnessEscalationJob(BaseJob):
 
         logger.info(
             "wellness_escalation_dispatched",
-            log_id=log_id,
-            host_id=host_id,
-            contact_count=len(contact_tokens),
+            log_id=payload.log_id,
+            host_id=payload.host_id,
+            contact_count=len(payload.contact_tokens),
         )
         return {
             "escalated": True,
-            "contact_count": len(contact_tokens),
+            "contact_count": len(payload.contact_tokens),
         }
 
 

@@ -6,6 +6,7 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from src.jobs.notification_send import NotificationSendJob
 
@@ -14,6 +15,20 @@ class TestNotificationSendJob:
     def test_job_type(self) -> None:
         job = NotificationSendJob()
         assert job.job_type == "notification.send"
+
+    @pytest.mark.asyncio
+    async def test_execute_invalid_tokens_type(self) -> None:
+        """tokens must be a list of strings."""
+        job = NotificationSendJob()
+        with pytest.raises(ValidationError):
+            await job.execute({"tokens": "not-a-list"})
+
+    @pytest.mark.asyncio
+    async def test_execute_invalid_data_type(self) -> None:
+        """data must be dict[str, str]."""
+        job = NotificationSendJob()
+        with pytest.raises(ValidationError):
+            await job.execute({"tokens": ["tok"], "data": "not-a-dict"})
 
     @pytest.mark.asyncio
     async def test_execute_no_tokens(self) -> None:

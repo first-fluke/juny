@@ -6,6 +6,7 @@ import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
+from src.jobs.schemas import RelationInactiveCheckPayload
 from src.lib.config import settings
 from src.lib.retry import with_retry
 
@@ -32,24 +33,26 @@ class RelationInactiveCheckJob(BaseJob):
             return response.status_code
 
     async def execute(self, data: dict[str, Any]) -> dict[str, Any]:
-        threshold_days: int = data.get("threshold_days", 30)
+        payload = RelationInactiveCheckPayload.model_validate(data)
 
         logger.info(
             "relation_inactive_check_start",
-            threshold_days=threshold_days,
+            threshold_days=payload.threshold_days,
         )
 
         headers: dict[str, str] = {}
         if settings.INTERNAL_API_KEY:
             headers["X-Internal-Key"] = settings.INTERNAL_API_KEY
 
-        status_code = await self._call_api(headers, {"threshold_days": threshold_days})
+        status_code = await self._call_api(
+            headers, {"threshold_days": payload.threshold_days}
+        )
 
         logger.info(
             "relation_inactive_check_complete",
             api_status=status_code,
         )
-        return {"checked": True, "threshold_days": threshold_days}
+        return {"checked": True, "threshold_days": payload.threshold_days}
 
 
 register_job(RelationInactiveCheckJob())

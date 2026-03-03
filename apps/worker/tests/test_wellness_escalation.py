@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from src.jobs.wellness_escalation import WellnessEscalationJob
 
@@ -13,6 +14,13 @@ class TestWellnessEscalationJob:
     def test_job_type(self) -> None:
         job = WellnessEscalationJob()
         assert job.job_type == "wellness.escalation"
+
+    @pytest.mark.asyncio
+    async def test_execute_invalid_contact_tokens_type(self) -> None:
+        """contact_tokens must be a list of strings."""
+        job = WellnessEscalationJob()
+        with pytest.raises(ValidationError):
+            await job.execute({"contact_tokens": "not-a-list"})
 
     @pytest.mark.asyncio
     async def test_execute_no_contacts(self) -> None:

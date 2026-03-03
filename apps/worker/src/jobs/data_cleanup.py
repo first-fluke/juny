@@ -6,6 +6,7 @@ import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
+from src.jobs.schemas import DataCleanupPayload
 from src.lib.config import settings
 from src.lib.retry import with_retry
 
@@ -32,13 +33,12 @@ class DataCleanupJob(BaseJob):
             return response.status_code
 
     async def execute(self, data: dict[str, Any]) -> dict[str, Any]:
-        retention_days: int = data.get("retention_days", 90)
-        resource_type: str = data.get("resource_type", "all")
+        payload = DataCleanupPayload.model_validate(data)
 
         logger.info(
             "data_cleanup_start",
-            retention_days=retention_days,
-            resource_type=resource_type,
+            retention_days=payload.retention_days,
+            resource_type=payload.resource_type,
         )
 
         headers: dict[str, str] = {}
@@ -47,14 +47,17 @@ class DataCleanupJob(BaseJob):
 
         status_code = await self._call_api(
             headers,
-            {"retention_days": retention_days, "resource_type": resource_type},
+            {
+                "retention_days": payload.retention_days,
+                "resource_type": payload.resource_type,
+            },
         )
 
         logger.info(
             "data_cleanup_complete",
             api_status=status_code,
         )
-        return {"cleaned": True, "retention_days": retention_days}
+        return {"cleaned": True, "retention_days": payload.retention_days}
 
 
 register_job(DataCleanupJob())

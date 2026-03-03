@@ -7,6 +7,7 @@ import httpx
 import structlog
 
 from src.jobs.base import BaseJob, register_job
+from src.jobs.schemas import NotificationSendPayload
 from src.lib.config import settings
 from src.lib.retry import with_retry
 
@@ -35,10 +36,11 @@ class NotificationSendJob(BaseJob):
         return "notification.send"
 
     async def execute(self, data: dict[str, Any]) -> dict[str, Any]:
-        tokens: list[str] = data.get("tokens", [])
-        title: str = data.get("title", "")
-        body: str = data.get("body", "")
-        extra: dict[str, str] = data.get("data", {})
+        payload = NotificationSendPayload.model_validate(data)
+        tokens = payload.tokens
+        title = payload.title
+        body = payload.body
+        extra = payload.data
 
         if not tokens:
             logger.warning("notification_send_no_tokens")
@@ -57,7 +59,7 @@ class NotificationSendJob(BaseJob):
             message = messaging.MulticastMessage(
                 tokens=tokens,
                 notification=notification,
-                data={k: str(v) for k, v in extra.items()},
+                data=extra,
             )
             response: messaging.BatchResponse = await asyncio.wait_for(
                 asyncio.to_thread(messaging.send_each_for_multicast, message),
