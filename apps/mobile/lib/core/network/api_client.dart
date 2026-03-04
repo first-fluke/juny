@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/core/network/interceptors/auth_interceptor.dart';
 import 'package:mobile/core/network/interceptors/error_interceptor.dart';
 
@@ -10,7 +11,7 @@ class ApiClientWrapper {
   ApiClientWrapper({required String Function() tokenGetter, String? baseUrl})
     : _dio = Dio(
         BaseOptions(
-          baseUrl: baseUrl ?? 'http://localhost:8000',
+          baseUrl: baseUrl ?? AppConfig.apiBaseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
         ),

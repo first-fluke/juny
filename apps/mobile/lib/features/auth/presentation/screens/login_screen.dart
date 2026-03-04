@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mobile/core/network/api/export.dart';
+import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
 
@@ -71,12 +73,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
       final accessToken = authorization.accessToken;
 
-      await ref
-          .read(authProvider.notifier)
-          .login(
-            provider: OAuthLoginRequestProvider.google,
-            oauthAccessToken: accessToken,
-          );
+      await _submitOAuthLogin(
+        provider: OAuthLoginRequestProvider.google,
+        oauthAccessToken: accessToken,
+      );
     } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -103,6 +103,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           SnackBar(content: Text('$e')),
         );
       }
+    }
+  }
+
+  Future<void> _submitOAuthLogin({
+    required OAuthLoginRequestProvider provider,
+    required String oauthAccessToken,
+  }) async {
+    await ref
+        .read(authProvider.notifier)
+        .login(
+          provider: provider,
+          oauthAccessToken: oauthAccessToken,
+        );
+
+    if (!mounted) return;
+    final authState = ref.read(authProvider);
+    if (authState case AuthStateUnauthenticated()) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.errAuth002)),
+      );
     }
   }
 
@@ -136,19 +157,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         height: 24,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.login, size: 28),
+                    : const FaIcon(FontAwesomeIcons.google, size: 24),
                 label: Text(l10n.loginWithGoogle),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                        // TODO(gracefullight): GitHub OAuth requires a
-                        // web-based flow.
-                      },
-                icon: const Icon(Icons.code, size: 28),
-                label: Text(l10n.loginWithGithub),
               ),
             ],
           ),

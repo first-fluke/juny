@@ -42,9 +42,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginWithGoogle => 'Googleでログイン';
 
   @override
-  String get loginWithGithub => 'GitHubでログイン';
-
-  @override
   String get welcomeHost => 'こんにちは！今日のご気分はいかがですか？';
 
   @override

@@ -42,9 +42,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginWithGoogle => 'Sign in with Google';
 
   @override
-  String get loginWithGithub => 'Sign in with GitHub';
-
-  @override
   String get welcomeHost => 'Hello! How are you today?';
 
   @override

@@ -166,12 +166,6 @@ abstract class AppLocalizations {
   /// **'Sign in with Google'**
   String get loginWithGoogle;
 
-  /// GitHub login button
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in with GitHub'**
-  String get loginWithGithub;
-
   /// Welcome message for host (senior)
   ///
   /// In en, this message translates to:

@@ -41,6 +41,15 @@ cp apps/api/.env.example apps/api/.env
 # .env 편집 — JWT_SECRET, GEMINI_API_KEY, LIVEKIT_* 등 설정
 ```
 
+모바일 런타임 설정은 `--dart-define`으로 전달합니다:
+
+```bash
+cd apps/mobile
+flutter run \
+  --dart-define=API_BASE_URL=http://localhost:8200 \
+  --dart-define=LIVEKIT_URL=wss://<your-livekit-host>
+```
+
 ### 3. 데이터베이스 마이그레이션
 
 ```bash
@@ -66,10 +75,13 @@ Worker는 **포트 8280** (`http://localhost:8280`)에서 실행됩니다.
 
 ### 인증 (OAuth + JWT)
 
-1. 사용자가 모바일에서 OAuth 제공자(Google, GitHub, Facebook)로 인증
+1. 사용자가 모바일에서 Google OAuth로 인증
 2. 모바일이 OAuth 토큰을 `POST /api/v1/auth/login`으로 전송
 3. 백엔드가 제공자와 재검증, 사용자 생성/조회 후 JWT 토큰 발급
 4. 이후 모든 API 호출에 `Authorization: Bearer <access_token>` 사용
+
+> 참고: 현재 모바일 앱 UI는 Google 로그인만 제공합니다. 백엔드 OAuth API는
+> Google/GitHub/Facebook 토큰 검증을 지원합니다.
 
 자세한 내용은 [AUTH.ko.md](./AUTH.ko.md) 참고.
 
@@ -223,7 +235,7 @@ cd apps/api && uv run pytest tests/test_health.py::test_health_check -v
 cd apps/api && uv run pytest tests/e2e/ -v
 
 # Mobile
-cd apps/mobile && flutter test test/core/utils_test.dart
+cd apps/mobile && flutter test
 ```
 
 ---

@@ -42,9 +42,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginWithGoogle => 'Google로 로그인';
 
   @override
-  String get loginWithGithub => 'GitHub로 로그인';
-
-  @override
   String get welcomeHost => '어르신, 안녕하세요! 오늘 기분은 어떠세요?';
 
   @override

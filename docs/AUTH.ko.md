@@ -267,6 +267,8 @@ Email과 name은 OAuth 토큰을 provider API로 재검증하여 획득합니다
 | GitHub | `GITHUB_CLIENT_ID` | `GITHUB_CLIENT_SECRET` | `https://api.github.com/user` |
 | Facebook | `FACEBOOK_CLIENT_ID` | `FACEBOOK_CLIENT_SECRET` | `https://graph.facebook.com/v19.0/me?fields=id,name,email,picture` |
 
+> 참고: 현재 모바일 앱 UI는 Google OAuth만 사용합니다.
+
 ## 주요 장점
 
 ### 1. 성능 개선
@@ -306,4 +308,4 @@ A: 짧은 만료 시간은 보안 측면에서 중요합니다. 토큰이 탈취
 - [OAuth 2.0 RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
 - [JWT Best Practices](https://tools.ietf.org/html/rfc8725)
 
-**Last Updated:** 2026-02-24
+**Last Updated:** 2026-03-03

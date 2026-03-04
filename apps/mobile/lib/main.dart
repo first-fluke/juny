@@ -13,28 +13,42 @@ import 'package:mobile/firebase_options.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
 
 Future<void> main() async {
+  var crashlyticsEnabled = false;
+
   await runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
+      // firebase_core 4.x may crash on iOS simulator when default app
+      // is already configured by native runtime.
+      final shouldInitFirebase =
+          !(defaultTargetPlatform == TargetPlatform.iOS && kDebugMode);
+
+      if (shouldInitFirebase && Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+        crashlyticsEnabled = true;
+      }
 
       FlutterError.onError = (errorDetails) {
-        unawaited(
-          FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails),
-        );
+        if (crashlyticsEnabled) {
+          unawaited(
+            FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails),
+          );
+        }
       };
 
       PlatformDispatcher.instance.onError = (error, stack) {
-        unawaited(
-          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true),
-        );
+        if (crashlyticsEnabled) {
+          unawaited(
+            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true),
+          );
+        }
         return true;
       };
 
-      if (kDebugMode) {
+      if (crashlyticsEnabled && kDebugMode) {
         await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
           false,
         );
@@ -43,9 +57,11 @@ Future<void> main() async {
       runApp(const ProviderScope(child: MyApp()));
     },
     (error, stack) {
-      unawaited(
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true),
-      );
+      if (crashlyticsEnabled) {
+        unawaited(
+          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true),
+        );
+      }
     },
   );
 }

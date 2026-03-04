@@ -267,6 +267,8 @@ Email and name are obtained by re-verifying the OAuth token with the provider AP
 | GitHub | `GITHUB_CLIENT_ID` | `GITHUB_CLIENT_SECRET` | `https://api.github.com/user` |
 | Facebook | `FACEBOOK_CLIENT_ID` | `FACEBOOK_CLIENT_SECRET` | `https://graph.facebook.com/v19.0/me?fields=id,name,email,picture` |
 
+> Note: The current mobile app UI uses Google OAuth only.
+
 ## Key Benefits
 
 ### 1. Performance Improvement
@@ -306,4 +308,4 @@ A: A short expiry time is important for security. It minimizes the damage scope 
 - [OAuth 2.0 RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
 - [JWT Best Practices](https://tools.ietf.org/html/rfc8725)
 
-**Last Updated:** 2026-02-24
+**Last Updated:** 2026-03-03

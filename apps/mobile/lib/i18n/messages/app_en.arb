@@ -44,10 +44,6 @@
   "@loginWithGoogle": {
     "description": "Google login button"
   },
-  "loginWithGithub": "Sign in with GitHub",
-  "@loginWithGithub": {
-    "description": "GitHub login button"
-  },
   "welcomeHost": "Hello! How are you today?",
   "@welcomeHost": {
     "description": "Welcome message for host (senior)"

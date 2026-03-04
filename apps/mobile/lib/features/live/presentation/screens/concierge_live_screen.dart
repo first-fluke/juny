@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/features/live/presentation/providers/live_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
@@ -36,6 +37,14 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
 
   Future<void> _connectToRoom() async {
     setState(() => _isConnecting = true);
+    final liveKitUrl = AppConfig.liveKitUrl.trim();
+    if (liveKitUrl.isEmpty) {
+      setState(() => _isConnecting = false);
+      _showMessage(
+        'LIVEKIT_URL is not configured. Please set it via --dart-define.',
+      );
+      return;
+    }
 
     try {
       final tokenResponse = await ref.read(
@@ -55,8 +64,7 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
       _room!.addListener(_onRoomEvent);
 
       await _room!.connect(
-        // TODO(live): configure LiveKit URL from environment
-        'wss://livekit.example.com',
+        liveKitUrl,
         tokenResponse.token,
       );
 
@@ -68,6 +76,9 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
       _findHostParticipant();
     } on Exception {
       setState(() => _isConnecting = false);
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context);
+      _showMessage(l10n?.errSvc001 ?? 'Failed to connect to live service.');
     }
   }
 
@@ -117,6 +128,13 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
     if (mounted) {
       Navigator.of(context).pop();
     }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override

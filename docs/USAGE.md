@@ -41,6 +41,15 @@ cp apps/api/.env.example apps/api/.env
 # Edit .env — set JWT_SECRET, GEMINI_API_KEY, LIVEKIT_* as needed
 ```
 
+For mobile runtime configuration, pass values via `--dart-define`:
+
+```bash
+cd apps/mobile
+flutter run \
+  --dart-define=API_BASE_URL=http://localhost:8200 \
+  --dart-define=LIVEKIT_URL=wss://<your-livekit-host>
+```
+
 ### 3. Run Database Migrations
 
 ```bash
@@ -66,10 +75,13 @@ The Worker runs on **port 8280** (`http://localhost:8280`).
 
 ### Authentication (OAuth + JWT)
 
-1. User authenticates via OAuth provider (Google, GitHub, Facebook) on mobile
+1. User authenticates via Google OAuth on mobile
 2. Mobile sends the OAuth token to `POST /api/v1/auth/login`
 3. Backend re-verifies with the provider, creates/finds the user, and issues JWT tokens
 4. All subsequent API calls use `Authorization: Bearer <access_token>`
+
+> Note: The current mobile app UI supports Google sign-in. The backend OAuth
+> API can validate Google/GitHub/Facebook tokens.
 
 ```
 POST   /api/v1/auth/login           — Exchange OAuth token for JWT
@@ -229,7 +241,7 @@ cd apps/api && uv run pytest tests/test_health.py::test_health_check -v
 cd apps/api && uv run pytest tests/e2e/ -v
 
 # Mobile
-cd apps/mobile && flutter test test/core/utils_test.dart
+cd apps/mobile && flutter test
 ```
 
 ---
