@@ -8,7 +8,7 @@ class AppConfig {
   /// Base API URL used by Dio clients.
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8000',
+    defaultValue: 'http://localhost:8200',
   );
 
   /// LiveKit websocket URL used by host/concierge live screens.
