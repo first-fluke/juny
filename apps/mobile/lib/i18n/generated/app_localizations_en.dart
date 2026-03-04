@@ -122,4 +122,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errUnknown => 'An unknown error occurred.';
+
+  @override
+  String get navigation => 'Navigation';
+
+  @override
+  String get startNavigation => 'Start Navigation';
+
+  @override
+  String get noActiveNavigation => 'No active navigation session.';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get exportData => 'Export My Data';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get wellnessAlerts => 'Wellness Alerts';
+
+  @override
+  String get medicationReminders => 'Medication Reminders';
+
+  @override
+  String get systemUpdates => 'System Updates';
+
+  @override
+  String get noNotifications => 'No notifications yet.';
+
+  @override
+  String get settings => 'Settings';
 }

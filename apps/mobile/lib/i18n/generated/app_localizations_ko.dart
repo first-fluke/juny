@@ -121,4 +121,46 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get errUnknown => '알 수 없는 오류가 발생했어요.';
+
+  @override
+  String get navigation => '길 안내';
+
+  @override
+  String get startNavigation => '길 안내 시작';
+
+  @override
+  String get noActiveNavigation => '진행 중인 길 안내가 없어요.';
+
+  @override
+  String get profile => '프로필';
+
+  @override
+  String get editProfile => '프로필 수정';
+
+  @override
+  String get deleteAccount => '계정 삭제';
+
+  @override
+  String get exportData => '내 데이터 내보내기';
+
+  @override
+  String get notifications => '알림';
+
+  @override
+  String get notificationSettings => '알림 설정';
+
+  @override
+  String get wellnessAlerts => '건강 알림';
+
+  @override
+  String get medicationReminders => '복약 알림';
+
+  @override
+  String get systemUpdates => '시스템 알림';
+
+  @override
+  String get noNotifications => '알림이 아직 없어요.';
+
+  @override
+  String get settings => '설정';
 }

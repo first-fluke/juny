@@ -45,4 +45,14 @@ class MedicationsRepository {
       _service.deleteMedicationApiV1MedicationsMedicationIdDelete(
         medicationId: id,
       );
+
+  Future<MedicationAdherenceResponse> adherence({
+    required String hostId,
+    required DateTime dateFrom,
+    required DateTime dateTo,
+  }) => _service.getMedicationAdherenceApiV1MedicationsAdherenceGet(
+    hostId: hostId,
+    dateFrom: dateFrom,
+    dateTo: dateTo,
+  );
 }

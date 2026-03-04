@@ -33,4 +33,14 @@ class WellnessRepository {
       summary: summary,
     ),
   );
+
+  Future<WellnessTrendResponse> trends({
+    required String hostId,
+    required DateTime dateFrom,
+    required DateTime dateTo,
+  }) => _service.getWellnessTrendApiV1WellnessTrendsGet(
+    hostId: hostId,
+    dateFrom: dateFrom,
+    dateTo: dateTo,
+  );
 }

@@ -151,5 +151,61 @@
   "errUnknown": "An unknown error occurred.",
   "@errUnknown": {
     "description": "Unknown error fallback"
+  },
+  "navigation": "Navigation",
+  "@navigation": {
+    "description": "Navigation section title"
+  },
+  "startNavigation": "Start Navigation",
+  "@startNavigation": {
+    "description": "Start navigation button"
+  },
+  "noActiveNavigation": "No active navigation session.",
+  "@noActiveNavigation": {
+    "description": "Empty state for navigation"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile section title"
+  },
+  "editProfile": "Edit Profile",
+  "@editProfile": {
+    "description": "Edit profile button"
+  },
+  "deleteAccount": "Delete Account",
+  "@deleteAccount": {
+    "description": "Delete account button"
+  },
+  "exportData": "Export My Data",
+  "@exportData": {
+    "description": "Export data button"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications section title"
+  },
+  "notificationSettings": "Notification Settings",
+  "@notificationSettings": {
+    "description": "Notification settings title"
+  },
+  "wellnessAlerts": "Wellness Alerts",
+  "@wellnessAlerts": {
+    "description": "Wellness alert notification toggle"
+  },
+  "medicationReminders": "Medication Reminders",
+  "@medicationReminders": {
+    "description": "Medication reminder notification toggle"
+  },
+  "systemUpdates": "System Updates",
+  "@systemUpdates": {
+    "description": "System update notification toggle"
+  },
+  "noNotifications": "No notifications yet.",
+  "@noNotifications": {
+    "description": "Empty state for notifications"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings button"
   }
 }

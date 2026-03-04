@@ -37,5 +37,19 @@
   "errSvc001": "通話サーバーとの接続が不安定です。しばらくしてからもう一度お試しください。",
   "errSvc002": "AIサービスが現在利用できません。",
   "errSvc003": "ログインプロバイダーからメールを取得できませんでした。",
-  "errUnknown": "不明なエラーが発生しました。"
+  "errUnknown": "不明なエラーが発生しました。",
+  "navigation": "ナビゲーション",
+  "startNavigation": "ナビ開始",
+  "noActiveNavigation": "進行中のナビゲーションはありません。",
+  "profile": "プロフィール",
+  "editProfile": "プロフィール編集",
+  "deleteAccount": "アカウント削除",
+  "exportData": "データエクスポート",
+  "notifications": "通知",
+  "notificationSettings": "通知設定",
+  "wellnessAlerts": "健康アラート",
+  "medicationReminders": "服薬リマインダー",
+  "systemUpdates": "システム通知",
+  "noNotifications": "通知はまだありません。",
+  "settings": "設定"
 }

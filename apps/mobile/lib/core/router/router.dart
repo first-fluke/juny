@@ -8,7 +8,10 @@ import 'package:mobile/features/host/presentation/screens/host_home_screen.dart'
 import 'package:mobile/features/live/presentation/screens/concierge_live_screen.dart';
 import 'package:mobile/features/live/presentation/screens/host_live_screen.dart';
 import 'package:mobile/features/medications/presentation/screens/medications_screen.dart';
+import 'package:mobile/features/navigation/presentation/screens/navigation_screen.dart';
+import 'package:mobile/features/notifications/presentation/screens/notification_settings_screen.dart';
 import 'package:mobile/features/relations/presentation/screens/relations_screen.dart';
+import 'package:mobile/features/users/presentation/screens/profile_screen.dart';
 import 'package:mobile/features/wellness/presentation/screens/wellness_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -85,6 +88,21 @@ GoRouter router(Ref ref) {
           final caregiverId = state.uri.queryParameters['caregiverId'];
           return RelationsScreen(hostId: hostId, caregiverId: caregiverId);
         },
+      ),
+      GoRoute(
+        path: '/navigation',
+        builder: (context, state) {
+          final hostId = state.uri.queryParameters['hostId'] ?? '';
+          return NavigationScreen(hostId: hostId);
+        },
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/notifications/settings',
+        builder: (context, state) => const NotificationSettingsScreen(),
       ),
     ],
   );

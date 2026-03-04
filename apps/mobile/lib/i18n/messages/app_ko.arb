@@ -37,5 +37,19 @@
   "errSvc001": "현재 통화 서버와 연결이 원활하지 않아요. 잠시 후 다시 시도해 주세요.",
   "errSvc002": "AI 서비스가 현재 사용할 수 없어요.",
   "errSvc003": "로그인 제공자로부터 이메일을 받을 수 없었어요.",
-  "errUnknown": "알 수 없는 오류가 발생했어요."
+  "errUnknown": "알 수 없는 오류가 발생했어요.",
+  "navigation": "길 안내",
+  "startNavigation": "길 안내 시작",
+  "noActiveNavigation": "진행 중인 길 안내가 없어요.",
+  "profile": "프로필",
+  "editProfile": "프로필 수정",
+  "deleteAccount": "계정 삭제",
+  "exportData": "내 데이터 내보내기",
+  "notifications": "알림",
+  "notificationSettings": "알림 설정",
+  "wellnessAlerts": "건강 알림",
+  "medicationReminders": "복약 알림",
+  "systemUpdates": "시스템 알림",
+  "noNotifications": "알림이 아직 없어요.",
+  "settings": "설정"
 }

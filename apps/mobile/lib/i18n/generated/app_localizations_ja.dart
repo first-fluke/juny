@@ -121,4 +121,46 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get errUnknown => '不明なエラーが発生しました。';
+
+  @override
+  String get navigation => 'ナビゲーション';
+
+  @override
+  String get startNavigation => 'ナビ開始';
+
+  @override
+  String get noActiveNavigation => '進行中のナビゲーションはありません。';
+
+  @override
+  String get profile => 'プロフィール';
+
+  @override
+  String get editProfile => 'プロフィール編集';
+
+  @override
+  String get deleteAccount => 'アカウント削除';
+
+  @override
+  String get exportData => 'データエクスポート';
+
+  @override
+  String get notifications => '通知';
+
+  @override
+  String get notificationSettings => '通知設定';
+
+  @override
+  String get wellnessAlerts => '健康アラート';
+
+  @override
+  String get medicationReminders => '服薬リマインダー';
+
+  @override
+  String get systemUpdates => 'システム通知';
+
+  @override
+  String get noNotifications => '通知はまだありません。';
+
+  @override
+  String get settings => '設定';
 }

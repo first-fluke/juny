@@ -327,6 +327,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An unknown error occurred.'**
   String get errUnknown;
+
+  /// Navigation section title
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get navigation;
+
+  /// Start navigation button
+  ///
+  /// In en, this message translates to:
+  /// **'Start Navigation'**
+  String get startNavigation;
+
+  /// Empty state for navigation
+  ///
+  /// In en, this message translates to:
+  /// **'No active navigation session.'**
+  String get noActiveNavigation;
+
+  /// Profile section title
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// Edit profile button
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// Delete account button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// Export data button
+  ///
+  /// In en, this message translates to:
+  /// **'Export My Data'**
+  String get exportData;
+
+  /// Notifications section title
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// Notification settings title
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Settings'**
+  String get notificationSettings;
+
+  /// Wellness alert notification toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness Alerts'**
+  String get wellnessAlerts;
+
+  /// Medication reminder notification toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Medication Reminders'**
+  String get medicationReminders;
+
+  /// System update notification toggle
+  ///
+  /// In en, this message translates to:
+  /// **'System Updates'**
+  String get systemUpdates;
+
+  /// Empty state for notifications
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet.'**
+  String get noNotifications;
+
+  /// Settings button
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
 }
 
 class _AppLocalizationsDelegate
