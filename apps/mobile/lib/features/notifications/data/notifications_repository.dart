@@ -8,8 +8,8 @@ class NotificationsRepository {
   NotificationsRepository({
     required NotificationsService notificationsService,
     required NotificationLogsService notificationLogsService,
-  })  : _notificationsService = notificationsService,
-        _notificationLogsService = notificationLogsService;
+  }) : _notificationsService = notificationsService,
+       _notificationLogsService = notificationLogsService;
 
   final NotificationsService _notificationsService;
   final NotificationLogsService _notificationLogsService;
@@ -20,27 +20,23 @@ class NotificationsRepository {
   Future<DeviceTokenResponse> registerDeviceToken({
     required String token,
     required DeviceTokenCreatePlatform platform,
-  }) =>
-      _notificationsService
-          .registerDeviceTokenApiV1NotificationsDeviceTokensPost(
+  }) => _notificationsService
+      .registerDeviceTokenApiV1NotificationsDeviceTokensPost(
         body: DeviceTokenCreate(token: token, platform: platform),
       );
 
-  Future<void> unregisterDeviceToken(String tokenId) =>
-      _notificationsService
-          .unregisterDeviceTokenApiV1NotificationsDeviceTokensTokenIdDelete(
+  Future<void> unregisterDeviceToken(String tokenId) => _notificationsService
+      .unregisterDeviceTokenApiV1NotificationsDeviceTokensTokenIdDelete(
         tokenId: tokenId,
       );
 
   Future<PaginatedResponseNotificationLogResponse> listLogs({
     int page = 1,
     int limit = 20,
-  }) =>
-      _notificationLogsService
-          .listNotificationLogsApiV1NotificationLogsGet(
-        page: page,
-        limit: limit,
-      );
+  }) => _notificationLogsService.listNotificationLogsApiV1NotificationLogsGet(
+    page: page,
+    limit: limit,
+  );
 
   Future<NotificationPreferenceResponse> getPreferences() =>
       _notificationLogsService
@@ -50,13 +46,21 @@ class NotificationsRepository {
     bool? wellnessAlerts,
     bool? medicationReminders,
     bool? systemUpdates,
-  }) =>
-      _notificationLogsService
-          .updatePreferencesApiV1NotificationLogsPreferencesPut(
+  }) => _notificationLogsService
+      .updatePreferencesApiV1NotificationLogsPreferencesPut(
         body: NotificationPreferenceUpdate(
           wellnessAlerts: wellnessAlerts,
           medicationReminders: medicationReminders,
           systemUpdates: systemUpdates,
         ),
+      );
+
+  Future<NotificationLogResponse> updateLogStatus({
+    required String logId,
+    required String status,
+  }) => _notificationLogsService
+      .updateLogStatusApiV1NotificationLogsLogIdStatusPatch(
+        logId: logId,
+        body: NotificationLogStatusUpdate(status: status),
       );
 }
