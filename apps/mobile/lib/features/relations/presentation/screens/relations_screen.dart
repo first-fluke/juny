@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/features/relations/presentation/providers/relations_provider.dart';
@@ -27,7 +28,11 @@ class RelationsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Care Relations'),
+        title: Text(l10n.careRelations),
+      ),
+      floatingActionButton: FloatingActionButton.large(
+        onPressed: () => context.push('/relations/create'),
+        child: const Icon(Icons.person_add),
       ),
       body: relationsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -55,7 +60,7 @@ class RelationsScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text(
-                  'No care relations found.',
+                  l10n.noRelations,
                   style: Theme.of(context).textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),

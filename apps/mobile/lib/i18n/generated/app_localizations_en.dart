@@ -164,4 +164,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settings => 'Settings';
+
+  @override
+  String get addMedication => 'Add Medication';
+
+  @override
+  String get pillName => 'Pill Name';
+
+  @override
+  String get scheduleTime => 'Schedule Time';
+
+  @override
+  String get addWellnessLog => 'Add Wellness Log';
+
+  @override
+  String get wellnessSummary => 'Summary';
+
+  @override
+  String get statusNormal => 'Normal';
+
+  @override
+  String get statusWarning => 'Warning';
+
+  @override
+  String get statusEmergency => 'Emergency';
+
+  @override
+  String get destination => 'Destination';
+
+  @override
+  String get careRelations => 'Care Relations';
+
+  @override
+  String get addRelation => 'Add Relation';
+
+  @override
+  String get hostId => 'Host ID';
+
+  @override
+  String get caregiverRole => 'Role';
+
+  @override
+  String get noRelations => 'No care relations found.';
+
+  @override
+  String get roleConcierge => 'Concierge';
+
+  @override
+  String get roleCareWorker => 'Care Worker';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get fieldRequired => 'This field is required.';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/features/medications/presentation/providers/medications_provider.dart';
@@ -24,6 +25,10 @@ class MedicationsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.medications)),
+      floatingActionButton: FloatingActionButton.large(
+        onPressed: () => context.push('/medications/create?hostId=$hostId'),
+        child: const Icon(Icons.add),
+      ),
       body: medicationsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(

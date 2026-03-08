@@ -21,6 +21,16 @@ class HostHomeScreen extends ConsumerWidget {
         title: Text(l10n.appTitle),
         actions: [
           IconButton(
+            icon: const Icon(Icons.notifications, size: 28),
+            tooltip: l10n.notifications,
+            onPressed: () => context.push('/notifications/settings'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.person, size: 28),
+            tooltip: l10n.profile,
+            onPressed: () => context.push('/profile'),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout, size: 28),
             tooltip: l10n.logout,
             onPressed: () => ref.read(authProvider.notifier).logout(),
@@ -51,14 +61,21 @@ class HostHomeScreen extends ConsumerWidget {
                 icon: Icons.medication,
                 label: l10n.medications,
                 color: const Color(0xFF4CAF50),
-                onPressed: () => context.go('/medications'),
+                onPressed: () => context.push('/medications'),
               ),
               const SizedBox(height: 20),
               _HomeButton(
                 icon: Icons.favorite,
                 label: l10n.wellness,
                 color: const Color(0xFFFF7043),
-                onPressed: () => context.go('/wellness'),
+                onPressed: () => context.push('/wellness'),
+              ),
+              const SizedBox(height: 20),
+              _HomeButton(
+                icon: Icons.navigation,
+                label: l10n.navigation,
+                color: const Color(0xFF1565C0),
+                onPressed: () => context.push('/navigation'),
               ),
             ],
           ),

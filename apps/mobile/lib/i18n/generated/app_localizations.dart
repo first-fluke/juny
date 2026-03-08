@@ -411,6 +411,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// Add medication button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Medication'**
+  String get addMedication;
+
+  /// Medication pill name field
+  ///
+  /// In en, this message translates to:
+  /// **'Pill Name'**
+  String get pillName;
+
+  /// Medication schedule time field
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule Time'**
+  String get scheduleTime;
+
+  /// Add wellness log button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Wellness Log'**
+  String get addWellnessLog;
+
+  /// Wellness log summary field
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get wellnessSummary;
+
+  /// Normal wellness status
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get statusNormal;
+
+  /// Warning wellness status
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get statusWarning;
+
+  /// Emergency wellness status
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency'**
+  String get statusEmergency;
+
+  /// Navigation destination field
+  ///
+  /// In en, this message translates to:
+  /// **'Destination'**
+  String get destination;
+
+  /// Care relations section title
+  ///
+  /// In en, this message translates to:
+  /// **'Care Relations'**
+  String get careRelations;
+
+  /// Add care relation button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Relation'**
+  String get addRelation;
+
+  /// Host user ID field
+  ///
+  /// In en, this message translates to:
+  /// **'Host ID'**
+  String get hostId;
+
+  /// Caregiver role selector
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get caregiverRole;
+
+  /// Empty state for care relations
+  ///
+  /// In en, this message translates to:
+  /// **'No care relations found.'**
+  String get noRelations;
+
+  /// Concierge role label
+  ///
+  /// In en, this message translates to:
+  /// **'Concierge'**
+  String get roleConcierge;
+
+  /// Care worker role label
+  ///
+  /// In en, this message translates to:
+  /// **'Care Worker'**
+  String get roleCareWorker;
+
+  /// Generic add button
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// Form validation required field
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required.'**
+  String get fieldRequired;
 }
 
 class _AppLocalizationsDelegate

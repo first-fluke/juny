@@ -207,5 +207,77 @@
   "settings": "Settings",
   "@settings": {
     "description": "Settings button"
+  },
+  "addMedication": "Add Medication",
+  "@addMedication": {
+    "description": "Add medication button"
+  },
+  "pillName": "Pill Name",
+  "@pillName": {
+    "description": "Medication pill name field"
+  },
+  "scheduleTime": "Schedule Time",
+  "@scheduleTime": {
+    "description": "Medication schedule time field"
+  },
+  "addWellnessLog": "Add Wellness Log",
+  "@addWellnessLog": {
+    "description": "Add wellness log button"
+  },
+  "wellnessSummary": "Summary",
+  "@wellnessSummary": {
+    "description": "Wellness log summary field"
+  },
+  "statusNormal": "Normal",
+  "@statusNormal": {
+    "description": "Normal wellness status"
+  },
+  "statusWarning": "Warning",
+  "@statusWarning": {
+    "description": "Warning wellness status"
+  },
+  "statusEmergency": "Emergency",
+  "@statusEmergency": {
+    "description": "Emergency wellness status"
+  },
+  "destination": "Destination",
+  "@destination": {
+    "description": "Navigation destination field"
+  },
+  "careRelations": "Care Relations",
+  "@careRelations": {
+    "description": "Care relations section title"
+  },
+  "addRelation": "Add Relation",
+  "@addRelation": {
+    "description": "Add care relation button"
+  },
+  "hostId": "Host ID",
+  "@hostId": {
+    "description": "Host user ID field"
+  },
+  "caregiverRole": "Role",
+  "@caregiverRole": {
+    "description": "Caregiver role selector"
+  },
+  "noRelations": "No care relations found.",
+  "@noRelations": {
+    "description": "Empty state for care relations"
+  },
+  "roleConcierge": "Concierge",
+  "@roleConcierge": {
+    "description": "Concierge role label"
+  },
+  "roleCareWorker": "Care Worker",
+  "@roleCareWorker": {
+    "description": "Care worker role label"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Generic add button"
+  },
+  "fieldRequired": "This field is required.",
+  "@fieldRequired": {
+    "description": "Form validation required field"
   }
 }

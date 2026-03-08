@@ -163,4 +163,58 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settings => '설정';
+
+  @override
+  String get addMedication => '복약 추가';
+
+  @override
+  String get pillName => '약 이름';
+
+  @override
+  String get scheduleTime => '복약 시간';
+
+  @override
+  String get addWellnessLog => '건강 기록 추가';
+
+  @override
+  String get wellnessSummary => '요약';
+
+  @override
+  String get statusNormal => '정상';
+
+  @override
+  String get statusWarning => '주의';
+
+  @override
+  String get statusEmergency => '긴급';
+
+  @override
+  String get destination => '목적지';
+
+  @override
+  String get careRelations => '돌봄 관계';
+
+  @override
+  String get addRelation => '관계 추가';
+
+  @override
+  String get hostId => '돌봄 대상자 ID';
+
+  @override
+  String get caregiverRole => '역할';
+
+  @override
+  String get noRelations => '돌봄 관계가 없어요.';
+
+  @override
+  String get roleConcierge => '보호자';
+
+  @override
+  String get roleCareWorker => '돌봄 종사자';
+
+  @override
+  String get add => '추가';
+
+  @override
+  String get fieldRequired => '필수 항목이에요.';
 }

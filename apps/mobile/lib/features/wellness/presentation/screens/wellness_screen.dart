@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/features/wellness/presentation/providers/wellness_provider.dart';
@@ -22,6 +23,10 @@ class WellnessScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.wellness)),
+      floatingActionButton: FloatingActionButton.large(
+        onPressed: () => context.push('/wellness/create?hostId=$hostId'),
+        child: const Icon(Icons.add),
+      ),
       body: logsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(

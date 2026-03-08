@@ -163,4 +163,58 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settings => '設定';
+
+  @override
+  String get addMedication => '服薬追加';
+
+  @override
+  String get pillName => '薬の名前';
+
+  @override
+  String get scheduleTime => '服薬時間';
+
+  @override
+  String get addWellnessLog => '健康記録追加';
+
+  @override
+  String get wellnessSummary => '概要';
+
+  @override
+  String get statusNormal => '正常';
+
+  @override
+  String get statusWarning => '注意';
+
+  @override
+  String get statusEmergency => '緊急';
+
+  @override
+  String get destination => '目的地';
+
+  @override
+  String get careRelations => 'ケア関係';
+
+  @override
+  String get addRelation => '関係追加';
+
+  @override
+  String get hostId => 'ケア対象者ID';
+
+  @override
+  String get caregiverRole => '役割';
+
+  @override
+  String get noRelations => 'ケア関係がありません。';
+
+  @override
+  String get roleConcierge => '介護者';
+
+  @override
+  String get roleCareWorker => 'ケアワーカー';
+
+  @override
+  String get add => '追加';
+
+  @override
+  String get fieldRequired => '必須項目です。';
 }
