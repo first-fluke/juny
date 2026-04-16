@@ -1,0 +1,19 @@
+appId: com.example.mobile
+tags:
+  - concierge
+---
+# Verify concierge home screen (requires authenticated concierge session)
+- launchApp
+- waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "보호자 대시보드"
+    commands:
+      - assertVisible: "보호자 대시보드"
+      - assertVisible: "라이브 보기"
+
+      # Navigate to live view
+      - tapOn: "라이브 보기"
+      - waitForAnimationToEnd
+      - back

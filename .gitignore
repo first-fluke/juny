@@ -62,6 +62,9 @@ apps/mobile/android/local.properties
 apps/mobile/ios/Flutter/Generated.xcconfig
 apps/mobile/ios/Flutter/flutter_export_environment.sh
 
+# Maestro
+apps/mobile/.maestro/tests/
+
 # Misc
 *.bak
 *.tmp

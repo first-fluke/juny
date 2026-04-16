@@ -1,0 +1,36 @@
+appId: com.example.mobile
+tags:
+  - host
+---
+# Verify host home screen navigation (requires authenticated host session)
+# This flow assumes the user is already logged in as host role.
+# Use `maestro test --env=AUTH_TOKEN=<token>` or pre-seed auth state.
+- launchApp
+- waitForAnimationToEnd
+
+# If redirected to login, skip remaining assertions
+- runFlow:
+    when:
+      visible: "어르신, 안녕하세요"
+    commands:
+      # Main menu buttons should be visible
+      - assertVisible: "라이브 시작"
+      - assertVisible: "복약 관리"
+      - assertVisible: "건강 기록"
+      - assertVisible: "길 안내"
+
+      # Navigate to medications
+      - tapOn: "복약 관리"
+      - waitForAnimationToEnd
+      - back
+
+      # Navigate to wellness
+      - tapOn: "건강 기록"
+      - waitForAnimationToEnd
+      - back
+
+      # Navigate to profile
+      - tapOn:
+          id: ".*profile.*"
+      - waitForAnimationToEnd
+      - back

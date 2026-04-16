@@ -1,0 +1,10 @@
+appId: com.example.mobile
+tags:
+  - smoke
+---
+# Verify app launches and shows splash → login screen
+- launchApp
+- assertVisible: "쥬니"
+# Splash should auto-redirect to login when no session exists
+- waitForAnimationToEnd
+- assertVisible: "Google로 로그인"

@@ -51,6 +51,8 @@ mise //apps/worker:dev | :test | :lint | :format
 
 # Mobile
 mise //apps/mobile:dev | :build | :test | :lint | :format | :gen:api | :gen:l10n
+mise //apps/mobile:test:e2e          # Run Maestro E2E tests (requires running simulator)
+mise //apps/mobile:test:e2e:smoke    # Run smoke tests only
 ```
 
 ### Running a single test
@@ -135,6 +137,7 @@ Branch naming: `feature/*`, `fix/*`, `hotfix/*`, `release/*`
 | API | pytest + pytest-asyncio | `apps/api/pyproject.toml` — `asyncio_mode = "auto"`, testpaths: `tests/` |
 | Worker | pytest + pytest-asyncio | `apps/worker/pyproject.toml` — `asyncio_mode = "auto"` |
 | Mobile | flutter_test + mocktail | `test/**/*_test.dart` |
+| Mobile E2E | Maestro | `apps/mobile/.maestro/*.yaml` — YAML 기반 UI E2E 테스트, 시뮬레이터 필요 |
 | Design tokens | Vitest | `packages/design-tokens/` |
 
 ## Key Patterns

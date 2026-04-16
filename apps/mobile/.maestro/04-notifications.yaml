@@ -1,0 +1,37 @@
+appId: com.example.mobile
+tags:
+  - host
+  - concierge
+---
+# Verify notifications screen (requires authenticated session)
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to notifications via app bar icon
+- runFlow:
+    when:
+      visible:
+        id: ".*notification.*"
+    commands:
+      - tapOn:
+          id: ".*notification.*"
+      - waitForAnimationToEnd
+      - assertVisible: "알림"
+
+      # Settings icon should be accessible
+      - assertVisible:
+          id: ".*settings.*"
+
+      # Either shows notification list or empty state
+      - runFlow:
+          when:
+            visible: "알림이 아직 없어요."
+          commands:
+            - assertVisible: "알림이 아직 없어요."
+
+      # Navigate to notification settings
+      - tapOn:
+          id: ".*settings.*"
+      - waitForAnimationToEnd
+      - assertVisible: "알림 설정"
+      - back

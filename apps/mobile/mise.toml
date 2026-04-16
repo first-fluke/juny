@@ -7,3 +7,5 @@ format = { run = "dart format .", description = "Format mobile app" }
 test = { run = "flutter test", description = "Test mobile app" }
 "gen:l10n" = { run = "flutter gen-l10n", description = "Generate localizations" }
 "gen:api" = { run = "dart run swagger_parser", description = "Generate API client from OpenAPI" }
+"test:e2e" = { run = "maestro test .maestro/", description = "Run Maestro E2E tests" }
+"test:e2e:smoke" = { run = "maestro test .maestro/ --include-tags=smoke", description = "Run Maestro smoke tests" }

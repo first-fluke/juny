@@ -1,0 +1,12 @@
+appId: com.example.mobile
+tags:
+  - auth
+---
+# Verify login screen UI elements
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- assertVisible: "쥬니"
+- assertVisible: "Google로 로그인"
+# Google Sign-In button should be tappable
+- assertEnabled: "Google로 로그인"

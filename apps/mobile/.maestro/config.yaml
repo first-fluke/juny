@@ -1,0 +1,7 @@
+appId: com.example.mobile
+name: Juny E2E Tests
+tags:
+  - smoke
+  - auth
+  - host
+  - concierge
