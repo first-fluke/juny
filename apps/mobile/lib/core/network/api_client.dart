@@ -8,16 +8,24 @@ import 'package:mobile/core/network/interceptors/error_interceptor.dart';
 /// {@endtemplate}
 class ApiClientWrapper {
   /// {@macro api_client_wrapper}
-  ApiClientWrapper({required String Function() tokenGetter, String? baseUrl})
-    : _dio = Dio(
-        BaseOptions(
-          baseUrl: baseUrl ?? AppConfig.apiBaseUrl,
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-        ),
-      ) {
+  ApiClientWrapper({
+    required String Function() tokenGetter,
+    required TokenRefresher tokenRefresher,
+    required LogoutCallback onLogout,
+    String? baseUrl,
+  }) : _dio = Dio(
+         BaseOptions(
+           baseUrl: baseUrl ?? AppConfig.apiBaseUrl,
+           connectTimeout: const Duration(seconds: 30),
+           receiveTimeout: const Duration(seconds: 30),
+         ),
+       ) {
     _dio.interceptors.addAll([
-      AuthInterceptor(tokenGetter: tokenGetter),
+      AuthInterceptor(
+        tokenGetter: tokenGetter,
+        tokenRefresher: tokenRefresher,
+        onLogout: onLogout,
+      ),
       const ErrorInterceptor(),
     ]);
   }

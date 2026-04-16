@@ -1,6 +1,7 @@
 import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/core/network/api_client.dart';
 import 'package:mobile/features/auth/data/auth_repository.dart';
+import 'package:mobile/features/auth/data/secure_token_storage.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -16,8 +17,18 @@ class Auth extends _$Auth {
     final apiClient = ref.watch(apiClientWrapperProvider);
     _repository = AuthRepository(
       authService: AuthenticationService(apiClient.dio),
+      tokenStorage: SecureTokenStorage(),
     );
-    return const AuthState.unauthenticated();
+    return const AuthState.loading();
+  }
+
+  /// Try restoring session from secure storage.
+  Future<void> restoreSession() async {
+    try {
+      state = await _repository.restoreSession();
+    } on Exception {
+      state = const AuthState.unauthenticated();
+    }
   }
 
   /// Login with an OAuth provider.
@@ -33,6 +44,17 @@ class Auth extends _$Auth {
       );
     } on Exception {
       state = const AuthState.unauthenticated();
+    }
+  }
+
+  /// Refresh the access token. Returns the new token or null.
+  Future<String?> refreshToken() async {
+    try {
+      state = await _repository.refresh();
+      return _repository.accessToken;
+    } on Exception {
+      state = const AuthState.unauthenticated();
+      return null;
     }
   }
 
@@ -62,5 +84,17 @@ ApiClientWrapper apiClientWrapper(Ref ref) {
     };
   }
 
-  return ApiClientWrapper(tokenGetter: tokenGetter);
+  Future<String?> tokenRefresher() async {
+    return ref.read(authProvider.notifier).refreshToken();
+  }
+
+  Future<void> onLogout() async {
+    await ref.read(authProvider.notifier).logout();
+  }
+
+  return ApiClientWrapper(
+    tokenGetter: tokenGetter,
+    tokenRefresher: tokenRefresher,
+    onLogout: onLogout,
+  );
 }

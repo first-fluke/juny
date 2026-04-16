@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:mobile/core/network/api/export.dart';
+import 'package:mobile/features/auth/data/secure_token_storage.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 
 /// {@template auth_repository}
@@ -8,10 +9,14 @@ import 'package:mobile/features/auth/domain/auth_state.dart';
 /// {@endtemplate}
 class AuthRepository {
   /// {@macro auth_repository}
-  AuthRepository({required AuthenticationService authService})
-    : _authService = authService;
+  AuthRepository({
+    required AuthenticationService authService,
+    required SecureTokenStorage tokenStorage,
+  }) : _authService = authService,
+       _tokenStorage = tokenStorage;
 
   final AuthenticationService _authService;
+  final SecureTokenStorage _tokenStorage;
 
   String _accessToken = '';
   String _refreshToken = '';
@@ -26,6 +31,17 @@ class AuthRepository {
   /// Whether the user is currently authenticated.
   bool get isAuthenticated => _accessToken.isNotEmpty;
 
+  /// Try to restore session from secure storage.
+  Future<AuthState> restoreSession() async {
+    final storedRefresh = await _tokenStorage.readRefreshToken();
+    if (storedRefresh == null || storedRefresh.isEmpty) {
+      return const AuthState.unauthenticated();
+    }
+
+    _refreshToken = storedRefresh;
+    return refresh();
+  }
+
   /// Login via OAuth provider.
   Future<AuthState> login({
     required OAuthLoginRequestProvider provider,
@@ -38,9 +54,10 @@ class AuthRepository {
       ),
     );
 
-    _accessToken = response.accessToken;
-    _refreshToken = response.refreshToken;
-    _userRole = _extractRole(response.accessToken);
+    await _setTokens(
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    );
 
     return AuthState.authenticated(
       accessToken: _accessToken,
@@ -60,9 +77,10 @@ class AuthRepository {
         body: RefreshTokenRequest(refreshToken: _refreshToken),
       );
 
-      _accessToken = response.accessToken;
-      _refreshToken = response.refreshToken;
-      _userRole = _extractRole(response.accessToken);
+      await _setTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
 
       return AuthState.authenticated(
         accessToken: _accessToken,
@@ -86,8 +104,24 @@ class AuthRepository {
       _accessToken = '';
       _refreshToken = '';
       _userRole = '';
+      await _tokenStorage.deleteAll();
     }
     return const AuthState.unauthenticated();
+  }
+
+  Future<void> _setTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    _accessToken = accessToken;
+    _refreshToken = refreshToken;
+    _userRole = _extractRole(accessToken);
+
+    await _tokenStorage.writeTokens(
+      accessToken: _accessToken,
+      refreshToken: _refreshToken,
+      userRole: _userRole,
+    );
   }
 
   /// Extract role from JWT payload (base64 decode the payload segment).
