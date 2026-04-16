@@ -11,6 +11,7 @@ import 'package:mobile/features/medications/presentation/screens/medication_crea
 import 'package:mobile/features/medications/presentation/screens/medications_screen.dart';
 import 'package:mobile/features/navigation/presentation/screens/navigation_screen.dart';
 import 'package:mobile/features/notifications/presentation/screens/notification_settings_screen.dart';
+import 'package:mobile/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:mobile/features/relations/presentation/screens/relation_create_screen.dart';
 import 'package:mobile/features/relations/presentation/screens/relations_screen.dart';
 import 'package:mobile/features/users/presentation/screens/profile_screen.dart';
@@ -120,6 +121,10 @@ GoRouter router(Ref ref) {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: '/notifications/settings',

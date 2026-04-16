@@ -1,0 +1,171 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:jiffy/jiffy.dart';
+import 'package:mobile/core/network/api/export.dart';
+import 'package:mobile/features/notifications/presentation/providers/notification_logs_provider.dart';
+import 'package:mobile/i18n/generated/app_localizations.dart';
+
+/// {@template notifications_screen}
+/// Chronological list of notification logs with read/unread state.
+///
+/// Tapping an unread item marks it as read via the PATCH status endpoint.
+/// A settings icon in the AppBar navigates to the notification settings screen.
+/// {@endtemplate}
+class NotificationsScreen extends ConsumerWidget {
+  /// {@macro notifications_screen}
+  const NotificationsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final logsAsync = ref.watch(notificationLogsProvider());
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.notifications),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: l10n.notificationSettings,
+            onPressed: () => context.push('/notifications/settings'),
+          ),
+        ],
+      ),
+      body: logsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(l10n.error, style: Theme.of(context).textTheme.bodyLarge),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => ref.invalidate(notificationLogsProvider()),
+                child: Text(l10n.retry),
+              ),
+            ],
+          ),
+        ),
+        data: (response) {
+          final items = response.data;
+          if (items.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(
+                  l10n.noNotifications,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: items.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) => _NotificationTile(
+              log: items[index],
+              onTap: () => _markAsRead(ref, items[index]),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _markAsRead(WidgetRef ref, NotificationLogResponse log) async {
+    if (log.status == 'read') return;
+    final repository = ref.read(notificationLogsRepositoryProvider);
+    await repository.markAsRead(log.id);
+    ref.invalidate(notificationLogsProvider());
+  }
+}
+
+class _NotificationTile extends StatelessWidget {
+  const _NotificationTile({
+    required this.log,
+    required this.onTap,
+  });
+
+  final NotificationLogResponse log;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isUnread = log.status != 'read';
+    final timeLabel = Jiffy.parseFromDateTime(log.createdAt).fromNow();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      child: ColoredBox(
+        color: isUnread
+            ? colorScheme.primaryContainer.withValues(alpha: 0.15)
+            : Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Icon(
+                  isUnread
+                      ? Icons.notifications
+                      : Icons.notifications_outlined,
+                  size: 24,
+                  color: isUnread
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      log.title,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: isUnread
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      log.body,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      timeLabel,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: colorScheme.outline,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isUnread)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6, left: 8),
+                  child: CircleAvatar(
+                    radius: 5,
+                    backgroundColor: colorScheme.primary,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

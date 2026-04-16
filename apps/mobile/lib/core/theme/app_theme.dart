@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/core/theme/generated_theme.dart';
 
 /// {@template app_theme}
 /// Senior-friendly theme with high contrast and large touch targets.
@@ -6,17 +7,40 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
-  static const _primaryColor = Color(0xFF0055FF);
-  static const _errorColor = Color(0xFFD32F2F);
+  // Semantic success color: oklch(0.65, 0.2, 145) — lime/green for medication.
+  static const Color _successColor = Color(0xFF4CAF50);
+  static const Color _onSuccessColor = Colors.white;
+
+  // Semantic warning color: oklch(0.75, 0.18, 85) — amber for wellness.
+  static const Color _warningColor = Color(0xFFFF9800);
+  static const Color _onWarningColor = Colors.black;
+
+  /// Tertiary color used for medication-related UI (semantic success/green).
+  static const Color tertiary = _successColor;
+
+  /// On-tertiary color used for text/icons on tertiary backgrounds.
+  static const Color onTertiary = _onSuccessColor;
+
+  /// Tertiary container color used for wellness-related UI (semantic warning/amber).
+  static const Color tertiaryContainer = _warningColor;
+
+  /// On-tertiary container color used for text/icons on tertiaryContainer backgrounds.
+  static const Color onTertiaryContainer = _onWarningColor;
 
   /// The light theme optimized for senior accessibility.
   static ThemeData get light => ThemeData(
     useMaterial3: true,
-    colorScheme: const ColorScheme.light(
-      primary: _primaryColor,
-      secondary: Color(0xFF4CAF50),
-      onSecondary: Colors.white,
-      error: _errorColor,
+    colorScheme: ColorScheme.light(
+      primary: generatedLightTheme.colors.primary,
+      onPrimary: generatedLightTheme.colors.primaryForeground,
+      secondary: generatedLightTheme.colors.secondary,
+      onSecondary: generatedLightTheme.colors.secondaryForeground,
+      tertiary: _successColor,
+      onTertiary: _onSuccessColor,
+      tertiaryContainer: _warningColor,
+      onTertiaryContainer: _onWarningColor,
+      error: generatedLightTheme.colors.error,
+      onError: generatedLightTheme.colors.errorForeground,
     ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(
@@ -108,9 +132,17 @@ class AppTheme {
   /// The dark theme.
   static ThemeData get dark => ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: _primaryColor,
-      brightness: Brightness.dark,
+    colorScheme: ColorScheme.dark(
+      primary: generatedDarkTheme.colors.primary,
+      onPrimary: generatedDarkTheme.colors.primaryForeground,
+      secondary: generatedDarkTheme.colors.secondary,
+      onSecondary: generatedDarkTheme.colors.secondaryForeground,
+      tertiary: _successColor,
+      onTertiary: _onSuccessColor,
+      tertiaryContainer: _warningColor,
+      onTertiaryContainer: _onWarningColor,
+      error: generatedDarkTheme.colors.error,
+      onError: generatedDarkTheme.colors.errorForeground,
     ),
     textTheme: const TextTheme(
       bodyLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),

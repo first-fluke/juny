@@ -15,6 +15,7 @@ class HostHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -23,7 +24,7 @@ class HostHomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.notifications, size: 28),
             tooltip: l10n.notifications,
-            onPressed: () => context.push('/notifications/settings'),
+            onPressed: () => context.push('/notifications'),
           ),
           IconButton(
             icon: const Icon(Icons.person, size: 28),
@@ -53,28 +54,32 @@ class HostHomeScreen extends ConsumerWidget {
               _HomeButton(
                 icon: Icons.videocam,
                 label: l10n.startLive,
-                color: const Color(0xFF0055FF),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 onPressed: () => context.go('/live/host'),
               ),
               const SizedBox(height: 20),
               _HomeButton(
                 icon: Icons.medication,
                 label: l10n.medications,
-                color: const Color(0xFF4CAF50),
+                backgroundColor: colorScheme.tertiary,
+                foregroundColor: colorScheme.onTertiary,
                 onPressed: () => context.push('/medications'),
               ),
               const SizedBox(height: 20),
               _HomeButton(
                 icon: Icons.favorite,
                 label: l10n.wellness,
-                color: const Color(0xFFFF7043),
+                backgroundColor: colorScheme.tertiaryContainer,
+                foregroundColor: colorScheme.onTertiaryContainer,
                 onPressed: () => context.push('/wellness'),
               ),
               const SizedBox(height: 20),
               _HomeButton(
                 icon: Icons.navigation,
                 label: l10n.navigation,
-                color: const Color(0xFF1565C0),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 onPressed: () => context.push('/navigation'),
               ),
             ],
@@ -89,13 +94,15 @@ class _HomeButton extends StatelessWidget {
   const _HomeButton({
     required this.icon,
     required this.label,
-    required this.color,
+    required this.backgroundColor,
+    required this.foregroundColor,
     required this.onPressed,
   });
 
   final IconData icon;
   final String label;
-  final Color color;
+  final Color backgroundColor;
+  final Color foregroundColor;
   final VoidCallback onPressed;
 
   @override
@@ -103,8 +110,8 @@ class _HomeButton extends StatelessWidget {
     return FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
+        backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor,
         minimumSize: const Size(double.infinity, 88),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),

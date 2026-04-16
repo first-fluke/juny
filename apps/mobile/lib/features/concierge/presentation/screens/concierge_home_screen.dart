@@ -23,7 +23,7 @@ class ConciergeHomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.notifications, size: 28),
             tooltip: l10n.notifications,
-            onPressed: () => context.push('/notifications/settings'),
+            onPressed: () => context.push('/notifications'),
           ),
           IconButton(
             icon: const Icon(Icons.person, size: 28),

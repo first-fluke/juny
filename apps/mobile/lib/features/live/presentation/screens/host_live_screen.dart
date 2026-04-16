@@ -147,8 +147,11 @@ class _HostLiveScreenState extends ConsumerState<HostLiveScreen> {
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: _isConnected
-                      ? Colors.red
-                      : const Color(0xFF0055FF),
+                      ? Theme.of(context).colorScheme.error
+                      : Theme.of(context).colorScheme.primary,
+                  foregroundColor: _isConnected
+                      ? Theme.of(context).colorScheme.onError
+                      : Theme.of(context).colorScheme.onPrimary,
                   minimumSize: const Size(double.infinity, 72),
                 ),
               ),
