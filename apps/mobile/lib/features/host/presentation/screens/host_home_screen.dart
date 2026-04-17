@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
@@ -15,30 +16,26 @@ class HostHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
+    return FScaffold(
+      header: FHeader(
         title: Text(l10n.appTitle),
-        actions: [
-          IconButton(
+        suffixes: [
+          FHeaderAction(
             icon: const Icon(Icons.notifications, size: 28),
-            tooltip: l10n.notifications,
-            onPressed: () => context.push('/notifications'),
+            onPress: () => context.push('/notifications'),
           ),
-          IconButton(
+          FHeaderAction(
             icon: const Icon(Icons.person, size: 28),
-            tooltip: l10n.profile,
-            onPressed: () => context.push('/profile'),
+            onPress: () => context.push('/profile'),
           ),
-          IconButton(
+          FHeaderAction(
             icon: const Icon(Icons.logout, size: 28),
-            tooltip: l10n.logout,
-            onPressed: () => ref.read(authProvider.notifier).logout(),
+            onPress: () => ref.read(authProvider.notifier).logout(),
           ),
         ],
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -54,32 +51,24 @@ class HostHomeScreen extends ConsumerWidget {
               _HomeButton(
                 icon: Icons.videocam,
                 label: l10n.startLive,
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
                 onPressed: () => context.go('/live/host'),
               ),
               const SizedBox(height: 20),
               _HomeButton(
                 icon: Icons.medication,
                 label: l10n.medications,
-                backgroundColor: colorScheme.tertiary,
-                foregroundColor: colorScheme.onTertiary,
                 onPressed: () => context.push('/medications'),
               ),
               const SizedBox(height: 20),
               _HomeButton(
                 icon: Icons.favorite,
                 label: l10n.wellness,
-                backgroundColor: colorScheme.tertiaryContainer,
-                foregroundColor: colorScheme.onTertiaryContainer,
                 onPressed: () => context.push('/wellness'),
               ),
               const SizedBox(height: 20),
               _HomeButton(
                 icon: Icons.navigation,
                 label: l10n.navigation,
-                backgroundColor: colorScheme.primary,
-                foregroundColor: colorScheme.onPrimary,
                 onPressed: () => context.push('/navigation'),
               ),
             ],
@@ -94,27 +83,17 @@ class _HomeButton extends StatelessWidget {
   const _HomeButton({
     required this.icon,
     required this.label,
-    required this.backgroundColor,
-    required this.foregroundColor,
     required this.onPressed,
   });
 
   final IconData icon;
   final String label;
-  final Color backgroundColor;
-  final Color foregroundColor;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton(
-      onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: foregroundColor,
-        minimumSize: const Size(double.infinity, 88),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      ),
+    return FButton(
+      onPress: onPressed,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
