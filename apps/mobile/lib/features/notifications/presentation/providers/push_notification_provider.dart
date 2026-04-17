@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile/features/notifications/data/local_notification_service.dart';
 import 'package:mobile/features/notifications/data/push_notification_service.dart';
 import 'package:mobile/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -15,6 +17,13 @@ PushNotificationService pushNotificationService(Ref ref) {
   return PushNotificationService();
 }
 
+/// Provides the singleton [LocalNotificationService] instance used for
+/// foreground banner display.
+@Riverpod(keepAlive: true)
+LocalNotificationService localNotificationService(Ref ref) {
+  return LocalNotificationService();
+}
+
 /// Manages the full FCM lifecycle: permission, token registration, and
 /// token refresh in response to authentication state changes.
 ///
@@ -22,6 +31,7 @@ PushNotificationService pushNotificationService(Ref ref) {
 @Riverpod(keepAlive: true)
 class PushNotification extends _$PushNotification {
   StreamSubscription<String>? _tokenRefreshSub;
+  StreamSubscription<RemoteMessage>? _foregroundSub;
 
   @override
   Future<void> build() async {
@@ -30,9 +40,10 @@ class PushNotification extends _$PushNotification {
       ..listen<AuthState>(authProvider, (previous, next) {
         unawaited(_onAuthStateChanged(previous, next));
       })
-      // Cancel token refresh subscription when the provider is disposed.
+      // Cancel subscriptions when the provider is disposed.
       ..onDispose(() {
         unawaited(_tokenRefreshSub?.cancel());
+        unawaited(_foregroundSub?.cancel());
       });
   }
 
@@ -41,7 +52,9 @@ class PushNotification extends _$PushNotification {
   /// Call this once after the user has been authenticated (or on app start).
   Future<void> initialize() async {
     final service = ref.read(pushNotificationServiceProvider);
+    final localNotifications = ref.read(localNotificationServiceProvider);
 
+    await localNotifications.initialize();
     await service.requestPermission();
 
     final token = await service.getToken();
@@ -53,12 +66,20 @@ class PushNotification extends _$PushNotification {
     _tokenRefreshSub = service.onTokenRefresh.listen((newToken) {
       unawaited(_registerToken(newToken));
     });
+
+    // Display foreground messages via local notifications so the user sees
+    // a banner even when the app is active.
+    _foregroundSub = service.onForegroundMessage.listen((message) {
+      unawaited(localNotifications.showForegroundMessage(message));
+    });
   }
 
   /// Unregister all active device tokens from the backend.
   Future<void> unregister() async {
     await _tokenRefreshSub?.cancel();
     _tokenRefreshSub = null;
+    await _foregroundSub?.cancel();
+    _foregroundSub = null;
 
     try {
       final repository = ref.read(notificationsRepositoryProvider);

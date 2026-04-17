@@ -61,6 +61,62 @@ final class PushNotificationServiceProvider
 String _$pushNotificationServiceHash() =>
     r'4730a581cc937f488ee2a274c8d66de537d18103';
 
+/// Provides the singleton [LocalNotificationService] instance used for
+/// foreground banner display.
+
+@ProviderFor(localNotificationService)
+final localNotificationServiceProvider = LocalNotificationServiceProvider._();
+
+/// Provides the singleton [LocalNotificationService] instance used for
+/// foreground banner display.
+
+final class LocalNotificationServiceProvider
+    extends
+        $FunctionalProvider<
+          LocalNotificationService,
+          LocalNotificationService,
+          LocalNotificationService
+        >
+    with $Provider<LocalNotificationService> {
+  /// Provides the singleton [LocalNotificationService] instance used for
+  /// foreground banner display.
+  LocalNotificationServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'localNotificationServiceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$localNotificationServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<LocalNotificationService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  LocalNotificationService create(Ref ref) {
+    return localNotificationService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LocalNotificationService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LocalNotificationService>(value),
+    );
+  }
+}
+
+String _$localNotificationServiceHash() =>
+    r'75d10e0179b3f7d36b86238bb229647ac1797977';
+
 /// Manages the full FCM lifecycle: permission, token registration, and
 /// token refresh in response to authentication state changes.
 ///
@@ -98,7 +154,7 @@ final class PushNotificationProvider
   PushNotification create() => PushNotification();
 }
 
-String _$pushNotificationHash() => r'6f3eadf03c1aad08c7a712a997e8ed67a8dbc92d';
+String _$pushNotificationHash() => r'f2aa0919cd59ec188810c083342bf3656919d417';
 
 /// Manages the full FCM lifecycle: permission, token registration, and
 /// token refresh in response to authentication state changes.
