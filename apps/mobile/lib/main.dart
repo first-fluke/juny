@@ -120,6 +120,8 @@ class _MyAppState extends ConsumerState<MyApp> {
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         routerConfig: router,
+        builder: (context, child) =>
+            FToaster(child: child ?? const SizedBox.shrink()),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
