@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/features/wellness/presentation/providers/wellness_provider.dart';
@@ -51,8 +52,9 @@ class _WellnessCreateScreenState extends ConsumerState<WellnessCreateScreen> {
     } on Exception {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.error)),
+        showFToast(
+          context: context,
+          title: Text(l10n.error),
         );
       }
     } finally {
@@ -64,17 +66,19 @@ class _WellnessCreateScreenState extends ConsumerState<WellnessCreateScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.addWellnessLog)),
-      body: Form(
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.addWellnessLog),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
+      ),
+      child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            Text(
-              l10n.statusNormal,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+            Text(l10n.statusNormal),
             const SizedBox(height: 8),
             SegmentedButton<WellnessStatus>(
               segments: [
@@ -104,15 +108,12 @@ class _WellnessCreateScreenState extends ConsumerState<WellnessCreateScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            TextFormField(
-              controller: _summaryController,
-              decoration: InputDecoration(
-                labelText: l10n.wellnessSummary,
-                prefixIcon: const Icon(Icons.notes),
-                border: const OutlineInputBorder(),
-                alignLabelWithHint: true,
+            FTextFormField(
+              control: FTextFieldControl.managed(
+                controller: _summaryController,
               ),
-              style: Theme.of(context).textTheme.bodyMedium,
+              label: Text(l10n.wellnessSummary),
+              hint: l10n.wellnessSummary,
               maxLines: 4,
               textInputAction: TextInputAction.done,
               validator: (value) {
@@ -123,16 +124,12 @@ class _WellnessCreateScreenState extends ConsumerState<WellnessCreateScreen> {
               },
             ),
             const SizedBox(height: 40),
-            FilledButton.icon(
-              onPressed: _isSubmitting ? null : _submit,
-              icon: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.add),
-              label: Text(l10n.addWellnessLog),
+            FButton(
+              onPress: _isSubmitting ? null : _submit,
+              prefix: _isSubmitting
+                  ? const FCircularProgress()
+                  : const Icon(FIcons.plus),
+              child: Text(l10n.addWellnessLog),
             ),
           ],
         ),
