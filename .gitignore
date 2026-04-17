@@ -79,8 +79,8 @@ CLAUDE.md
 .agent/plan.json
 
 # Serena Memory (runtime state)
-.serena/memories/*
-!.serena/memories/.gitkeep
+**/.serena/memories/
+**/.serena/cache/
 
 # OMA runtime artifacts
 .agents/results/
