@@ -22,15 +22,19 @@ class ConciergeHomeScreen extends ConsumerWidget {
         title: Text(l10n.welcomeConcierge),
         suffixes: [
           FHeaderAction(
-            icon: const Icon(Icons.notifications, size: 28),
+            icon: Icon(
+              Icons.notifications,
+              size: 28,
+              semanticLabel: l10n.notifications,
+            ),
             onPress: () => context.push('/notifications'),
           ),
           FHeaderAction(
-            icon: const Icon(Icons.person, size: 28),
+            icon: Icon(Icons.person, size: 28, semanticLabel: l10n.profile),
             onPress: () => context.push('/profile'),
           ),
           FHeaderAction(
-            icon: const Icon(Icons.logout, size: 28),
+            icon: Icon(Icons.logout, size: 28, semanticLabel: l10n.logout),
             onPress: () => ref.read(authProvider.notifier).logout(),
           ),
         ],
@@ -41,7 +45,6 @@ class ConciergeHomeScreen extends ConsumerWidget {
           children: [
             _DashboardCard(
               icon: Icons.videocam,
-              iconColor: const Color(0xFF0055FF),
               title: l10n.liveSession,
               onTap: () => context.push('/live/concierge'),
               trailing: FilledButton.icon(
@@ -52,25 +55,21 @@ class ConciergeHomeScreen extends ConsumerWidget {
             ),
             _DashboardCard(
               icon: Icons.people,
-              iconColor: const Color(0xFF7B1FA2),
               title: l10n.careRelations,
               onTap: () => context.push('/relations'),
             ),
             _DashboardCard(
               icon: Icons.medication,
-              iconColor: const Color(0xFF4CAF50),
               title: l10n.medications,
               onTap: () => context.push('/medications'),
             ),
             _DashboardCard(
               icon: Icons.favorite,
-              iconColor: const Color(0xFFFF7043),
               title: l10n.wellness,
               onTap: () => context.push('/wellness'),
             ),
             _DashboardCard(
               icon: Icons.navigation,
-              iconColor: const Color(0xFF1565C0),
               title: l10n.navigation,
               onTap: () => context.push('/navigation'),
             ),
@@ -84,14 +83,12 @@ class ConciergeHomeScreen extends ConsumerWidget {
 class _DashboardCard extends StatelessWidget {
   const _DashboardCard({
     required this.icon,
-    required this.iconColor,
     required this.title,
     required this.onTap,
     this.trailing,
   });
 
   final IconData icon;
-  final Color iconColor;
   final String title;
   final VoidCallback onTap;
   final Widget? trailing;
@@ -109,7 +106,11 @@ class _DashboardCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(icon, size: 28, color: iconColor),
+                  Icon(
+                    icon,
+                    size: 28,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -125,6 +126,8 @@ class _DashboardCard extends StatelessWidget {
               ),
               if (trailing != null) ...[
                 const SizedBox(height: 16),
+                // TODO(forui): replace with FButton once forui supports
+                // icon+label inline variant
                 trailing!,
               ],
             ],

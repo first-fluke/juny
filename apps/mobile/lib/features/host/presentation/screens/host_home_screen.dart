@@ -22,15 +22,19 @@ class HostHomeScreen extends ConsumerWidget {
         title: Text(l10n.appTitle),
         suffixes: [
           FHeaderAction(
-            icon: const Icon(Icons.notifications, size: 28),
+            icon: Icon(
+              Icons.notifications,
+              size: 28,
+              semanticLabel: l10n.notifications,
+            ),
             onPress: () => context.push('/notifications'),
           ),
           FHeaderAction(
-            icon: const Icon(Icons.person, size: 28),
+            icon: Icon(Icons.person, size: 28, semanticLabel: l10n.profile),
             onPress: () => context.push('/profile'),
           ),
           FHeaderAction(
-            icon: const Icon(Icons.logout, size: 28),
+            icon: Icon(Icons.logout, size: 28, semanticLabel: l10n.logout),
             onPress: () => ref.read(authProvider.notifier).logout(),
           ),
         ],

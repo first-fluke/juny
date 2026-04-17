@@ -27,7 +27,10 @@ class NotificationsScreen extends ConsumerWidget {
         title: Text(l10n.notifications),
         suffixes: [
           FHeaderAction(
-            icon: const Icon(FIcons.settings),
+            icon: Icon(
+              FIcons.settings,
+              semanticLabel: l10n.notificationSettings,
+            ),
             onPress: () => context.push('/notifications/settings'),
           ),
         ],
@@ -114,9 +117,7 @@ class _NotificationTile extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Icon(
-                  isUnread
-                      ? Icons.notifications
-                      : Icons.notifications_outlined,
+                  isUnread ? Icons.notifications : Icons.notifications_outlined,
                   size: 24,
                   color: isUnread
                       ? colorScheme.primary
@@ -131,17 +132,17 @@ class _NotificationTile extends StatelessWidget {
                     Text(
                       log.title,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: isUnread
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                          ),
+                        fontWeight: isUnread
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       log.body,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -149,8 +150,8 @@ class _NotificationTile extends StatelessWidget {
                     Text(
                       timeLabel,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: colorScheme.outline,
-                          ),
+                        color: colorScheme.outline,
+                      ),
                     ),
                   ],
                 ),
