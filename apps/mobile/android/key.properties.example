@@ -1,0 +1,15 @@
+# Android keystore signing configuration
+# Copy this file to key.properties and fill in your actual values.
+# NEVER commit key.properties to version control.
+
+# Path to your .jks or .keystore file (relative to android/app/ or absolute)
+storeFile=../keys/juny-release.jks
+
+# Keystore password set during keytool -genkey
+storePassword=
+
+# Key alias set during keytool -genkey (e.g., "juny")
+keyAlias=
+
+# Key password set during keytool -genkey
+keyPassword=

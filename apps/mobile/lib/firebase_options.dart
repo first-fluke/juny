@@ -1,3 +1,5 @@
+// TODO: run `flutterfire configure` to replace these placeholders with real credentials.
+// See https://firebase.google.com/docs/flutter/setup for setup instructions.
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
@@ -51,6 +53,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: 'YOUR_SENDER_ID',
     projectId: 'YOUR_PROJECT_ID',
     storageBucket: 'YOUR_STORAGE_BUCKET',
-    iosBundleId: 'YOUR_IOS_BUNDLE_ID',
+    iosBundleId: 'com.juny.app',
   );
 }

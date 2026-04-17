@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Set to true if your app uses data for tracking (requires NSUserTrackingUsageDescription) -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<!-- Declare accessed API types required by Apple Privacy Manifest policy (iOS 17+) -->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- NSUserDefaults: used by Flutter plugins for preferences storage -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- CA92.1: Access info from same app that wrote it -->
+				<string>CA92.1</string>
+			</array>
+		</dict>
+		<!-- File timestamp: used by Flutter engine and plugins -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- DDA9.1: Access file timestamps in app's own container -->
+				<string>DDA9.1</string>
+			</array>
+		</dict>
+		<!-- System boot time: used for performance metrics by Flutter engine -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- 35F9.1: Calculate time elapsed since arbitrary reference point -->
+				<string>35F9.1</string>
+			</array>
+		</dict>
+		<!-- Disk space: used by Flutter engine for caching decisions -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- E174.1: Display disk space info to the user -->
+				<string>E174.1</string>
+			</array>
+		</dict>
+	</array>
+	<!-- Declare data types your app collects. Replace placeholders with actual data types. -->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array>
+		<!-- TODO: Add collected data types after reviewing Apple's privacy nutrition label categories.
+		     Example entry (remove or update as appropriate):
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeName</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		-->
+	</array>
+</dict>
+</plist>
