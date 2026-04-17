@@ -10,7 +10,7 @@ import 'package:mobile/i18n/generated/app_localizations.dart';
 /// {@template relations_screen}
 /// Displays care relations for the current user.
 /// {@endtemplate}
-class RelationsScreen extends ConsumerWidget {
+class RelationsScreen extends ConsumerStatefulWidget {
   /// {@macro relations_screen}
   const RelationsScreen({this.hostId, this.caregiverId, super.key});
 
@@ -21,10 +21,24 @@ class RelationsScreen extends ConsumerWidget {
   final String? caregiverId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RelationsScreen> createState() => _RelationsScreenState();
+}
+
+class _RelationsScreenState extends ConsumerState<RelationsScreen> {
+  bool _activeOnly = true;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final activeOnly = _activeOnly;
+    final hostId = widget.hostId;
+    final caregiverId = widget.caregiverId;
     final relationsAsync = ref.watch(
-      relationsListProvider(hostId: hostId, caregiverId: caregiverId),
+      relationsListProvider(
+        hostId: hostId,
+        caregiverId: caregiverId,
+        activeOnly: activeOnly,
+      ),
     );
 
     return FScaffold(
@@ -37,52 +51,78 @@ class RelationsScreen extends ConsumerWidget {
       childPad: false,
       child: Stack(
         children: [
-          relationsAsync.when(
-            loading: () => const Center(child: FCircularProgress()),
-            error: (error, _) => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    l10n.error,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  FButton(
-                    onPress: () => ref.invalidate(
-                      relationsListProvider(
-                        hostId: hostId,
-                        caregiverId: caregiverId,
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      // TODO(i18n): localize "활성 관계만 표시"
+                      child: Text(
+                        '활성 관계만 표시',
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
-                    child: Text(l10n.retry),
-                  ),
-                ],
+                    FSwitch(
+                      value: activeOnly,
+                      onChange: (value) => setState(() => _activeOnly = value),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            data: (relations) {
-              if (relations.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text(
-                      l10n.noRelations,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      textAlign: TextAlign.center,
+              Expanded(
+                child: relationsAsync.when(
+                  loading: () => const Center(child: FCircularProgress()),
+                  error: (error, _) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          l10n.error,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        FButton(
+                          onPress: () => ref.invalidate(
+                            relationsListProvider(
+                              hostId: hostId,
+                              caregiverId: caregiverId,
+                              activeOnly: activeOnly,
+                            ),
+                          ),
+                          child: Text(l10n.retry),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              }
+                  data: (relations) {
+                    if (relations.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Text(
+                            l10n.noRelations,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    }
 
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: relations.length,
-                itemBuilder: (context, index) => _RelationCard(
-                  relation: relations[index],
-                  onDeactivate: () => _deactivate(ref, relations[index].id),
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: relations.length,
+                      itemBuilder: (context, index) => _RelationCard(
+                        relation: relations[index],
+                        onDeactivate: () =>
+                            _deactivate(relations[index].id, activeOnly),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           ),
           Positioned(
             right: 16,
@@ -97,11 +137,15 @@ class RelationsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _deactivate(WidgetRef ref, String relationId) async {
+  Future<void> _deactivate(String relationId, bool activeOnly) async {
     final repository = ref.read(relationsRepositoryProvider);
     await repository.deactivate(relationId);
     ref.invalidate(
-      relationsListProvider(hostId: hostId, caregiverId: caregiverId),
+      relationsListProvider(
+        hostId: widget.hostId,
+        caregiverId: widget.caregiverId,
+        activeOnly: activeOnly,
+      ),
     );
   }
 }

@@ -16,11 +16,13 @@ Future<List<CareRelationResponse>> relationsList(
   Ref ref, {
   String? hostId,
   String? caregiverId,
+  bool activeOnly = true,
 }) async {
   final repository = ref.watch(relationsRepositoryProvider);
   final response = await repository.list(
     hostId: hostId,
     caregiverId: caregiverId,
+    activeOnly: activeOnly,
   );
   return response.data;
 }

@@ -140,3 +140,72 @@ final class MedicationsListFamily extends $Family
   @override
   String toString() => r'medicationsListProvider';
 }
+
+@ProviderFor(deleteMedication)
+final deleteMedicationProvider = DeleteMedicationFamily._();
+
+final class DeleteMedicationProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  DeleteMedicationProvider._({
+    required DeleteMedicationFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'deleteMedicationProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$deleteMedicationHash();
+
+  @override
+  String toString() {
+    return r'deleteMedicationProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as String;
+    return deleteMedication(ref, medicationId: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DeleteMedicationProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$deleteMedicationHash() => r'de6a8a0414835496c69e64c540fcc3d8e5865852';
+
+final class DeleteMedicationFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, String> {
+  DeleteMedicationFamily._()
+    : super(
+        retry: null,
+        name: r'deleteMedicationProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  DeleteMedicationProvider call({required String medicationId}) =>
+      DeleteMedicationProvider._(argument: medicationId, from: this);
+
+  @override
+  String toString() => r'deleteMedicationProvider';
+}

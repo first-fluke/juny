@@ -20,3 +20,18 @@ Future<PaginatedResponseWellnessLogResponse> wellnessLogsList(
   final repository = ref.watch(wellnessRepositoryProvider);
   return repository.list(hostId: hostId, page: page);
 }
+
+/// Fetches wellness trend data for the past 30 days.
+@riverpod
+Future<WellnessTrendResponse> wellnessTrends(
+  Ref ref, {
+  required String hostId,
+}) {
+  final repository = ref.watch(wellnessRepositoryProvider);
+  final now = DateTime.now();
+  return repository.trends(
+    hostId: hostId,
+    dateFrom: now.subtract(const Duration(days: 29)),
+    dateTo: now,
+  );
+}

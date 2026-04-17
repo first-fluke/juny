@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:mobile/features/users/presentation/providers/users_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
@@ -48,14 +51,26 @@ class ProfileScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 48,
-                      backgroundImage: user.image != null
-                          ? NetworkImage(user.image!)
-                          : null,
-                      child: user.image == null
-                          ? const Icon(Icons.person, size: 48)
-                          : null,
+                    GestureDetector(
+                      onTap: () => _pickAndUpload(context, ref),
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
+                            radius: 48,
+                            backgroundImage: user.image != null
+                                ? NetworkImage(user.image!)
+                                : null,
+                            child: user.image == null
+                                ? const Icon(Icons.person, size: 48)
+                                : null,
+                          ),
+                          const CircleAvatar(
+                            radius: 14,
+                            child: Icon(Icons.camera_alt, size: 16),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -99,6 +114,24 @@ class ProfileScreen extends ConsumerWidget {
   Future<void> _exportData(WidgetRef ref) async {
     final repository = ref.read(usersRepositoryProvider);
     await repository.exportMyData();
+  }
+
+  Future<void> _pickAndUpload(BuildContext context, WidgetRef ref) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    final repository = ref.read(usersRepositoryProvider);
+    try {
+      await repository.uploadPhoto(File(picked.path));
+      ref.invalidate(currentUserProvider);
+    } on Exception catch (e) {
+      if (!context.mounted) return;
+      showFToast(context: context, title: Text(e.toString()));
+    }
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {

@@ -49,7 +49,7 @@ final class UsersRepositoryProvider
   }
 }
 
-String _$usersRepositoryHash() => r'7a1abf8e7fc2ca579eea68697f08e909062f0c75';
+String _$usersRepositoryHash() => r'ef9992b08caf34c9b6d44d7867a44a4caf637d4d';
 
 @ProviderFor(currentUser)
 final currentUserProvider = CurrentUserProvider._();

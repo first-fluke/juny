@@ -214,3 +214,118 @@ final class HostLocationFamily extends $Family
   @override
   String toString() => r'hostLocationProvider';
 }
+
+/// Manages the lifecycle of [LocationTrackingService] for an active session.
+///
+/// Automatically stops tracking and flushes remaining waypoints on dispose.
+
+@ProviderFor(locationTracking)
+final locationTrackingProvider = LocationTrackingFamily._();
+
+/// Manages the lifecycle of [LocationTrackingService] for an active session.
+///
+/// Automatically stops tracking and flushes remaining waypoints on dispose.
+
+final class LocationTrackingProvider
+    extends
+        $FunctionalProvider<
+          LocationTrackingService,
+          LocationTrackingService,
+          LocationTrackingService
+        >
+    with $Provider<LocationTrackingService> {
+  /// Manages the lifecycle of [LocationTrackingService] for an active session.
+  ///
+  /// Automatically stops tracking and flushes remaining waypoints on dispose.
+  LocationTrackingProvider._({
+    required LocationTrackingFamily super.from,
+    required ({String hostId, String sessionId}) super.argument,
+  }) : super(
+         retry: null,
+         name: r'locationTrackingProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$locationTrackingHash();
+
+  @override
+  String toString() {
+    return r'locationTrackingProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $ProviderElement<LocationTrackingService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  LocationTrackingService create(Ref ref) {
+    final argument = this.argument as ({String hostId, String sessionId});
+    return locationTracking(
+      ref,
+      hostId: argument.hostId,
+      sessionId: argument.sessionId,
+    );
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LocationTrackingService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LocationTrackingService>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is LocationTrackingProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$locationTrackingHash() => r'45261c5f3d617cdcd6f87f8db827f07a26354a05';
+
+/// Manages the lifecycle of [LocationTrackingService] for an active session.
+///
+/// Automatically stops tracking and flushes remaining waypoints on dispose.
+
+final class LocationTrackingFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          LocationTrackingService,
+          ({String hostId, String sessionId})
+        > {
+  LocationTrackingFamily._()
+    : super(
+        retry: null,
+        name: r'locationTrackingProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Manages the lifecycle of [LocationTrackingService] for an active session.
+  ///
+  /// Automatically stops tracking and flushes remaining waypoints on dispose.
+
+  LocationTrackingProvider call({
+    required String hostId,
+    required String sessionId,
+  }) => LocationTrackingProvider._(
+    argument: (hostId: hostId, sessionId: sessionId),
+    from: this,
+  );
+
+  @override
+  String toString() => r'locationTrackingProvider';
+}

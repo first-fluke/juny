@@ -98,7 +98,7 @@ final class PushNotificationProvider
   PushNotification create() => PushNotification();
 }
 
-String _$pushNotificationHash() => r'b64fbea9b4efca628cb780b1dc628c4cfaf80176';
+String _$pushNotificationHash() => r'6f3eadf03c1aad08c7a712a997e8ed67a8dbc92d';
 
 /// Manages the full FCM lifecycle: permission, token registration, and
 /// token refresh in response to authentication state changes.

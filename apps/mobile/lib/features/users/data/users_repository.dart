@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:mobile/core/network/api/export.dart';
 
 /// {@template users_repository}
@@ -5,9 +7,14 @@ import 'package:mobile/core/network/api/export.dart';
 /// {@endtemplate}
 class UsersRepository {
   /// {@macro users_repository}
-  UsersRepository({required UsersService service}) : _service = service;
+  UsersRepository({
+    required UsersService service,
+    required FilesService filesService,
+  }) : _service = service,
+       _filesService = filesService;
 
   final UsersService _service;
+  final FilesService _filesService;
 
   Future<UserResponse> getMe() => _service.getMyProfileApiV1UsersMeGet();
 
@@ -23,4 +30,12 @@ class UsersRepository {
 
   Future<UserResponse> getUser(String userId) =>
       _service.getUserApiV1UsersUserIdGet(userId: userId);
+
+  /// Uploads [imageFile] to storage and updates the user's profile photo.
+  Future<UserResponse> uploadPhoto(File imageFile) async {
+    final upload = await _filesService.uploadFileApiV1FilesUploadPost(
+      file: imageFile,
+    );
+    return updateMe(image: upload.url);
+  }
 }

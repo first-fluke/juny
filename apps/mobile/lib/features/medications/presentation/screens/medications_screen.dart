@@ -72,9 +72,20 @@ class MedicationsScreen extends ConsumerWidget {
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: items.length,
-                itemBuilder: (context, index) => _MedicationCard(
-                  medication: items[index],
-                  onMarkTaken: () => _markAsTaken(ref, items[index].id),
+                itemBuilder: (context, index) => Dismissible(
+                  key: ValueKey(items[index].id),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    color: Theme.of(context).colorScheme.error,
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  onDismissed: (_) => _deleteMedication(ref, items[index].id),
+                  child: _MedicationCard(
+                    medication: items[index],
+                    onMarkTaken: () => _markAsTaken(ref, items[index].id),
+                  ),
                 ),
               );
             },
@@ -95,6 +106,12 @@ class MedicationsScreen extends ConsumerWidget {
   Future<void> _markAsTaken(WidgetRef ref, String medicationId) async {
     final repository = ref.read(medicationsRepositoryProvider);
     await repository.markAsTaken(medicationId);
+    ref.invalidate(medicationsListProvider(hostId: hostId));
+  }
+
+  Future<void> _deleteMedication(WidgetRef ref, String medicationId) async {
+    final repository = ref.read(medicationsRepositoryProvider);
+    await repository.delete(medicationId);
     ref.invalidate(medicationsListProvider(hostId: hostId));
   }
 }

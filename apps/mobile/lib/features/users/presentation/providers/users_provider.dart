@@ -8,7 +8,10 @@ part 'users_provider.g.dart';
 @riverpod
 UsersRepository usersRepository(Ref ref) {
   final apiClient = ref.watch(apiClientWrapperProvider);
-  return UsersRepository(service: UsersService(apiClient.dio));
+  return UsersRepository(
+    service: UsersService(apiClient.dio),
+    filesService: FilesService(apiClient.dio),
+  );
 }
 
 @riverpod

@@ -72,7 +72,8 @@ final class RelationsListProvider
         $FutureProvider<List<CareRelationResponse>> {
   RelationsListProvider._({
     required RelationsListFamily super.from,
-    required ({String? hostId, String? caregiverId}) super.argument,
+    required ({String? hostId, String? caregiverId, bool activeOnly})
+    super.argument,
   }) : super(
          retry: null,
          name: r'relationsListProvider',
@@ -99,11 +100,14 @@ final class RelationsListProvider
 
   @override
   FutureOr<List<CareRelationResponse>> create(Ref ref) {
-    final argument = this.argument as ({String? hostId, String? caregiverId});
+    final argument =
+        this.argument
+            as ({String? hostId, String? caregiverId, bool activeOnly});
     return relationsList(
       ref,
       hostId: argument.hostId,
       caregiverId: argument.caregiverId,
+      activeOnly: argument.activeOnly,
     );
   }
 
@@ -118,13 +122,13 @@ final class RelationsListProvider
   }
 }
 
-String _$relationsListHash() => r'c1ab4579b011b8cec05c482ab654a851dc9b3bd3';
+String _$relationsListHash() => r'3ccc4c6280a7ace326d78e76883518ae3c271ca4';
 
 final class RelationsListFamily extends $Family
     with
         $FunctionalFamilyOverride<
           FutureOr<List<CareRelationResponse>>,
-          ({String? hostId, String? caregiverId})
+          ({String? hostId, String? caregiverId, bool activeOnly})
         > {
   RelationsListFamily._()
     : super(
@@ -135,11 +139,18 @@ final class RelationsListFamily extends $Family
         isAutoDispose: true,
       );
 
-  RelationsListProvider call({String? hostId, String? caregiverId}) =>
-      RelationsListProvider._(
-        argument: (hostId: hostId, caregiverId: caregiverId),
-        from: this,
-      );
+  RelationsListProvider call({
+    String? hostId,
+    String? caregiverId,
+    bool activeOnly = true,
+  }) => RelationsListProvider._(
+    argument: (
+      hostId: hostId,
+      caregiverId: caregiverId,
+      activeOnly: activeOnly,
+    ),
+    from: this,
+  );
 
   @override
   String toString() => r'relationsListProvider';

@@ -20,3 +20,9 @@ Future<PaginatedResponseMedicationResponse> medicationsList(
   final repository = ref.watch(medicationsRepositoryProvider);
   return repository.list(hostId: hostId, page: page);
 }
+
+@riverpod
+Future<void> deleteMedication(Ref ref, {required String medicationId}) {
+  final repository = ref.read(medicationsRepositoryProvider);
+  return repository.delete(medicationId);
+}

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile/features/concierge/data/concierge_repository.dart';
+import 'package:mobile/features/concierge/presentation/providers/concierge_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
 
 /// {@template concierge_home_screen}
@@ -40,40 +43,141 @@ class ConciergeHomeScreen extends ConsumerWidget {
         ],
       ),
       child: SafeArea(
-        child: ListView(
+        child: _ConciergeBody(),
+      ),
+    );
+  }
+}
+
+/// Body widget that shows host summary cards plus navigation shortcuts.
+class _ConciergeBody extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final summariesAsync = ref.watch<AsyncValue<List<HostSummary>>>(
+      conciergeHostSummariesProvider,
+    );
+
+    final fallbackCards = <Widget>[
+      _DashboardCard(
+        icon: Icons.videocam,
+        title: l10n.liveSession,
+        onTap: () => context.push('/live/concierge'),
+      ),
+      _DashboardCard(
+        icon: Icons.people,
+        title: l10n.careRelations,
+        onTap: () => context.push('/relations'),
+      ),
+    ];
+
+    return summariesAsync.when(
+      loading: () => const Center(child: FCircularProgress()),
+      error: (_, _) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: fallbackCards,
+      ),
+      data: (summaries) {
+        final summaryWidgets = summaries
+            .map<Widget>(
+              (s) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _HostSummaryCard(summary: s),
+              ),
+            )
+            .toList();
+
+        return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _DashboardCard(
-              icon: Icons.videocam,
-              title: l10n.liveSession,
-              onTap: () => context.push('/live/concierge'),
-              trailing: FilledButton.icon(
-                onPressed: () => context.push('/live/concierge'),
-                icon: const Icon(Icons.visibility, size: 24),
-                label: Text(l10n.watchLive),
+            ...fallbackCards,
+            if (summaries.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                  l10n.careRelations,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
-            ),
-            _DashboardCard(
-              icon: Icons.people,
-              title: l10n.careRelations,
-              onTap: () => context.push('/relations'),
-            ),
-            _DashboardCard(
-              icon: Icons.medication,
-              title: l10n.medications,
-              onTap: () => context.push('/medications'),
-            ),
-            _DashboardCard(
-              icon: Icons.favorite,
-              title: l10n.wellness,
-              onTap: () => context.push('/wellness'),
-            ),
-            _DashboardCard(
-              icon: Icons.navigation,
-              title: l10n.navigation,
-              onTap: () => context.push('/navigation'),
-            ),
+              ...summaryWidgets,
+            ],
           ],
+        );
+      },
+    );
+  }
+}
+
+/// Compact card showing aggregated host status for the concierge.
+class _HostSummaryCard extends StatelessWidget {
+  const _HostSummaryCard({required this.summary});
+
+  final HostSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final wellness = summary.latestWellness;
+    final pending = summary.pendingMedications ?? 0;
+    final nav = summary.activeNavigation;
+
+    return FCard.raw(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.push(
+          '/wellness?hostId=${summary.relation.hostId}',
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.person_outline, size: 24),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      summary.relation.hostId,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  if (nav != null)
+                    const Icon(Icons.navigation, size: 18, color: Colors.blue),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    wellness != null
+                        ? (wellness.status == 'emergency'
+                              ? Icons.warning
+                              : Icons.check_circle)
+                        : Icons.help_outline,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    wellness != null
+                        ? Jiffy.parseFromDateTime(
+                            wellness.createdAt,
+                          ).fromNow()
+                        : l10n.noWellnessLogs,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(width: 16),
+                  const Icon(Icons.medication, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$pending ${l10n.medications}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -85,13 +189,11 @@ class _DashboardCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.onTap,
-    this.trailing,
   });
 
   final IconData icon;
   final String title;
   final VoidCallback onTap;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -124,12 +226,6 @@ class _DashboardCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (trailing != null) ...[
-                const SizedBox(height: 16),
-                // TODO(forui): replace with FButton once forui supports
-                // icon+label inline variant
-                trailing!,
-              ],
             ],
           ),
         ),

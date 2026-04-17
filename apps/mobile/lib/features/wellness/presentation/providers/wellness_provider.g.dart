@@ -140,3 +140,89 @@ final class WellnessLogsListFamily extends $Family
   @override
   String toString() => r'wellnessLogsListProvider';
 }
+
+/// Fetches wellness trend data for the past 30 days.
+
+@ProviderFor(wellnessTrends)
+final wellnessTrendsProvider = WellnessTrendsFamily._();
+
+/// Fetches wellness trend data for the past 30 days.
+
+final class WellnessTrendsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<WellnessTrendResponse>,
+          WellnessTrendResponse,
+          FutureOr<WellnessTrendResponse>
+        >
+    with
+        $FutureModifier<WellnessTrendResponse>,
+        $FutureProvider<WellnessTrendResponse> {
+  /// Fetches wellness trend data for the past 30 days.
+  WellnessTrendsProvider._({
+    required WellnessTrendsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'wellnessTrendsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$wellnessTrendsHash();
+
+  @override
+  String toString() {
+    return r'wellnessTrendsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<WellnessTrendResponse> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<WellnessTrendResponse> create(Ref ref) {
+    final argument = this.argument as String;
+    return wellnessTrends(ref, hostId: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is WellnessTrendsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$wellnessTrendsHash() => r'486869311acdc244cc9b4386f09bdfed967548be';
+
+/// Fetches wellness trend data for the past 30 days.
+
+final class WellnessTrendsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<WellnessTrendResponse>, String> {
+  WellnessTrendsFamily._()
+    : super(
+        retry: null,
+        name: r'wellnessTrendsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Fetches wellness trend data for the past 30 days.
+
+  WellnessTrendsProvider call({required String hostId}) =>
+      WellnessTrendsProvider._(argument: hostId, from: this);
+
+  @override
+  String toString() => r'wellnessTrendsProvider';
+}

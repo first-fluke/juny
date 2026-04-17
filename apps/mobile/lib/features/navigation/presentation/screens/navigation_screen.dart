@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mobile/core/config/app_config.dart';
+import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/features/navigation/presentation/providers/navigation_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
 
@@ -29,54 +32,137 @@ class NavigationScreen extends ConsumerWidget {
           FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
         ],
       ),
+      childPad: false,
       child: sessionAsync.when(
         loading: () => const Center(child: FCircularProgress()),
         error: (error, _) => _StartNavigationForm(hostId: hostId),
-        data: (session) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: FCard.raw(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.navigation,
-                          size: 36,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(session.destinationName),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(session.status),
-                    const SizedBox(height: 16),
-                    FButton(
-                      variant: FButtonVariant.destructive,
-                      onPress: () => _cancelSession(ref, session.id),
-                      prefix: const Icon(Icons.close),
-                      child: Text(l10n.cancel),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
+        data: (session) =>
+            _ActiveNavigationView(session: session, hostId: hostId),
       ),
     );
   }
+}
 
-  Future<void> _cancelSession(WidgetRef ref, String sessionId) async {
+/// Shows the live map and session controls for an active navigation session.
+class _ActiveNavigationView extends ConsumerStatefulWidget {
+  const _ActiveNavigationView({
+    required this.session,
+    required this.hostId,
+  });
+
+  final NavigationSessionResponse session;
+  final String hostId;
+
+  @override
+  ConsumerState<_ActiveNavigationView> createState() =>
+      _ActiveNavigationViewState();
+}
+
+class _ActiveNavigationViewState extends ConsumerState<_ActiveNavigationView> {
+  GoogleMapController? _mapController;
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  Set<Marker> _buildMarkers() {
+    final session = widget.session;
+    return {
+      Marker(
+        markerId: const MarkerId('origin'),
+        position: LatLng(
+          session.originLat.toDouble(),
+          session.originLng.toDouble(),
+        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      ),
+      Marker(
+        markerId: const MarkerId('destination'),
+        position: LatLng(
+          session.destinationLat.toDouble(),
+          session.destinationLng.toDouble(),
+        ),
+        infoWindow: InfoWindow(title: session.destinationName),
+      ),
+    };
+  }
+
+  CameraPosition _initialCamera() {
+    final s = widget.session;
+    final midLat = (s.originLat.toDouble() + s.destinationLat.toDouble()) / 2;
+    final midLng = (s.originLng.toDouble() + s.destinationLng.toDouble()) / 2;
+    return CameraPosition(target: LatLng(midLat, midLng), zoom: 13);
+  }
+
+  Future<void> _cancelSession() async {
     final repository = ref.read(navigationRepositoryProvider);
-    await repository.cancelSession(sessionId);
-    ref.invalidate(activeNavigationSessionProvider(hostId: hostId));
+    await repository.cancelSession(widget.session.id);
+    ref.invalidate(activeNavigationSessionProvider(hostId: widget.hostId));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final hasKey = AppConfig.googleMapsApiKey.isNotEmpty;
+
+    return Column(
+      children: [
+        Expanded(
+          child: hasKey
+              ? GoogleMap(
+                  initialCameraPosition: _initialCamera(),
+                  markers: _buildMarkers(),
+                  myLocationEnabled: true,
+                  onMapCreated: (controller) => _mapController = controller,
+                )
+              : ColoredBox(
+                  color: Colors.grey.shade200,
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.map_outlined, size: 64),
+                        SizedBox(height: 12),
+                        Text('GOOGLE_MAPS_API_KEY not configured'),
+                      ],
+                    ),
+                  ),
+                ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: FCard.raw(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.navigation, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(widget.session.destinationName)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(widget.session.status),
+                  const SizedBox(height: 16),
+                  FButton(
+                    variant: FButtonVariant.destructive,
+                    onPress: _cancelSession,
+                    prefix: const Icon(Icons.close),
+                    child: Text(l10n.cancel),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
