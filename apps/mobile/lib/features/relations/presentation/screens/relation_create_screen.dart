@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/features/relations/presentation/providers/relations_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
@@ -49,8 +50,9 @@ class _RelationCreateScreenState extends ConsumerState<RelationCreateScreen> {
     } on Exception {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.error)),
+        showFToast(
+          context: context,
+          title: Text(l10n.error),
         );
       }
     } finally {
@@ -62,21 +64,24 @@ class _RelationCreateScreenState extends ConsumerState<RelationCreateScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.addRelation)),
-      body: Form(
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.addRelation),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
+      ),
+      child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            TextFormField(
-              controller: _hostIdController,
-              decoration: InputDecoration(
-                labelText: l10n.hostId,
-                prefixIcon: const Icon(Icons.person),
-                border: const OutlineInputBorder(),
+            FTextFormField(
+              control: FTextFieldControl.managed(
+                controller: _hostIdController,
               ),
-              style: Theme.of(context).textTheme.bodyMedium,
+              label: Text(l10n.hostId),
+              hint: l10n.hostId,
               textInputAction: TextInputAction.next,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -86,14 +91,12 @@ class _RelationCreateScreenState extends ConsumerState<RelationCreateScreen> {
               },
             ),
             const SizedBox(height: 20),
-            TextFormField(
-              controller: _caregiverIdController,
-              decoration: const InputDecoration(
-                labelText: 'Caregiver ID',
-                prefixIcon: Icon(Icons.people),
-                border: OutlineInputBorder(),
+            FTextFormField(
+              control: FTextFieldControl.managed(
+                controller: _caregiverIdController,
               ),
-              style: Theme.of(context).textTheme.bodyMedium,
+              label: const Text('Caregiver ID'),
+              hint: 'Caregiver ID',
               textInputAction: TextInputAction.done,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -103,10 +106,7 @@ class _RelationCreateScreenState extends ConsumerState<RelationCreateScreen> {
               },
             ),
             const SizedBox(height: 24),
-            Text(
-              l10n.caregiverRole,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text(l10n.caregiverRole),
             const SizedBox(height: 8),
             SegmentedButton<String>(
               segments: [
@@ -130,16 +130,12 @@ class _RelationCreateScreenState extends ConsumerState<RelationCreateScreen> {
               ),
             ),
             const SizedBox(height: 40),
-            FilledButton.icon(
-              onPressed: _isSubmitting ? null : _submit,
-              icon: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.add),
-              label: Text(l10n.addRelation),
+            FButton(
+              onPress: _isSubmitting ? null : _submit,
+              prefix: _isSubmitting
+                  ? const FCircularProgress()
+                  : const Icon(FIcons.userPlus),
+              child: Text(l10n.addRelation),
             ),
           ],
         ),
