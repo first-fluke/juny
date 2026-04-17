@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 
 /// {@template splash_screen}
@@ -24,29 +25,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      body: Center(
+    return FScaffold(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.health_and_safety,
               size: 80,
-              color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 24),
             Text(
               'Juny',
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
-              ),
+              style: Theme.of(context).textTheme.displaySmall,
             ),
             const SizedBox(height: 32),
-            const CircularProgressIndicator(),
+            const FCircularProgress(),
           ],
         ),
       ),
