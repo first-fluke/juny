@@ -81,3 +81,7 @@ CLAUDE.md
 # Serena Memory (runtime state)
 .serena/memories/*
 !.serena/memories/.gitkeep
+
+# OMA runtime artifacts
+.agents/results/
+.agents/state/
