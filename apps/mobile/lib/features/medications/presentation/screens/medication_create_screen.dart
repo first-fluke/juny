@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/features/medications/presentation/providers/medications_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
@@ -70,8 +71,9 @@ class _MedicationCreateScreenState
     } on Exception {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.error)),
+        showFToast(
+          context: context,
+          title: Text(l10n.error),
         );
       }
     } finally {
@@ -84,21 +86,24 @@ class _MedicationCreateScreenState
     final l10n = AppLocalizations.of(context)!;
     final timeText = _selectedTime.format(context);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.addMedication)),
-      body: Form(
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.addMedication),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
+      ),
+      child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            TextFormField(
-              controller: _pillNameController,
-              decoration: InputDecoration(
-                labelText: l10n.pillName,
-                prefixIcon: const Icon(Icons.medication),
-                border: const OutlineInputBorder(),
+            FTextFormField(
+              control: FTextFieldControl.managed(
+                controller: _pillNameController,
               ),
-              style: Theme.of(context).textTheme.bodyMedium,
+              label: Text(l10n.pillName),
+              hint: l10n.pillName,
               textInputAction: TextInputAction.done,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -108,30 +113,19 @@ class _MedicationCreateScreenState
               },
             ),
             const SizedBox(height: 24),
-            ListTile(
-              leading: const Icon(Icons.access_time, size: 28),
+            FTile(
+              prefix: const Icon(FIcons.clock),
               title: Text(l10n.scheduleTime),
-              subtitle: Text(
-                timeText,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Theme.of(context).colorScheme.outline),
-              ),
-              onTap: _pickTime,
+              subtitle: Text(timeText),
+              onPress: _pickTime,
             ),
             const SizedBox(height: 40),
-            FilledButton.icon(
-              onPressed: _isSubmitting ? null : _submit,
-              icon: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.add),
-              label: Text(l10n.addMedication),
+            FButton(
+              onPress: _isSubmitting ? null : _submit,
+              prefix: _isSubmitting
+                  ? const FCircularProgress()
+                  : const Icon(FIcons.plus),
+              child: Text(l10n.addMedication),
             ),
           ],
         ),
