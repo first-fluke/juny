@@ -201,6 +201,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get hostId => '돌봄 대상자 ID';
 
   @override
+  String get caregiverId => '돌봄제공자 ID';
+
+  @override
+  String get deactivateRelation => '관계 해제';
+
+  @override
   String get caregiverRole => '역할';
 
   @override

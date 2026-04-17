@@ -64,6 +64,8 @@
   "careRelations": "ケア関係",
   "addRelation": "関係追加",
   "hostId": "ケア対象者ID",
+  "caregiverId": "介護者ID",
+  "deactivateRelation": "関係解除",
   "caregiverRole": "役割",
   "noRelations": "ケア関係がありません。",
   "roleConcierge": "介護者",

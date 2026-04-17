@@ -64,6 +64,8 @@
   "careRelations": "돌봄 관계",
   "addRelation": "관계 추가",
   "hostId": "돌봄 대상자 ID",
+  "caregiverId": "돌봄제공자 ID",
+  "deactivateRelation": "관계 해제",
   "caregiverRole": "역할",
   "noRelations": "돌봄 관계가 없어요.",
   "roleConcierge": "보호자",

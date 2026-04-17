@@ -81,7 +81,7 @@ class WellnessScreen extends ConsumerWidget {
             bottom: 24,
             child: FButton.icon(
               onPress: () => context.push('/wellness/create?hostId=$hostId'),
-              child: const Icon(FIcons.plus),
+              child: Icon(FIcons.plus, semanticLabel: l10n.addWellnessLog),
             ),
           ),
         ],

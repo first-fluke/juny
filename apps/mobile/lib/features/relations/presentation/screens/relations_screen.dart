@@ -89,7 +89,7 @@ class RelationsScreen extends ConsumerWidget {
             bottom: 24,
             child: FButton.icon(
               onPress: () => context.push('/relations/create'),
-              child: const Icon(FIcons.userPlus),
+              child: Icon(FIcons.userPlus, semanticLabel: l10n.addRelation),
             ),
           ),
         ],
@@ -117,6 +117,7 @@ class _RelationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final date = Jiffy.parseFromDateTime(
       relation.createdAt,
     ).format(pattern: 'yyyy-MM-dd');
@@ -152,7 +153,10 @@ class _RelationCard extends StatelessWidget {
               if (relation.isActive)
                 FButton.icon(
                   onPress: onDeactivate,
-                  child: const Icon(FIcons.unlink),
+                  child: Icon(
+                    FIcons.unlink,
+                    semanticLabel: l10n.deactivateRelation,
+                  ),
                 ),
             ],
           ),

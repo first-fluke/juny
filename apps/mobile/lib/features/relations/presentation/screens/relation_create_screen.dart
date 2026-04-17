@@ -95,8 +95,8 @@ class _RelationCreateScreenState extends ConsumerState<RelationCreateScreen> {
               control: FTextFieldControl.managed(
                 controller: _caregiverIdController,
               ),
-              label: const Text('Caregiver ID'),
-              hint: 'Caregiver ID',
+              label: Text(l10n.caregiverId),
+              hint: l10n.caregiverId,
               textInputAction: TextInputAction.done,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -108,6 +108,7 @@ class _RelationCreateScreenState extends ConsumerState<RelationCreateScreen> {
             const SizedBox(height: 24),
             Text(l10n.caregiverRole),
             const SizedBox(height: 8),
+            // TODO(forui): migrate when forui adds FSegmentedControl
             SegmentedButton<String>(
               segments: [
                 ButtonSegment(

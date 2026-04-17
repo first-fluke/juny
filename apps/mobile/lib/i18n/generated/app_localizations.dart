@@ -484,6 +484,18 @@ abstract class AppLocalizations {
   /// **'Host ID'**
   String get hostId;
 
+  /// Caregiver user ID field
+  ///
+  /// In en, this message translates to:
+  /// **'Caregiver ID'**
+  String get caregiverId;
+
+  /// Deactivate care relation button
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate Relation'**
+  String get deactivateRelation;
+
   /// Caregiver role selector
   ///
   /// In en, this message translates to:

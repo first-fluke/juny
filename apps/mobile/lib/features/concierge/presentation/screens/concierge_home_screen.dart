@@ -109,7 +109,7 @@ class _DashboardCard extends StatelessWidget {
                   Icon(
                     icon,
                     size: 28,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: context.theme.colors.primary,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -120,7 +120,7 @@ class _DashboardCard extends StatelessWidget {
                   ),
                   Icon(
                     Icons.chevron_right,
-                    color: Theme.of(context).colorScheme.outline,
+                    color: context.theme.colors.border,
                   ),
                 ],
               ),

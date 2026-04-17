@@ -202,6 +202,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hostId => 'Host ID';
 
   @override
+  String get caregiverId => 'Caregiver ID';
+
+  @override
+  String get deactivateRelation => 'Deactivate Relation';
+
+  @override
   String get caregiverRole => 'Role';
 
   @override

@@ -256,6 +256,14 @@
   "@hostId": {
     "description": "Host user ID field"
   },
+  "caregiverId": "Caregiver ID",
+  "@caregiverId": {
+    "description": "Caregiver user ID field"
+  },
+  "deactivateRelation": "Deactivate Relation",
+  "@deactivateRelation": {
+    "description": "Deactivate care relation button"
+  },
   "caregiverRole": "Role",
   "@caregiverRole": {
     "description": "Caregiver role selector"

@@ -85,7 +85,7 @@ class MedicationsScreen extends ConsumerWidget {
             child: FButton.icon(
               onPress: () =>
                   context.push('/medications/create?hostId=$hostId'),
-              child: const Icon(FIcons.plus),
+              child: Icon(FIcons.plus, semanticLabel: l10n.addMedication),
             ),
           ),
         ],

@@ -201,6 +201,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get hostId => 'ケア対象者ID';
 
   @override
+  String get caregiverId => '介護者ID';
+
+  @override
+  String get deactivateRelation => '関係解除';
+
+  @override
   String get caregiverRole => '役割';
 
   @override

@@ -80,6 +80,7 @@ class _WellnessCreateScreenState extends ConsumerState<WellnessCreateScreen> {
           children: [
             Text(l10n.statusNormal),
             const SizedBox(height: 8),
+            // TODO(forui): migrate when forui adds FSegmentedControl
             SegmentedButton<WellnessStatus>(
               segments: [
                 ButtonSegment(

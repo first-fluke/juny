@@ -146,7 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Icon(
                 Icons.health_and_safety,
                 size: 96,
-                color: Theme.of(context).colorScheme.primary,
+                color: context.theme.colors.primary,
               ),
               const SizedBox(height: 16),
               Text(

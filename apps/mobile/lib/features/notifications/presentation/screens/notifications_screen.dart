@@ -101,13 +101,13 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUnread = log.status != 'read';
     final timeLabel = Jiffy.parseFromDateTime(log.createdAt).fromNow();
-    final colorScheme = Theme.of(context).colorScheme;
+    final colors = context.theme.colors;
 
     return InkWell(
       onTap: onTap,
       child: ColoredBox(
         color: isUnread
-            ? colorScheme.primaryContainer.withValues(alpha: 0.15)
+            ? colors.muted.withValues(alpha: 0.15)
             : Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -119,9 +119,7 @@ class _NotificationTile extends StatelessWidget {
                 child: Icon(
                   isUnread ? Icons.notifications : Icons.notifications_outlined,
                   size: 24,
-                  color: isUnread
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
+                  color: isUnread ? colors.primary : colors.mutedForeground,
                 ),
               ),
               const SizedBox(width: 12),
@@ -141,7 +139,7 @@ class _NotificationTile extends StatelessWidget {
                     Text(
                       log.body,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                        color: colors.mutedForeground,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -150,7 +148,7 @@ class _NotificationTile extends StatelessWidget {
                     Text(
                       timeLabel,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colorScheme.outline,
+                        color: colors.border,
                       ),
                     ),
                   ],
@@ -159,9 +157,13 @@ class _NotificationTile extends StatelessWidget {
               if (isUnread)
                 Padding(
                   padding: const EdgeInsets.only(top: 6, left: 8),
-                  child: CircleAvatar(
-                    radius: 5,
-                    backgroundColor: colorScheme.primary,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
             ],
