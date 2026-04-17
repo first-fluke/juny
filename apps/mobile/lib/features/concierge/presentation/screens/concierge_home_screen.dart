@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
@@ -16,28 +17,25 @@ class ConciergeHomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
+    return FScaffold(
+      header: FHeader(
         title: Text(l10n.welcomeConcierge),
-        actions: [
-          IconButton(
+        suffixes: [
+          FHeaderAction(
             icon: const Icon(Icons.notifications, size: 28),
-            tooltip: l10n.notifications,
-            onPressed: () => context.push('/notifications'),
+            onPress: () => context.push('/notifications'),
           ),
-          IconButton(
+          FHeaderAction(
             icon: const Icon(Icons.person, size: 28),
-            tooltip: l10n.profile,
-            onPressed: () => context.push('/profile'),
+            onPress: () => context.push('/profile'),
           ),
-          IconButton(
+          FHeaderAction(
             icon: const Icon(Icons.logout, size: 28),
-            tooltip: l10n.logout,
-            onPressed: () => ref.read(authProvider.notifier).logout(),
+            onPress: () => ref.read(authProvider.notifier).logout(),
           ),
         ],
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -100,7 +98,7 @@ class _DashboardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return FCard.raw(
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
