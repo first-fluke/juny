@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/core/network/api/export.dart';
@@ -132,9 +133,10 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
 
   void _showMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    showFToast(
+      context: context,
+      title: Text(message),
+    );
   }
 
   @override
@@ -149,9 +151,14 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.liveSession)),
-      body: SafeArea(
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.liveSession),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
+      ),
+      child: SafeArea(
         child: Column(
           children: [
             Expanded(
@@ -162,18 +169,12 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
                           ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const CircularProgressIndicator(),
+                                const FCircularProgress(),
                                 const SizedBox(height: 24),
-                                Text(
-                                  l10n.connecting,
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
+                                Text(l10n.connecting),
                               ],
                             )
-                          : Text(
-                              l10n.disconnected,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
+                          : Text(l10n.disconnected),
                     ),
             ),
             if (_isConnected)
@@ -185,30 +186,21 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: FilledButton.icon(
-                        onPressed: _toggleDucking,
-                        icon: Icon(
+                      child: FButton(
+                        onPress: _toggleDucking,
+                        prefix: Icon(
                           _isDucking ? Icons.mic : Icons.mic_off,
                           size: 28,
                         ),
-                        label: Text(l10n.speakToSenior),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _isDucking
-                              ? const Color(0xFF4CAF50)
-                              : const Color(0xFF757575),
-                          minimumSize: const Size(0, 72),
-                        ),
+                        child: Text(l10n.speakToSenior),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    FilledButton.icon(
-                      onPressed: _disconnect,
-                      icon: const Icon(Icons.call_end, size: 28),
-                      label: Text(l10n.endLive),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        minimumSize: const Size(120, 72),
-                      ),
+                    FButton(
+                      variant: FButtonVariant.destructive,
+                      onPress: _disconnect,
+                      prefix: const Icon(Icons.call_end, size: 28),
+                      child: Text(l10n.endLive),
                     ),
                   ],
                 ),
@@ -222,11 +214,8 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
 
   Widget _buildRemoteVideo() {
     if (_hostParticipant == null) {
-      return Center(
-        child: Text(
-          'Waiting for senior to connect...',
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
+      return const Center(
+        child: Text('Waiting for senior to connect...'),
       );
     }
 
@@ -236,16 +225,13 @@ class _ConciergeLiveScreenState extends ConsumerState<ConciergeLiveScreen> {
         .firstOrNull;
 
     if (videoTrack == null) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.videocam_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              'Camera is off',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
+            Icon(Icons.videocam_off, size: 64),
+            SizedBox(height: 16),
+            Text('Camera is off'),
           ],
         ),
       );
