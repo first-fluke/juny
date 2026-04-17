@@ -9,16 +9,14 @@ class UsersRepository {
 
   final UsersService _service;
 
-  Future<UserResponse> getMe() =>
-      _service.getMyProfileApiV1UsersMeGet();
+  Future<UserResponse> getMe() => _service.getMyProfileApiV1UsersMeGet();
 
   Future<UserResponse> updateMe({String? name, String? image}) =>
       _service.updateMyProfileApiV1UsersMePatch(
         body: UserUpdate(name: name, image: image),
       );
 
-  Future<void> deleteMe() =>
-      _service.deleteMeApiV1UsersMeDelete();
+  Future<void> deleteMe() => _service.deleteMeApiV1UsersMeDelete();
 
   Future<dynamic> exportMyData() =>
       _service.exportMyDataApiV1UsersMeExportGet();

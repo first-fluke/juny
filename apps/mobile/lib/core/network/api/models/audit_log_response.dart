@@ -11,15 +11,14 @@ part 'audit_log_response.g.dart';
 abstract class AuditLogResponse with _$AuditLogResponse {
   const factory AuditLogResponse({
     required String id,
-    @JsonKey(name: 'actor_id')
-    required String? actorId,
+    @JsonKey(name: 'actor_id') required String? actorId,
     required String action,
-    @JsonKey(name: 'resource_type')
-    required String resourceType,
+    @JsonKey(name: 'resource_type') required String resourceType,
     required dynamic detail,
     required String? description,
     required DateTime timestamp,
   }) = _AuditLogResponse;
-  
-  factory AuditLogResponse.fromJson(Map<String, Object?> json) => _$AuditLogResponseFromJson(json);
+
+  factory AuditLogResponse.fromJson(Map<String, Object?> json) =>
+      _$AuditLogResponseFromJson(json);
 }

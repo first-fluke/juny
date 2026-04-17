@@ -31,7 +31,8 @@ abstract class AdminService {
   ///
   /// List care relations with no recent wellness activity.
   @GET('/api/v1/admin/inactive-relations')
-  Future<List<InactiveRelationResponse>> listInactiveRelationsApiV1AdminInactiveRelationsGet({
+  Future<List<InactiveRelationResponse>>
+  listInactiveRelationsApiV1AdminInactiveRelationsGet({
     @Query('threshold_days') int? thresholdDays = 30,
   });
 
@@ -39,7 +40,8 @@ abstract class AdminService {
   ///
   /// Get daily wellness statistics for a host.
   @GET('/api/v1/admin/wellness/aggregate')
-  Future<WellnessAggregateResponse> wellnessAggregateApiV1AdminWellnessAggregateGet({
+  Future<WellnessAggregateResponse>
+  wellnessAggregateApiV1AdminWellnessAggregateGet({
     @Query('host_id') required String hostId,
     @Query('date') required String date,
   });
@@ -48,7 +50,8 @@ abstract class AdminService {
   ///
   /// Deactivate failed FCM tokens reported by the worker.
   @POST('/api/v1/admin/tokens/deactivate')
-  Future<TokenDeactivateResponse> deactivateTokensApiV1AdminTokensDeactivatePost({
+  Future<TokenDeactivateResponse>
+  deactivateTokensApiV1AdminTokensDeactivatePost({
     @Body() required TokenDeactivateRequest body,
   });
 
@@ -56,7 +59,8 @@ abstract class AdminService {
   ///
   /// List audit log entries (paginated, newest first).
   @GET('/api/v1/admin/audit-logs')
-  Future<PaginatedResponseAuditLogResponse> listAuditLogsApiV1AdminAuditLogsGet({
+  Future<PaginatedResponseAuditLogResponse>
+  listAuditLogsApiV1AdminAuditLogsGet({
     @Query('page') int? page = 1,
     @Query('limit') int? limit = 50,
   });

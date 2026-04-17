@@ -29,7 +29,8 @@ abstract class MedicationsService {
   ///
   /// List medications for a host (paginated, newest first).
   @GET('/api/v1/medications')
-  Future<PaginatedResponseMedicationResponse> listMedicationsApiV1MedicationsGet({
+  Future<PaginatedResponseMedicationResponse>
+  listMedicationsApiV1MedicationsGet({
     @Query('host_id') required String hostId,
     @Query('page') int? page = 1,
     @Query('limit') int? limit = 20,
@@ -39,7 +40,8 @@ abstract class MedicationsService {
   ///
   /// Get medication adherence statistics for a host within a date range.
   @GET('/api/v1/medications/adherence')
-  Future<MedicationAdherenceResponse> getMedicationAdherenceApiV1MedicationsAdherenceGet({
+  Future<MedicationAdherenceResponse>
+  getMedicationAdherenceApiV1MedicationsAdherenceGet({
     @Query('host_id') required String hostId,
     @Query('date_from') required DateTime dateFrom,
     @Query('date_to') required DateTime dateTo,

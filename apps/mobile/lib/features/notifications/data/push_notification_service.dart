@@ -39,8 +39,7 @@ class PushNotificationService {
   ///
   /// The returned [Stream] emits a [RemoteMessage] each time a push
   /// notification arrives while the app is in the foreground.
-  Stream<RemoteMessage> get onForegroundMessage =>
-      FirebaseMessaging.onMessage;
+  Stream<RemoteMessage> get onForegroundMessage => FirebaseMessaging.onMessage;
 
   /// Subscribe to token refresh events.
   ///

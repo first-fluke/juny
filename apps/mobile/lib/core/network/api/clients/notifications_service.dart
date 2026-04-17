@@ -12,19 +12,22 @@ part 'notifications_service.g.dart';
 
 @RestApi()
 abstract class NotificationsService {
-  factory NotificationsService(Dio dio, {String? baseUrl}) = _NotificationsService;
+  factory NotificationsService(Dio dio, {String? baseUrl}) =
+      _NotificationsService;
 
   /// List Device Tokens.
   ///
   /// List the current user's active device tokens.
   @GET('/api/v1/notifications/device-tokens')
-  Future<List<DeviceTokenResponse>> listDeviceTokensApiV1NotificationsDeviceTokensGet();
+  Future<List<DeviceTokenResponse>>
+  listDeviceTokensApiV1NotificationsDeviceTokensGet();
 
   /// Register Device Token.
   ///
   /// Register a device token for push notifications.
   @POST('/api/v1/notifications/device-tokens')
-  Future<DeviceTokenResponse> registerDeviceTokenApiV1NotificationsDeviceTokensPost({
+  Future<DeviceTokenResponse>
+  registerDeviceTokenApiV1NotificationsDeviceTokensPost({
     @Body() required DeviceTokenCreate body,
   });
 
@@ -32,7 +35,8 @@ abstract class NotificationsService {
   ///
   /// Deactivate a device token.
   @DELETE('/api/v1/notifications/device-tokens/{token_id}')
-  Future<void> unregisterDeviceTokenApiV1NotificationsDeviceTokensTokenIdDelete({
+  Future<void>
+  unregisterDeviceTokenApiV1NotificationsDeviceTokensTokenIdDelete({
     @Path('token_id') required String tokenId,
   });
 }

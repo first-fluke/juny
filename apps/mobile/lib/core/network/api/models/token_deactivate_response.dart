@@ -10,9 +10,9 @@ part 'token_deactivate_response.g.dart';
 @Freezed()
 abstract class TokenDeactivateResponse with _$TokenDeactivateResponse {
   const factory TokenDeactivateResponse({
-    @JsonKey(name: 'deactivated_count')
-    required int deactivatedCount,
+    @JsonKey(name: 'deactivated_count') required int deactivatedCount,
   }) = _TokenDeactivateResponse;
-  
-  factory TokenDeactivateResponse.fromJson(Map<String, Object?> json) => _$TokenDeactivateResponseFromJson(json);
+
+  factory TokenDeactivateResponse.fromJson(Map<String, Object?> json) =>
+      _$TokenDeactivateResponseFromJson(json);
 }

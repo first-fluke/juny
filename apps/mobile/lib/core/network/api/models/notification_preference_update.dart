@@ -9,15 +9,14 @@ part 'notification_preference_update.g.dart';
 
 /// Payload for updating notification preferences.
 @Freezed()
-abstract class NotificationPreferenceUpdate with _$NotificationPreferenceUpdate {
+abstract class NotificationPreferenceUpdate
+    with _$NotificationPreferenceUpdate {
   const factory NotificationPreferenceUpdate({
-    @JsonKey(name: 'wellness_alerts')
-    bool? wellnessAlerts,
-    @JsonKey(name: 'medication_reminders')
-    bool? medicationReminders,
-    @JsonKey(name: 'system_updates')
-    bool? systemUpdates,
+    @JsonKey(name: 'wellness_alerts') bool? wellnessAlerts,
+    @JsonKey(name: 'medication_reminders') bool? medicationReminders,
+    @JsonKey(name: 'system_updates') bool? systemUpdates,
   }) = _NotificationPreferenceUpdate;
-  
-  factory NotificationPreferenceUpdate.fromJson(Map<String, Object?> json) => _$NotificationPreferenceUpdateFromJson(json);
+
+  factory NotificationPreferenceUpdate.fromJson(Map<String, Object?> json) =>
+      _$NotificationPreferenceUpdateFromJson(json);
 }

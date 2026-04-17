@@ -12,15 +12,13 @@ part 'device_token_response.g.dart';
 abstract class DeviceTokenResponse with _$DeviceTokenResponse {
   const factory DeviceTokenResponse({
     required String id,
-    @JsonKey(name: 'user_id')
-    required String userId,
+    @JsonKey(name: 'user_id') required String userId,
     required String token,
     required String platform,
-    @JsonKey(name: 'is_active')
-    required bool isActive,
-    @JsonKey(name: 'created_at')
-    required DateTime createdAt,
+    @JsonKey(name: 'is_active') required bool isActive,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _DeviceTokenResponse;
-  
-  factory DeviceTokenResponse.fromJson(Map<String, Object?> json) => _$DeviceTokenResponseFromJson(json);
+
+  factory DeviceTokenResponse.fromJson(Map<String, Object?> json) =>
+      _$DeviceTokenResponseFromJson(json);
 }

@@ -11,18 +11,15 @@ part 'medication_adherence_response.g.dart';
 @Freezed()
 abstract class MedicationAdherenceResponse with _$MedicationAdherenceResponse {
   const factory MedicationAdherenceResponse({
-    @JsonKey(name: 'host_id')
-    required String hostId,
-    @JsonKey(name: 'date_from')
-    required String dateFrom,
-    @JsonKey(name: 'date_to')
-    required String dateTo,
+    @JsonKey(name: 'host_id') required String hostId,
+    @JsonKey(name: 'date_from') required String dateFrom,
+    @JsonKey(name: 'date_to') required String dateTo,
     required int total,
     required int taken,
     required int missed,
-    @JsonKey(name: 'adherence_rate')
-    required num adherenceRate,
+    @JsonKey(name: 'adherence_rate') required num adherenceRate,
   }) = _MedicationAdherenceResponse;
-  
-  factory MedicationAdherenceResponse.fromJson(Map<String, Object?> json) => _$MedicationAdherenceResponseFromJson(json);
+
+  factory MedicationAdherenceResponse.fromJson(Map<String, Object?> json) =>
+      _$MedicationAdherenceResponseFromJson(json);
 }

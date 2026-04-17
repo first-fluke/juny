@@ -10,13 +10,10 @@ part 'cleanup_request.g.dart';
 @Freezed()
 abstract class CleanupRequest with _$CleanupRequest {
   const factory CleanupRequest({
-    @JsonKey(name: 'retention_days')
-    @Default(90)
-    int retentionDays,
-    @JsonKey(name: 'resource_type')
-    @Default('all')
-    String resourceType,
+    @JsonKey(name: 'retention_days') @Default(90) int retentionDays,
+    @JsonKey(name: 'resource_type') @Default('all') String resourceType,
   }) = _CleanupRequest;
-  
-  factory CleanupRequest.fromJson(Map<String, Object?> json) => _$CleanupRequestFromJson(json);
+
+  factory CleanupRequest.fromJson(Map<String, Object?> json) =>
+      _$CleanupRequestFromJson(json);
 }

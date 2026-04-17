@@ -16,9 +16,9 @@ class NotificationLogsRepository {
     int page = 1,
     int limit = 20,
   }) => _service.listNotificationLogsApiV1NotificationLogsGet(
-        page: page,
-        limit: limit,
-      );
+    page: page,
+    limit: limit,
+  );
 
   /// Marks a notification log entry as read.
   Future<NotificationLogResponse> markAsRead(String logId) =>

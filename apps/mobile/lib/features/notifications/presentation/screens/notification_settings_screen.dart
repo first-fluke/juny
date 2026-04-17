@@ -33,8 +33,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
               Text(l10n.error, style: Theme.of(context).textTheme.bodyLarge),
               const SizedBox(height: 16),
               FButton(
-                onPress: () =>
-                    ref.invalidate(notificationPreferencesProvider),
+                onPress: () => ref.invalidate(notificationPreferencesProvider),
                 child: Text(l10n.retry),
               ),
             ],

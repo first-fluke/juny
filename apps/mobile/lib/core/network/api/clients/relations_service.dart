@@ -32,7 +32,8 @@ abstract class RelationsService {
   ///
   /// Users can only list relations they participate in.
   @GET('/api/v1/relations')
-  Future<PaginatedResponseCareRelationResponse> listCareRelationsApiV1RelationsGet({
+  Future<PaginatedResponseCareRelationResponse>
+  listCareRelationsApiV1RelationsGet({
     @Query('active_only') bool? activeOnly = true,
     @Query('page') int? page = 1,
     @Query('limit') int? limit = 20,

@@ -83,8 +83,7 @@ class MedicationsScreen extends ConsumerWidget {
             right: 16,
             bottom: 24,
             child: FButton.icon(
-              onPress: () =>
-                  context.push('/medications/create?hostId=$hostId'),
+              onPress: () => context.push('/medications/create?hostId=$hostId'),
               child: Icon(FIcons.plus, semanticLabel: l10n.addMedication),
             ),
           ),
@@ -123,9 +122,7 @@ class _MedicationCard extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                medication.isTaken
-                    ? Icons.check_circle
-                    : Icons.circle_outlined,
+                medication.isTaken ? Icons.check_circle : Icons.circle_outlined,
                 size: 40,
               ),
               const SizedBox(width: 16),

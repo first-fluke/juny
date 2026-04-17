@@ -30,7 +30,8 @@ abstract class NavigationService {
   ///
   /// Get the currently active navigation session for a host.
   @GET('/api/v1/navigation/sessions/active')
-  Future<NavigationSessionResponse> getActiveSessionApiV1NavigationSessionsActiveGet({
+  Future<NavigationSessionResponse>
+  getActiveSessionApiV1NavigationSessionsActiveGet({
     @Query('host_id') required String hostId,
   });
 
@@ -38,7 +39,8 @@ abstract class NavigationService {
   ///
   /// Get a navigation session by ID.
   @GET('/api/v1/navigation/sessions/{session_id}')
-  Future<NavigationSessionResponse> getSessionApiV1NavigationSessionsSessionIdGet({
+  Future<NavigationSessionResponse>
+  getSessionApiV1NavigationSessionsSessionIdGet({
     @Path('session_id') required String sessionId,
   });
 
@@ -54,7 +56,8 @@ abstract class NavigationService {
   ///
   /// Reroute a navigation session from the current location.
   @POST('/api/v1/navigation/sessions/{session_id}/reroute')
-  Future<NavigationSessionResponse> rerouteNavigationApiV1NavigationSessionsSessionIdReroutePost({
+  Future<NavigationSessionResponse>
+  rerouteNavigationApiV1NavigationSessionsSessionIdReroutePost({
     @Path('session_id') required String sessionId,
     @Body() required RerouteRequest body,
   });
@@ -71,7 +74,8 @@ abstract class NavigationService {
   ///
   /// Record multiple GPS waypoints in a batch.
   @POST('/api/v1/navigation/waypoints/batch')
-  Future<List<LocationWaypointResponse>> createWaypointsBatchApiV1NavigationWaypointsBatchPost({
+  Future<List<LocationWaypointResponse>>
+  createWaypointsBatchApiV1NavigationWaypointsBatchPost({
     @Body() required List<LocationWaypointCreate> body,
   });
 
@@ -79,7 +83,8 @@ abstract class NavigationService {
   ///
   /// Get the most recent location for a host (Concierge polling).
   @GET('/api/v1/navigation/location/{host_id}')
-  Future<LocationWaypointResponse?> getHostLocationApiV1NavigationLocationHostIdGet({
+  Future<LocationWaypointResponse?>
+  getHostLocationApiV1NavigationLocationHostIdGet({
     @Path('host_id') required String hostId,
   });
 

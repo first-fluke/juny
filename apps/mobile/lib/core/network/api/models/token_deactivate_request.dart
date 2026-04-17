@@ -12,6 +12,7 @@ abstract class TokenDeactivateRequest with _$TokenDeactivateRequest {
   const factory TokenDeactivateRequest({
     required List<String> tokens,
   }) = _TokenDeactivateRequest;
-  
-  factory TokenDeactivateRequest.fromJson(Map<String, Object?> json) => _$TokenDeactivateRequestFromJson(json);
+
+  factory TokenDeactivateRequest.fromJson(Map<String, Object?> json) =>
+      _$TokenDeactivateRequestFromJson(json);
 }

@@ -11,17 +11,16 @@ part 'location_waypoint_create.g.dart';
 @Freezed()
 abstract class LocationWaypointCreate with _$LocationWaypointCreate {
   const factory LocationWaypointCreate({
-    @JsonKey(name: 'host_id')
-    required String hostId,
+    @JsonKey(name: 'host_id') required String hostId,
     required num lat,
     required num lng,
-    @JsonKey(name: 'session_id')
-    String? sessionId,
+    @JsonKey(name: 'session_id') String? sessionId,
     num? altitude,
     num? accuracy,
     num? speed,
     num? heading,
   }) = _LocationWaypointCreate;
-  
-  factory LocationWaypointCreate.fromJson(Map<String, Object?> json) => _$LocationWaypointCreateFromJson(json);
+
+  factory LocationWaypointCreate.fromJson(Map<String, Object?> json) =>
+      _$LocationWaypointCreateFromJson(json);
 }

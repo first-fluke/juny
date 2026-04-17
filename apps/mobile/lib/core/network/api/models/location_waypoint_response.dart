@@ -12,19 +12,17 @@ part 'location_waypoint_response.g.dart';
 abstract class LocationWaypointResponse with _$LocationWaypointResponse {
   const factory LocationWaypointResponse({
     required String id,
-    @JsonKey(name: 'host_id')
-    required String hostId,
-    @JsonKey(name: 'session_id')
-    required String? sessionId,
+    @JsonKey(name: 'host_id') required String hostId,
+    @JsonKey(name: 'session_id') required String? sessionId,
     required num lat,
     required num lng,
     required num? altitude,
     required num? accuracy,
     required num? speed,
     required num? heading,
-    @JsonKey(name: 'created_at')
-    required DateTime createdAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _LocationWaypointResponse;
-  
-  factory LocationWaypointResponse.fromJson(Map<String, Object?> json) => _$LocationWaypointResponseFromJson(json);
+
+  factory LocationWaypointResponse.fromJson(Map<String, Object?> json) =>
+      _$LocationWaypointResponseFromJson(json);
 }

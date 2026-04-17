@@ -11,13 +11,11 @@ part 'medication_update.g.dart';
 @Freezed()
 abstract class MedicationUpdate with _$MedicationUpdate {
   const factory MedicationUpdate({
-    @JsonKey(name: 'pill_name')
-    String? pillName,
-    @JsonKey(name: 'schedule_time')
-    DateTime? scheduleTime,
-    @JsonKey(name: 'is_taken')
-    bool? isTaken,
+    @JsonKey(name: 'pill_name') String? pillName,
+    @JsonKey(name: 'schedule_time') DateTime? scheduleTime,
+    @JsonKey(name: 'is_taken') bool? isTaken,
   }) = _MedicationUpdate;
-  
-  factory MedicationUpdate.fromJson(Map<String, Object?> json) => _$MedicationUpdateFromJson(json);
+
+  factory MedicationUpdate.fromJson(Map<String, Object?> json) =>
+      _$MedicationUpdateFromJson(json);
 }

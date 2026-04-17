@@ -12,14 +12,13 @@ part 'wellness_log_response.g.dart';
 abstract class WellnessLogResponse with _$WellnessLogResponse {
   const factory WellnessLogResponse({
     required String id,
-    @JsonKey(name: 'host_id')
-    required String hostId,
+    @JsonKey(name: 'host_id') required String hostId,
     required String status,
     required String summary,
     required dynamic details,
-    @JsonKey(name: 'created_at')
-    required DateTime createdAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _WellnessLogResponse;
-  
-  factory WellnessLogResponse.fromJson(Map<String, Object?> json) => _$WellnessLogResponseFromJson(json);
+
+  factory WellnessLogResponse.fromJson(Map<String, Object?> json) =>
+      _$WellnessLogResponseFromJson(json);
 }

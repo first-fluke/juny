@@ -12,13 +12,11 @@ part 'daily_wellness_stat.g.dart';
 abstract class DailyWellnessStat with _$DailyWellnessStat {
   const factory DailyWellnessStat({
     required String date,
-    @Default(0)
-    int normal,
-    @Default(0)
-    int warning,
-    @Default(0)
-    int emergency,
+    @Default(0) int normal,
+    @Default(0) int warning,
+    @Default(0) int emergency,
   }) = _DailyWellnessStat;
-  
-  factory DailyWellnessStat.fromJson(Map<String, Object?> json) => _$DailyWellnessStatFromJson(json);
+
+  factory DailyWellnessStat.fromJson(Map<String, Object?> json) =>
+      _$DailyWellnessStatFromJson(json);
 }

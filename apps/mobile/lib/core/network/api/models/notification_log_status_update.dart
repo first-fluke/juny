@@ -13,6 +13,7 @@ abstract class NotificationLogStatusUpdate with _$NotificationLogStatusUpdate {
   const factory NotificationLogStatusUpdate({
     required String status,
   }) = _NotificationLogStatusUpdate;
-  
-  factory NotificationLogStatusUpdate.fromJson(Map<String, Object?> json) => _$NotificationLogStatusUpdateFromJson(json);
+
+  factory NotificationLogStatusUpdate.fromJson(Map<String, Object?> json) =>
+      _$NotificationLogStatusUpdateFromJson(json);
 }

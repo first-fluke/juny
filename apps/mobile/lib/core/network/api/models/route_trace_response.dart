@@ -13,16 +13,13 @@ part 'route_trace_response.g.dart';
 @Freezed()
 abstract class RouteTraceResponse with _$RouteTraceResponse {
   const factory RouteTraceResponse({
-    @JsonKey(name: 'host_id')
-    required String hostId,
-    @JsonKey(name: 'session_id')
-    required String? sessionId,
+    @JsonKey(name: 'host_id') required String hostId,
+    @JsonKey(name: 'session_id') required String? sessionId,
     required List<LocationWaypointResponse> waypoints,
-    @JsonKey(name: 'total_distance_meters')
-    required num totalDistanceMeters,
-    @JsonKey(name: 'duration_seconds')
-    required num durationSeconds,
+    @JsonKey(name: 'total_distance_meters') required num totalDistanceMeters,
+    @JsonKey(name: 'duration_seconds') required num durationSeconds,
   }) = _RouteTraceResponse;
-  
-  factory RouteTraceResponse.fromJson(Map<String, Object?> json) => _$RouteTraceResponseFromJson(json);
+
+  factory RouteTraceResponse.fromJson(Map<String, Object?> json) =>
+      _$RouteTraceResponseFromJson(json);
 }

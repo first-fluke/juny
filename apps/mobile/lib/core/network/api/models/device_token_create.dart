@@ -16,6 +16,7 @@ abstract class DeviceTokenCreate with _$DeviceTokenCreate {
     required String token,
     required DeviceTokenCreatePlatform platform,
   }) = _DeviceTokenCreate;
-  
-  factory DeviceTokenCreate.fromJson(Map<String, Object?> json) => _$DeviceTokenCreateFromJson(json);
+
+  factory DeviceTokenCreate.fromJson(Map<String, Object?> json) =>
+      _$DeviceTokenCreateFromJson(json);
 }

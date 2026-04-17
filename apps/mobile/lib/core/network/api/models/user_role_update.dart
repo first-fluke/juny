@@ -13,6 +13,7 @@ abstract class UserRoleUpdate with _$UserRoleUpdate {
   const factory UserRoleUpdate({
     required String role,
   }) = _UserRoleUpdate;
-  
-  factory UserRoleUpdate.fromJson(Map<String, Object?> json) => _$UserRoleUpdateFromJson(json);
+
+  factory UserRoleUpdate.fromJson(Map<String, Object?> json) =>
+      _$UserRoleUpdateFromJson(json);
 }

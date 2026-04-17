@@ -50,12 +50,12 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     CircleAvatar(
                       radius: 48,
-                      backgroundImage:
-                          user.image != null ? NetworkImage(user.image!) : null,
-                      child:
-                          user.image == null
-                              ? const Icon(Icons.person, size: 48)
-                              : null,
+                      backgroundImage: user.image != null
+                          ? NetworkImage(user.image!)
+                          : null,
+                      child: user.image == null
+                          ? const Icon(Icons.person, size: 48)
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     Text(

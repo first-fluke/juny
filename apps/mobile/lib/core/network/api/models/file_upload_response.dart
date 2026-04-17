@@ -13,10 +13,10 @@ abstract class FileUploadResponse with _$FileUploadResponse {
   const factory FileUploadResponse({
     required String key,
     required String url,
-    @JsonKey(name: 'content_type')
-    required String contentType,
+    @JsonKey(name: 'content_type') required String contentType,
     required int size,
   }) = _FileUploadResponse;
-  
-  factory FileUploadResponse.fromJson(Map<String, Object?> json) => _$FileUploadResponseFromJson(json);
+
+  factory FileUploadResponse.fromJson(Map<String, Object?> json) =>
+      _$FileUploadResponseFromJson(json);
 }

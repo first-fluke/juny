@@ -12,16 +12,15 @@ part 'notification_log_response.g.dart';
 abstract class NotificationLogResponse with _$NotificationLogResponse {
   const factory NotificationLogResponse({
     required String id,
-    @JsonKey(name: 'recipient_id')
-    required String recipientId,
+    @JsonKey(name: 'recipient_id') required String recipientId,
     required String title,
     required String body,
     required String status,
     required String channel,
     required dynamic metadata,
-    @JsonKey(name: 'created_at')
-    required DateTime createdAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _NotificationLogResponse;
-  
-  factory NotificationLogResponse.fromJson(Map<String, Object?> json) => _$NotificationLogResponseFromJson(json);
+
+  factory NotificationLogResponse.fromJson(Map<String, Object?> json) =>
+      _$NotificationLogResponseFromJson(json);
 }

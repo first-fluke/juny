@@ -14,6 +14,7 @@ abstract class UserUpdate with _$UserUpdate {
     String? name,
     String? image,
   }) = _UserUpdate;
-  
-  factory UserUpdate.fromJson(Map<String, Object?> json) => _$UserUpdateFromJson(json);
+
+  factory UserUpdate.fromJson(Map<String, Object?> json) =>
+      _$UserUpdateFromJson(json);
 }

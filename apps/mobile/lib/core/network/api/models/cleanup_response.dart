@@ -10,14 +10,11 @@ part 'cleanup_response.g.dart';
 @Freezed()
 abstract class CleanupResponse with _$CleanupResponse {
   const factory CleanupResponse({
-    @JsonKey(name: 'deleted_wellness_logs')
-    required int deletedWellnessLogs,
-    @JsonKey(name: 'deactivated_tokens')
-    required int deactivatedTokens,
-    @JsonKey(name: 'deleted_waypoints')
-    @Default(0)
-    int deletedWaypoints,
+    @JsonKey(name: 'deleted_wellness_logs') required int deletedWellnessLogs,
+    @JsonKey(name: 'deactivated_tokens') required int deactivatedTokens,
+    @JsonKey(name: 'deleted_waypoints') @Default(0) int deletedWaypoints,
   }) = _CleanupResponse;
-  
-  factory CleanupResponse.fromJson(Map<String, Object?> json) => _$CleanupResponseFromJson(json);
+
+  factory CleanupResponse.fromJson(Map<String, Object?> json) =>
+      _$CleanupResponseFromJson(json);
 }

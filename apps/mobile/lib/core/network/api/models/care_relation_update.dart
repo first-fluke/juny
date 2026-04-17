@@ -11,10 +11,10 @@ part 'care_relation_update.g.dart';
 @Freezed()
 abstract class CareRelationUpdate with _$CareRelationUpdate {
   const factory CareRelationUpdate({
-    @JsonKey(name: 'is_active')
-    bool? isActive,
+    @JsonKey(name: 'is_active') bool? isActive,
     String? role,
   }) = _CareRelationUpdate;
-  
-  factory CareRelationUpdate.fromJson(Map<String, Object?> json) => _$CareRelationUpdateFromJson(json);
+
+  factory CareRelationUpdate.fromJson(Map<String, Object?> json) =>
+      _$CareRelationUpdateFromJson(json);
 }

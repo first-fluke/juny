@@ -132,12 +132,11 @@ void main() {
         () async {
           final updatedLog = _buildLog(status: 'read');
           when(
-            () =>
-                mockService
-                    .updateLogStatusApiV1NotificationLogsLogIdStatusPatch(
-                      logId: 'log-001',
-                      body: any(named: 'body'),
-                    ),
+            () => mockService
+                .updateLogStatusApiV1NotificationLogsLogIdStatusPatch(
+                  logId: 'log-001',
+                  body: any(named: 'body'),
+                ),
           ).thenAnswer((_) async => updatedLog);
 
           final result = await sut.markAsRead('log-001');
@@ -145,12 +144,11 @@ void main() {
           expect(result, updatedLog);
           expect(result.status, 'read');
           verify(
-            () =>
-                mockService
-                    .updateLogStatusApiV1NotificationLogsLogIdStatusPatch(
-                      logId: 'log-001',
-                      body: const NotificationLogStatusUpdate(status: 'read'),
-                    ),
+            () => mockService
+                .updateLogStatusApiV1NotificationLogsLogIdStatusPatch(
+                  logId: 'log-001',
+                  body: const NotificationLogStatusUpdate(status: 'read'),
+                ),
           ).called(1);
         },
       );

@@ -15,13 +15,15 @@ part 'notification_logs_service.g.dart';
 
 @RestApi()
 abstract class NotificationLogsService {
-  factory NotificationLogsService(Dio dio, {String? baseUrl}) = _NotificationLogsService;
+  factory NotificationLogsService(Dio dio, {String? baseUrl}) =
+      _NotificationLogsService;
 
   /// List Notification Logs.
   ///
   /// List notification logs for the current user (own notifications only).
   @GET('/api/v1/notification-logs')
-  Future<PaginatedResponseNotificationLogResponse> listNotificationLogsApiV1NotificationLogsGet({
+  Future<PaginatedResponseNotificationLogResponse>
+  listNotificationLogsApiV1NotificationLogsGet({
     @Query('page') int? page = 1,
     @Query('limit') int? limit = 20,
   });
@@ -30,13 +32,15 @@ abstract class NotificationLogsService {
   ///
   /// Get notification preferences for the current user.
   @GET('/api/v1/notification-logs/preferences')
-  Future<NotificationPreferenceResponse> getPreferencesApiV1NotificationLogsPreferencesGet();
+  Future<NotificationPreferenceResponse>
+  getPreferencesApiV1NotificationLogsPreferencesGet();
 
   /// Update Preferences.
   ///
   /// Update notification preferences for the current user.
   @PUT('/api/v1/notification-logs/preferences')
-  Future<NotificationPreferenceResponse> updatePreferencesApiV1NotificationLogsPreferencesPut({
+  Future<NotificationPreferenceResponse>
+  updatePreferencesApiV1NotificationLogsPreferencesPut({
     @Body() required NotificationPreferenceUpdate body,
   });
 
@@ -44,7 +48,8 @@ abstract class NotificationLogsService {
   ///
   /// Update notification log delivery status (internal/worker callback).
   @PATCH('/api/v1/notification-logs/{log_id}/status')
-  Future<NotificationLogResponse> updateLogStatusApiV1NotificationLogsLogIdStatusPatch({
+  Future<NotificationLogResponse>
+  updateLogStatusApiV1NotificationLogsLogIdStatusPatch({
     @Path('log_id') required String logId,
     @Body() required NotificationLogStatusUpdate body,
   });

@@ -11,11 +11,10 @@ part 'reroute_request.g.dart';
 @Freezed()
 abstract class RerouteRequest with _$RerouteRequest {
   const factory RerouteRequest({
-    @JsonKey(name: 'current_lat')
-    required num currentLat,
-    @JsonKey(name: 'current_lng')
-    required num currentLng,
+    @JsonKey(name: 'current_lat') required num currentLat,
+    @JsonKey(name: 'current_lng') required num currentLng,
   }) = _RerouteRequest;
-  
-  factory RerouteRequest.fromJson(Map<String, Object?> json) => _$RerouteRequestFromJson(json);
+
+  factory RerouteRequest.fromJson(Map<String, Object?> json) =>
+      _$RerouteRequestFromJson(json);
 }

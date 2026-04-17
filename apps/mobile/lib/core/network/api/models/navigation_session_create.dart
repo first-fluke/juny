@@ -11,15 +11,12 @@ part 'navigation_session_create.g.dart';
 @Freezed()
 abstract class NavigationSessionCreate with _$NavigationSessionCreate {
   const factory NavigationSessionCreate({
-    @JsonKey(name: 'host_id')
-    required String hostId,
-    @JsonKey(name: 'destination_query')
-    required String destinationQuery,
-    @JsonKey(name: 'origin_lat')
-    required num originLat,
-    @JsonKey(name: 'origin_lng')
-    required num originLng,
+    @JsonKey(name: 'host_id') required String hostId,
+    @JsonKey(name: 'destination_query') required String destinationQuery,
+    @JsonKey(name: 'origin_lat') required num originLat,
+    @JsonKey(name: 'origin_lng') required num originLng,
   }) = _NavigationSessionCreate;
-  
-  factory NavigationSessionCreate.fromJson(Map<String, Object?> json) => _$NavigationSessionCreateFromJson(json);
+
+  factory NavigationSessionCreate.fromJson(Map<String, Object?> json) =>
+      _$NavigationSessionCreateFromJson(json);
 }
