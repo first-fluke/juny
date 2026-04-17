@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
 
@@ -15,18 +16,24 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final prefsAsync = ref.watch(notificationPreferencesProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.notificationSettings)),
-      body: prefsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.notificationSettings),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
+      ),
+      childPad: false,
+      child: prefsAsync.when(
+        loading: () => const Center(child: FCircularProgress()),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(l10n.error, style: Theme.of(context).textTheme.bodyLarge),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () =>
+              FButton(
+                onPress: () =>
                     ref.invalidate(notificationPreferencesProvider),
                 child: Text(l10n.retry),
               ),
@@ -35,31 +42,37 @@ class NotificationSettingsScreen extends ConsumerWidget {
         ),
         data: (prefs) => ListView(
           children: [
-            SwitchListTile(
+            FTile(
+              prefix: const Icon(Icons.favorite),
               title: Text(l10n.wellnessAlerts),
-              secondary: const Icon(Icons.favorite),
-              value: prefs.wellnessAlerts,
-              onChanged: (value) => _updatePreference(
-                ref,
-                wellnessAlerts: value,
+              suffix: FSwitch(
+                value: prefs.wellnessAlerts,
+                onChange: (value) => _updatePreference(
+                  ref,
+                  wellnessAlerts: value,
+                ),
               ),
             ),
-            SwitchListTile(
+            FTile(
+              prefix: const Icon(Icons.medication),
               title: Text(l10n.medicationReminders),
-              secondary: const Icon(Icons.medication),
-              value: prefs.medicationReminders,
-              onChanged: (value) => _updatePreference(
-                ref,
-                medicationReminders: value,
+              suffix: FSwitch(
+                value: prefs.medicationReminders,
+                onChange: (value) => _updatePreference(
+                  ref,
+                  medicationReminders: value,
+                ),
               ),
             ),
-            SwitchListTile(
+            FTile(
+              prefix: const Icon(Icons.system_update),
               title: Text(l10n.systemUpdates),
-              secondary: const Icon(Icons.system_update),
-              value: prefs.systemUpdates,
-              onChanged: (value) => _updatePreference(
-                ref,
-                systemUpdates: value,
+              suffix: FSwitch(
+                value: prefs.systemUpdates,
+                onChange: (value) => _updatePreference(
+                  ref,
+                  systemUpdates: value,
+                ),
               ),
             ),
           ],
