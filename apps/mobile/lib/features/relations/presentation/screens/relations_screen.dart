@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobile/core/network/api/export.dart';
@@ -26,57 +27,72 @@ class RelationsScreen extends ConsumerWidget {
       relationsListProvider(hostId: hostId, caregiverId: caregiverId),
     );
 
-    return Scaffold(
-      appBar: AppBar(
+    return FScaffold(
+      header: FHeader.nested(
         title: Text(l10n.careRelations),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
       ),
-      floatingActionButton: FloatingActionButton.large(
-        onPressed: () => context.push('/relations/create'),
-        child: const Icon(Icons.person_add),
-      ),
-      body: relationsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(l10n.error, style: Theme.of(context).textTheme.bodyLarge),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => ref.invalidate(
-                  relationsListProvider(
-                    hostId: hostId,
-                    caregiverId: caregiverId,
+      childPad: false,
+      child: Stack(
+        children: [
+          relationsAsync.when(
+            loading: () => const Center(child: FCircularProgress()),
+            error: (error, _) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    l10n.error,
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                ),
-                child: Text(l10n.retry),
+                  const SizedBox(height: 16),
+                  FButton(
+                    onPress: () => ref.invalidate(
+                      relationsListProvider(
+                        hostId: hostId,
+                        caregiverId: caregiverId,
+                      ),
+                    ),
+                    child: Text(l10n.retry),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        data: (relations) {
-          if (relations.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(
-                  l10n.noRelations,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: relations.length,
-            itemBuilder: (context, index) => _RelationCard(
-              relation: relations[index],
-              onDeactivate: () => _deactivate(ref, relations[index].id),
             ),
-          );
-        },
+            data: (relations) {
+              if (relations.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      l10n.noRelations,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: relations.length,
+                itemBuilder: (context, index) => _RelationCard(
+                  relation: relations[index],
+                  onDeactivate: () => _deactivate(ref, relations[index].id),
+                ),
+              );
+            },
+          ),
+          Positioned(
+            right: 16,
+            bottom: 24,
+            child: FButton.icon(
+              onPress: () => context.push('/relations/create'),
+              child: const Icon(FIcons.userPlus),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -105,45 +121,41 @@ class _RelationCard extends StatelessWidget {
       relation.createdAt,
     ).format(pattern: 'yyyy-MM-dd');
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Icon(
-              relation.isActive ? Icons.people : Icons.people_outline,
-              size: 36,
-              color: relation.isActive
-                  ? const Color(0xFF0055FF)
-                  : const Color(0xFFBDBDBD),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    relation.role,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    date,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: FCard.raw(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Icon(
+                relation.isActive ? Icons.people : Icons.people_outline,
+                size: 36,
               ),
-            ),
-            if (relation.isActive)
-              IconButton(
-                onPressed: onDeactivate,
-                icon: const Icon(Icons.link_off, size: 28),
-                tooltip: 'Deactivate',
-                style: IconButton.styleFrom(
-                  foregroundColor: const Color(0xFFD32F2F),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      relation.role,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      date,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
-          ],
+              if (relation.isActive)
+                FButton.icon(
+                  onPress: onDeactivate,
+                  child: const Icon(FIcons.unlink),
+                ),
+            ],
+          ),
         ),
       ),
     );
