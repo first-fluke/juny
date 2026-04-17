@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/features/navigation/presentation/providers/navigation_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
 
@@ -21,15 +22,20 @@ class NavigationScreen extends ConsumerWidget {
       activeNavigationSessionProvider(hostId: hostId),
     );
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.navigation)),
-      body: sessionAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.navigation),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
+      ),
+      child: sessionAsync.when(
+        loading: () => const Center(child: FCircularProgress()),
         error: (error, _) => _StartNavigationForm(hostId: hostId),
         data: (session) {
           return Padding(
             padding: const EdgeInsets.all(16),
-            child: Card(
+            child: FCard.raw(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -41,30 +47,21 @@ class NavigationScreen extends ConsumerWidget {
                         const Icon(
                           Icons.navigation,
                           size: 36,
-                          color: Color(0xFF1565C0),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: Text(
-                            session.destinationName,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
+                          child: Text(session.destinationName),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      session.status,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                    Text(session.status),
                     const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: () => _cancelSession(ref, session.id),
-                      icon: const Icon(Icons.close),
-                      label: Text(l10n.cancel),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFD32F2F),
-                      ),
+                    FButton(
+                      variant: FButtonVariant.destructive,
+                      onPress: () => _cancelSession(ref, session.id),
+                      prefix: const Icon(Icons.close),
+                      child: Text(l10n.cancel),
                     ),
                   ],
                 ),
@@ -125,8 +122,9 @@ class _StartNavigationFormState extends ConsumerState<_StartNavigationForm> {
     } on Exception {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.error)),
+        showFToast(
+          context: context,
+          title: Text(l10n.error),
         );
       }
     } finally {
@@ -145,40 +143,29 @@ class _StartNavigationFormState extends ConsumerState<_StartNavigationForm> {
         const Icon(
           Icons.navigation_outlined,
           size: 80,
-          color: Color(0xFFBDBDBD),
         ),
         const SizedBox(height: 16),
         Text(
           l10n.noActiveNavigation,
-          style: Theme.of(context).textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
-        TextFormField(
-          controller: _destinationController,
-          decoration: InputDecoration(
-            labelText: l10n.destination,
-            prefixIcon: const Icon(Icons.place),
-            border: const OutlineInputBorder(),
+        FTextFormField(
+          control: FTextFieldControl.managed(
+            controller: _destinationController,
           ),
-          style: Theme.of(context).textTheme.bodyMedium,
+          label: Text(l10n.destination),
+          hint: l10n.destination,
           textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => _startNavigation(),
+          onSubmit: (_) => _startNavigation(),
         ),
         const SizedBox(height: 24),
-        FilledButton.icon(
-          onPressed: _isSubmitting ? null : _startNavigation,
-          icon: _isSubmitting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+        FButton(
+          onPress: _isSubmitting ? null : _startNavigation,
+          prefix: _isSubmitting
+              ? const FCircularProgress()
               : const Icon(Icons.navigation),
-          label: Text(l10n.startNavigation),
-          style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF1565C0),
-          ),
+          child: Text(l10n.startNavigation),
         ),
       ],
     );
