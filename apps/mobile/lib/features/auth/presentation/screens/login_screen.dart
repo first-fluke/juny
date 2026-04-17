@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:forui/forui.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mobile/core/network/api/export.dart';
 import 'package:mobile/features/auth/domain/auth_state.dart';
@@ -60,8 +61,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleAuthError(Object error) {
     setState(() => _isLoading = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$error')),
+      showFToast(
+        context: context,
+        title: Text('$error'),
       );
     }
   }
@@ -79,8 +81,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e')),
+        showFToast(
+          context: context,
+          title: Text('$e'),
         );
       }
     } finally {
@@ -99,8 +102,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on Exception catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e')),
+        showFToast(
+          context: context,
+          title: Text('$e'),
         );
       }
     }
@@ -121,8 +125,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.read(authProvider);
     if (authState case AuthStateUnauthenticated()) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.errAuth002)),
+      showFToast(
+        context: context,
+        title: Text(l10n.errAuth002),
       );
     }
   }
@@ -131,8 +136,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      body: SafeArea(
+    return FScaffold(
+      child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
@@ -149,16 +154,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: Theme.of(context).textTheme.displayMedium,
               ),
               const SizedBox(height: 64),
-              ElevatedButton.icon(
-                onPressed: _isLoading ? null : _loginWithGoogle,
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+              FButton(
+                onPress: _isLoading ? null : _loginWithGoogle,
+                prefix: _isLoading
+                    ? const FCircularProgress()
                     : const FaIcon(FontAwesomeIcons.google, size: 24),
-                label: Text(l10n.loginWithGoogle),
+                child: Text(l10n.loginWithGoogle),
               ),
             ],
           ),
