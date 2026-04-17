@@ -49,7 +49,7 @@ function generateColorProperties(colors: Record<string, OklchColor>): string {
 
 function generateTheme(mode: "light" | "dark"): string {
   const colors = mode === "light" ? tokens.color.light : tokens.color.dark;
-  const baseTheme = mode === "light" ? "FThemes.zinc.light" : "FThemes.zinc.dark";
+  const baseTheme = mode === "light" ? "FThemes.zinc.light.touch" : "FThemes.zinc.dark.touch";
   const themeName = mode === "light" ? "Light" : "Dark";
 
   return `final generated${themeName}Theme = ${baseTheme}.copyWith(

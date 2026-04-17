@@ -82,7 +82,7 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const FDivider(),
                   FTile(
-                    variants: {FItemVariant.destructive},
+                    variant: FItemVariant.destructive,
                     prefix: const Icon(Icons.delete_forever),
                     title: Text(l10n.deleteAccount),
                     onPress: () => _confirmDelete(context, ref),
