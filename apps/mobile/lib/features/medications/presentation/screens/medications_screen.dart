@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobile/core/network/api/export.dart';
@@ -23,53 +24,71 @@ class MedicationsScreen extends ConsumerWidget {
       medicationsListProvider(hostId: hostId),
     );
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.medications)),
-      floatingActionButton: FloatingActionButton.large(
-        onPressed: () => context.push('/medications/create?hostId=$hostId'),
-        child: const Icon(Icons.add),
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.medications),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
       ),
-      body: medicationsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(l10n.error, style: Theme.of(context).textTheme.bodyLarge),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => ref.invalidate(
-                  medicationsListProvider(hostId: hostId),
-                ),
-                child: Text(l10n.retry),
+      childPad: false,
+      child: Stack(
+        children: [
+          medicationsAsync.when(
+            loading: () => const Center(child: FCircularProgress()),
+            error: (error, _) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    l10n.error,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  FButton(
+                    onPress: () => ref.invalidate(
+                      medicationsListProvider(hostId: hostId),
+                    ),
+                    child: Text(l10n.retry),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        data: (response) {
-          final items = response.data;
-          if (items.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(
-                  l10n.noMedications,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            itemBuilder: (context, index) => _MedicationCard(
-              medication: items[index],
-              onMarkTaken: () => _markAsTaken(ref, items[index].id),
             ),
-          );
-        },
+            data: (response) {
+              final items = response.data;
+              if (items.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      l10n.noMedications,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: items.length,
+                itemBuilder: (context, index) => _MedicationCard(
+                  medication: items[index],
+                  onMarkTaken: () => _markAsTaken(ref, items[index].id),
+                ),
+              );
+            },
+          ),
+          Positioned(
+            right: 16,
+            bottom: 24,
+            child: FButton.icon(
+              onPress: () =>
+                  context.push('/medications/create?hostId=$hostId'),
+              child: const Icon(FIcons.plus),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -96,47 +115,44 @@ class _MedicationCard extends StatelessWidget {
       medication.scheduleTime,
     ).format(pattern: 'HH:mm');
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Icon(
-              medication.isTaken ? Icons.check_circle : Icons.circle_outlined,
-              size: 40,
-              color: medication.isTaken
-                  ? const Color(0xFF4CAF50)
-                  : const Color(0xFFBDBDBD),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    medication.pillName,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    scheduleTime,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.black54,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: FCard.raw(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Icon(
+                medication.isTaken
+                    ? Icons.check_circle
+                    : Icons.circle_outlined,
+                size: 40,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      medication.pillName,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                  ),
-                ],
-              ),
-            ),
-            if (!medication.isTaken)
-              FilledButton(
-                onPressed: onMarkTaken,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  minimumSize: const Size(80, 56),
+                    const SizedBox(height: 4),
+                    Text(
+                      scheduleTime,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.check, size: 28),
               ),
-          ],
+              if (!medication.isTaken)
+                FButton(
+                  onPress: onMarkTaken,
+                  mainAxisSize: MainAxisSize.min,
+                  child: const Icon(Icons.check, size: 28),
+                ),
+            ],
+          ),
         ),
       ),
     );
