@@ -165,8 +165,9 @@ async def _collect_all_pages(
 async def export_user_data(db: AsyncSession, user_id: UUID) -> dict[str, Any]:
     """Collect all data for a user across every domain (GDPR export).
 
-    Returns a dict with keys: user, relations, wellness_logs,
-    medications, device_tokens.
+    Returns a dict with keys: user, relations_as_host, relations_as_caregiver,
+    wellness_logs, medications, navigation_sessions, location_waypoints,
+    device_tokens.
     """
     user = await user_repo.find_by_id(db, user_id)
     if user is None:
@@ -194,6 +195,16 @@ async def export_user_data(db: AsyncSession, user_id: UUID) -> dict[str, Any]:
         db,
         user_id,
     )
+    navigation_sessions = await _collect_all_pages(
+        navigation_repo.find_sessions_by_host,
+        db,
+        user_id,
+    )
+    location_waypoints = await _collect_all_pages(
+        navigation_repo.find_waypoints_by_host,
+        db,
+        user_id,
+    )
     device_tokens = await notification_repo.find_by_user(db, user_id, active_only=False)
 
     def _serialize(obj: Any) -> dict[str, Any]:
@@ -207,5 +218,7 @@ async def export_user_data(db: AsyncSession, user_id: UUID) -> dict[str, Any]:
         "relations_as_caregiver": [_serialize(r) for r in caregiver_relations],
         "wellness_logs": [_serialize(w) for w in wellness_logs],
         "medications": [_serialize(m) for m in medications],
+        "navigation_sessions": [_serialize(s) for s in navigation_sessions],
+        "location_waypoints": [_serialize(wp) for wp in location_waypoints],
         "device_tokens": [_serialize(dt) for dt in device_tokens],
     }

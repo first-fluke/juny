@@ -3,14 +3,9 @@ from uuid import UUID
 from fastapi import APIRouter, Request, status
 
 from src.auth import service
+from src.auth.schemas import OAuthLoginRequest, RefreshTokenRequest, TokenResponse
 from src.common.errors import AUTH_002, AUTH_003, SVC_003, raise_api_error
-from src.lib.auth import (
-    OAuthLoginRequest,
-    RefreshTokenRequest,
-    TokenResponse,
-    decode_token,
-    verify_oauth_token,
-)
+from src.lib.auth import decode_token, verify_oauth_token
 from src.lib.dependencies import DBSession
 from src.lib.rate_limit import rate_limit
 

@@ -198,3 +198,59 @@ async def count_waypoints_by_session(
         .where(LocationWaypoint.session_id == session_id),
     )
     return result.scalar_one()
+
+
+async def find_sessions_by_host(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+    *,
+    limit: int = 100,
+    offset: int = 0,
+) -> tuple[list[NavigationSession], int]:
+    """Find all navigation sessions for a host with pagination.
+
+    Returns (sessions, total_count).
+    """
+    count_result = await db.execute(
+        select(func.count())
+        .select_from(NavigationSession)
+        .where(NavigationSession.host_id == host_id),
+    )
+    total: int = count_result.scalar_one()
+
+    rows_result = await db.execute(
+        select(NavigationSession)
+        .where(NavigationSession.host_id == host_id)
+        .order_by(NavigationSession.created_at.desc())
+        .limit(limit)
+        .offset(offset),
+    )
+    return list(rows_result.scalars().all()), total
+
+
+async def find_waypoints_by_host(
+    db: AsyncSession,
+    host_id: uuid.UUID,
+    *,
+    limit: int = 1000,
+    offset: int = 0,
+) -> tuple[list[LocationWaypoint], int]:
+    """Find all waypoints for a host with pagination.
+
+    Returns (waypoints, total_count).
+    """
+    count_result = await db.execute(
+        select(func.count())
+        .select_from(LocationWaypoint)
+        .where(LocationWaypoint.host_id == host_id),
+    )
+    total: int = count_result.scalar_one()
+
+    rows_result = await db.execute(
+        select(LocationWaypoint)
+        .where(LocationWaypoint.host_id == host_id)
+        .order_by(LocationWaypoint.created_at.asc())
+        .limit(limit)
+        .offset(offset),
+    )
+    return list(rows_result.scalars().all()), total

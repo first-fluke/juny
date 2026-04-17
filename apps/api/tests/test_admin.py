@@ -332,6 +332,8 @@ class TestAdminService:
 
     @pytest.mark.asyncio
     @patch("src.notifications.repository.find_by_user", new_callable=AsyncMock)
+    @patch("src.navigation.repository.find_waypoints_by_host", new_callable=AsyncMock)
+    @patch("src.navigation.repository.find_sessions_by_host", new_callable=AsyncMock)
     @patch("src.medications.repository.find_by_host", new_callable=AsyncMock)
     @patch("src.wellness.repository.find_by_host", new_callable=AsyncMock)
     @patch("src.relations.repository.find_by_caregiver", new_callable=AsyncMock)
@@ -344,6 +346,8 @@ class TestAdminService:
         mock_rel_cg: AsyncMock,
         mock_wellness: AsyncMock,
         mock_meds: AsyncMock,
+        mock_nav_sessions: AsyncMock,
+        mock_nav_waypoints: AsyncMock,
         mock_tokens: AsyncMock,
     ) -> None:
         from src.admin.service import export_user_data
@@ -356,6 +360,8 @@ class TestAdminService:
         mock_rel_cg.return_value = ([], 0)
         mock_wellness.return_value = ([], 0)
         mock_meds.return_value = ([], 0)
+        mock_nav_sessions.return_value = ([], 0)
+        mock_nav_waypoints.return_value = ([], 0)
         mock_tokens.return_value = []
 
         db = AsyncMock()
@@ -365,10 +371,14 @@ class TestAdminService:
         assert "relations_as_host" in result
         assert "wellness_logs" in result
         assert "medications" in result
+        assert "navigation_sessions" in result
+        assert "location_waypoints" in result
         assert "device_tokens" in result
 
     @pytest.mark.asyncio
     @patch("src.notifications.repository.find_by_user", new_callable=AsyncMock)
+    @patch("src.navigation.repository.find_waypoints_by_host", new_callable=AsyncMock)
+    @patch("src.navigation.repository.find_sessions_by_host", new_callable=AsyncMock)
     @patch("src.medications.repository.find_by_host", new_callable=AsyncMock)
     @patch("src.wellness.repository.find_by_host", new_callable=AsyncMock)
     @patch("src.relations.repository.find_by_caregiver", new_callable=AsyncMock)
@@ -381,6 +391,8 @@ class TestAdminService:
         mock_rel_cg: AsyncMock,
         mock_wellness: AsyncMock,
         mock_meds: AsyncMock,
+        mock_nav_sessions: AsyncMock,
+        mock_nav_waypoints: AsyncMock,
         mock_tokens: AsyncMock,
     ) -> None:
         from src.admin.service import export_user_data
@@ -394,6 +406,8 @@ class TestAdminService:
         mock_rel_cg.return_value = ([], 0)
         mock_wellness.return_value = ([], 0)
         mock_meds.return_value = ([], 0)
+        mock_nav_sessions.return_value = ([], 0)
+        mock_nav_waypoints.return_value = ([], 0)
         mock_tokens.return_value = []
 
         db = AsyncMock()
@@ -405,6 +419,8 @@ class TestAdminService:
     @pytest.mark.asyncio
     @patch("src.admin.service._MAX_EXPORT_RECORDS", 10)
     @patch("src.notifications.repository.find_by_user", new_callable=AsyncMock)
+    @patch("src.navigation.repository.find_waypoints_by_host", new_callable=AsyncMock)
+    @patch("src.navigation.repository.find_sessions_by_host", new_callable=AsyncMock)
     @patch("src.medications.repository.find_by_host", new_callable=AsyncMock)
     @patch("src.wellness.repository.find_by_host", new_callable=AsyncMock)
     @patch("src.relations.repository.find_by_caregiver", new_callable=AsyncMock)
@@ -417,6 +433,8 @@ class TestAdminService:
         mock_rel_cg: AsyncMock,
         mock_wellness: AsyncMock,
         mock_meds: AsyncMock,
+        mock_nav_sessions: AsyncMock,
+        mock_nav_waypoints: AsyncMock,
         mock_tokens: AsyncMock,
     ) -> None:
         from src.admin.service import export_user_data
@@ -429,6 +447,8 @@ class TestAdminService:
         mock_rel_cg.return_value = ([], 0)
         mock_wellness.return_value = ([], 0)
         mock_meds.return_value = ([], 0)
+        mock_nav_sessions.return_value = ([], 0)
+        mock_nav_waypoints.return_value = ([], 0)
         mock_tokens.return_value = []
 
         db = AsyncMock()
