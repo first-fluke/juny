@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/features/auth/presentation/providers/auth_provider.dart';
 import 'package:mobile/features/users/presentation/providers/users_provider.dart';
 import 'package:mobile/i18n/generated/app_localizations.dart';
@@ -16,18 +17,24 @@ class ProfileScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final userAsync = ref.watch(currentUserProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.profile)),
-      body: userAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.profile),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
+      ),
+      childPad: false,
+      child: userAsync.when(
+        loading: () => const Center(child: FCircularProgress()),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(l10n.error, style: Theme.of(context).textTheme.bodyLarge),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => ref.invalidate(currentUserProvider),
+              FButton(
+                onPress: () => ref.invalidate(currentUserProvider),
                 child: Text(l10n.retry),
               ),
             ],
@@ -36,7 +43,7 @@ class ProfileScreen extends ConsumerWidget {
         data: (user) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Card(
+            FCard.raw(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -65,25 +72,20 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Card(
+            FCard.raw(
               child: Column(
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.download),
+                  FTile(
+                    prefix: const Icon(Icons.download),
                     title: Text(l10n.exportData),
-                    onTap: () => _exportData(ref),
+                    onPress: () => _exportData(ref),
                   ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.delete_forever,
-                      color: Color(0xFFD32F2F),
-                    ),
-                    title: Text(
-                      l10n.deleteAccount,
-                      style: const TextStyle(color: Color(0xFFD32F2F)),
-                    ),
-                    onTap: () => _confirmDelete(context, ref),
+                  const FDivider(),
+                  FTile(
+                    variants: {FItemVariant.destructive},
+                    prefix: const Icon(Icons.delete_forever),
+                    title: Text(l10n.deleteAccount),
+                    onPress: () => _confirmDelete(context, ref),
                   ),
                 ],
               ),
@@ -101,22 +103,21 @@ class ProfileScreen extends ConsumerWidget {
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showFDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context, style, animation) => FDialog(
+        animation: animation,
         title: Text(l10n.deleteAccount),
-        content: Text(l10n.confirm),
+        body: Text(l10n.confirm),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFD32F2F),
-            ),
+          FButton(
+            onPress: () => Navigator.of(context).pop(true),
             child: Text(l10n.delete),
+          ),
+          FButton(
+            variant: FButtonVariant.ghost,
+            onPress: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
           ),
         ],
       ),
