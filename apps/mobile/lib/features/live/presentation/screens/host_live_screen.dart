@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/core/network/api/export.dart';
@@ -80,9 +81,10 @@ class _HostLiveScreenState extends ConsumerState<HostLiveScreen> {
 
   void _showMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    showFToast(
+      context: context,
+      title: Text(message),
+    );
   }
 
   Future<void> _disconnect() async {
@@ -107,9 +109,14 @@ class _HostLiveScreenState extends ConsumerState<HostLiveScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.liveSession)),
-      body: SafeArea(
+    return FScaffold(
+      header: FHeader.nested(
+        title: Text(l10n.liveSession),
+        prefixes: [
+          FHeaderAction.back(onPress: () => Navigator.of(context).pop()),
+        ],
+      ),
+      child: SafeArea(
         child: Column(
           children: [
             Expanded(
@@ -120,41 +127,28 @@ class _HostLiveScreenState extends ConsumerState<HostLiveScreen> {
                           ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const CircularProgressIndicator(),
+                                const FCircularProgress(),
                                 const SizedBox(height: 24),
-                                Text(
-                                  l10n.connecting,
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
+                                Text(l10n.connecting),
                               ],
                             )
-                          : Text(
-                              l10n.disconnected,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
+                          : Text(l10n.disconnected),
                     ),
             ),
             Padding(
               padding: const EdgeInsets.all(24),
-              child: FilledButton.icon(
-                onPressed: _isConnected ? _disconnect : _connectToRoom,
-                icon: Icon(
-                  _isConnected ? Icons.call_end : Icons.videocam,
-                  size: 28,
-                ),
-                label: Text(
-                  _isConnected ? l10n.endLive : l10n.startLive,
-                ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: _isConnected
-                      ? Theme.of(context).colorScheme.error
-                      : Theme.of(context).colorScheme.primary,
-                  foregroundColor: _isConnected
-                      ? Theme.of(context).colorScheme.onError
-                      : Theme.of(context).colorScheme.onPrimary,
-                  minimumSize: const Size(double.infinity, 72),
-                ),
-              ),
+              child: _isConnected
+                  ? FButton(
+                      variant: FButtonVariant.destructive,
+                      onPress: _disconnect,
+                      prefix: const Icon(Icons.call_end, size: 28),
+                      child: Text(l10n.endLive),
+                    )
+                  : FButton(
+                      onPress: _connectToRoom,
+                      prefix: const Icon(Icons.videocam, size: 28),
+                      child: Text(l10n.startLive),
+                    ),
             ),
           ],
         ),
@@ -169,7 +163,7 @@ class _HostLiveScreenState extends ConsumerState<HostLiveScreen> {
         .firstOrNull;
 
     if (videoTrack == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: FCircularProgress());
     }
 
     return VideoTrackRenderer(videoTrack);
