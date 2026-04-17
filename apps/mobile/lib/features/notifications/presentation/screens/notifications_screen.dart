@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:mobile/core/network/api/export.dart';
@@ -21,27 +22,27 @@ class NotificationsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final logsAsync = ref.watch(notificationLogsProvider());
 
-    return Scaffold(
-      appBar: AppBar(
+    return FScaffold(
+      header: FHeader(
         title: Text(l10n.notifications),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: l10n.notificationSettings,
-            onPressed: () => context.push('/notifications/settings'),
+        suffixes: [
+          FHeaderAction(
+            icon: const Icon(FIcons.settings),
+            onPress: () => context.push('/notifications/settings'),
           ),
         ],
       ),
-      body: logsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+      childPad: false,
+      child: logsAsync.when(
+        loading: () => const Center(child: FCircularProgress()),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(l10n.error, style: Theme.of(context).textTheme.bodyLarge),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => ref.invalidate(notificationLogsProvider()),
+              FButton(
+                onPress: () => ref.invalidate(notificationLogsProvider()),
                 child: Text(l10n.retry),
               ),
             ],
@@ -65,7 +66,7 @@ class NotificationsScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: items.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const FDivider(),
             itemBuilder: (context, index) => _NotificationTile(
               log: items[index],
               onTap: () => _markAsRead(ref, items[index]),
