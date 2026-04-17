@@ -7,6 +7,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Apply Firebase plugins only when google-services.json is present so local
+// builds without Firebase credentials don't fail.
+val googleServicesFile = file("google-services.json")
+if (googleServicesFile.exists()) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
+}
+
 // Load signing properties from key.properties (not committed to version control)
 val keyPropertiesFile = rootProject.file("key.properties")
 val keyProperties = Properties()
